@@ -1,13 +1,14 @@
 import uuid
+from typing import List
 from fastapi import HTTPException
 from schemas.user import User, UserCreate, UserUpdate
-from repos.userRepo import load_all, save_all
+from repos.userRepo import loadAll, saveAll
 
 def listUsers() -> List[User]:
-    return [User(**it) for it in load_all()]
+    return [User(**it) for it in loadAll()]
 
 def createUser(payload: UserCreate) -> User:
-    users = load_all()
+    users = loadAll()
     newId = str(uuid.uuid4())
     if any(it.get("id") == newId for it in users):
         raise HTTPException(status_code=409, detail="ID collision; retry.")
@@ -20,18 +21,18 @@ def createUser(payload: UserCreate) -> User:
                    pw = payload.pw.strip(),
                    role = payload.role)
     users.append(newUser.dict())
-    save_all(users)
+    saveAll(users)
     return newUser
 
 def getUserById(userId: str) -> User:
-    users = load_all()
+    users = loadAll()
     for it in users:
         if it.get("id") == userId:
             return User(**it)
     raise HTTPException(status_code=404, detail=f"User '{userId}' not found")
 
 def updateUser(userId: str, payload: UserUpdate) -> User:
-    users = load_all()
+    users = loadAll()
     for idx, it in enumerate(users):
         if it.get("id") == userId:
             updated = User(
@@ -45,13 +46,13 @@ def updateUser(userId: str, payload: UserUpdate) -> User:
                 role = payload.role,
             )
             users[idx] = updated.dict()
-            save_all(users)
+            saveAll(users)
             return updated
     raise HTTPException(status_code=404, detail=f"User '{userId}' not found")
 
 def deleteUser(userId: str) -> None:
-    users = load_all()
+    users = loadAll()
     newUsers = [it for it in users if it.get("id") != userId]
     if len(newUsers) == len(users):
         raise HTTPException(status_code=404, detail=f"User '{userId}' not found")
-    save_all(newUsers)
+    saveAll(newUsers)

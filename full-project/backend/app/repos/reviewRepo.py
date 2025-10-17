@@ -2,7 +2,7 @@ from pathlib import Path
 import json, os
 from typing import List, Dict, Any
 
-DATA_PATH = Path(__file__).resolve().parents[1] / "data" / "users.json"
+DATA_PATH = Path(__file__).resolve().parents[1] / "data" / "reviews.json"
 
 def loadAll() -> List[Dict[str, Any]]:
     if not DATA_PATH.exists():

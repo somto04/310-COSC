@@ -16,7 +16,7 @@ class ReviewCreate(BaseModel):
     reviewBody: str
     flagged: bool
 
-class reviewUpdate(BaseModel):
+class ReviewUpdate(BaseModel):
     reveiwTitle: Optional[str] = None
     rating: Optional[int] = None
     reviewBody: Optional[str] = None

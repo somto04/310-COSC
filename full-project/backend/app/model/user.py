@@ -9,6 +9,7 @@ class user:
         self.username = username
         self.password = password
 
+    #user getters
     def get_userId(self):
         return self.userId
     
@@ -29,6 +30,8 @@ class user:
     
     def get_penaltiesCount(self):
         return self.penaltiesCount
+    
+    #user setters
     
     def set_userId(self, userId):
         self.userId = userId

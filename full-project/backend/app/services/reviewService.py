@@ -14,7 +14,7 @@ def createReview(payload: ReviewCreate) -> Review:
         raise HTTPException(status_code=409, detail="ID collision; retry.")
     newReview = Review(id=newId, 
                    movieId = payload.movieId.strip(), 
-                   reveiwTitle = payload.reveiwTitle.strip(), 
+                   reviewTitle = payload.reviewTitle.strip(), 
                    rating = payload.rating.strip(),
                    reviewBody = payload.reviewBody.strip(),
                    flagged = payload.flagged)
@@ -36,7 +36,7 @@ def updateReview(reviewId: str, payload: ReviewUpdate) -> Review:
             updated = Review(
                 id=reviewId,
                 movieId = payload.movieId.strip(), 
-                reveiwTitle = payload.reveiwTitle.strip(), 
+                reviewTitle = payload.reviewTitle.strip(), 
                 rating = payload.rating.strip(),
                 reviewBody = payload.reviewBody.strip(),
                 flagged = payload.flagged,

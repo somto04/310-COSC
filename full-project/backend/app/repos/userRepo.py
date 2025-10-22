@@ -3,7 +3,8 @@ import json
 from pathlib import Path
 from typing import List, Dict
 
-DATA_FILE = Path(__file__).resolve().parents[2] / "data" / "users.json"
+DATA_FILE = Path(__file__).parent.parent / "data" / "users.json"
+
 
 def _ensure_file():
     if not DATA_FILE.exists():

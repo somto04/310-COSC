@@ -1,5 +1,5 @@
 
-from typing import List
+from typing import List, Optional
 from fastapi import APIRouter, HTTPException, status
 from ..schemas.movie import Movie, MovieCreate, MovieUpdate
 from ..services.movieService import (
@@ -12,6 +12,14 @@ from ..services.movieService import (
 )
 
 router = APIRouter(prefix="/movies", tags=["movies"])
+
+@router.get("/search", response_model=List[Movie])
+def searchMovies(q: Optional[str] = None, query: Optional[str] = None):
+    keyword = q or query or ""
+    results = searchMovie(keyword)
+    if not results:
+        raise HTTPException(status_code=404, detail="Movie not found")
+    return results
 
 @router.get("", response_model=List[Movie])
 def getMovies():
@@ -34,6 +42,3 @@ def removeMovie(movieId: str):
     deleteMovie(movieId)
     return None
 
-@router.get("/search", response_model=List[Movie])
-def searchMovies(query: str):
-    return searchMovie(query)

@@ -2,22 +2,26 @@ from pydantic import BaseModel
 from typing import Optional
 
 class Review(BaseModel):
-    reviewId: int
+    id: str
     movieId: int
-    reveiwTitle: str
-    rating: int
+    userId: int
+    reviewTitle: str
     reviewBody: str
-    flagged: bool
+    rating: str
+    datePosted: Optional[str] = None
 
 class ReviewCreate(BaseModel):
     movieId: int
-    reveiwTitle: str
-    rating: int
+    userId: int
+    reviewTitle: str
     reviewBody: str
-    flagged: bool
+    rating: str
+    datePosted: Optional[str] = None
 
 class ReviewUpdate(BaseModel):
-    reveiwTitle: Optional[str] = None
-    rating: Optional[int] = None
+    movieId: Optional[int] = None
+    userId: Optional[int] = None
+    reviewTitle: Optional[str] = None
     reviewBody: Optional[str] = None
-    flagged: Optional[bool] = None
+    rating: Optional[str] = None
+    datePosted: Optional[str] = None

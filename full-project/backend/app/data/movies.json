@@ -1,0 +1,211 @@
+[
+  {
+    "id": 1,
+    "title": "Avengers Endgame",
+    "movieIMDbRating": 8.4,
+    "movieGenres": [
+      "Action",
+      "Adventure",
+      "Drama"
+    ],
+    "directors": [
+      "Anthony Russo",
+      "Joe Russo"
+    ],
+    "mainStars": [
+      "Robert Downey Jr.",
+      "Chris Evans",
+      "Mark Ruffalo"
+    ],
+    "description": "After the devastating events of Avengers: Infinity War (2018), the universe is in ruins. With the help of remaining allies, the Avengers assemble once more in order to reverse Thanos' actions and restore balance to the universe.",
+    "datePublished": "2019-04-26",
+    "duration": 181
+  },
+  {
+    "id": 2,
+    "title": "Forrest Gump",
+    "movieIMDbRating": 8.8,
+    "movieGenres": [
+      "Drama",
+      "Romance"
+    ],
+    "directors": [
+      "Robert Zemeckis"
+    ],
+    "mainStars": [
+      "Tom Hanks",
+      "Robin Wright",
+      "Gary Sinise"
+    ],
+    "description": "The presidencies of Kennedy and Johnson, the Vietnam War, the Watergate scandal and other historical events unfold from the perspective of an Alabama man with an IQ of 75, whose only desire is to be reunited with his childhood swe...",
+    "datePublished": "1994-07-06",
+    "duration": 142
+  },
+  {
+    "id": 3,
+    "title": "John Wick Chapter 3  Parabellum",
+    "movieIMDbRating": 7.4,
+    "movieGenres": [
+      "Action",
+      "Crime",
+      "Thriller"
+    ],
+    "directors": [
+      "Chad Stahelski"
+    ],
+    "mainStars": [
+      "Keanu Reeves",
+      "Halle Berry",
+      "Ian McShane"
+    ],
+    "description": "John Wick is on the run after killing a member of the international assassins' guild, and with a $14 million price tag on his head, he is the target of hit men and women everywhere.",
+    "datePublished": "2019-07-05",
+    "duration": 130
+  },
+  {
+    "id": 4,
+    "title": "Joker",
+    "movieIMDbRating": 8.4,
+    "movieGenres": [
+      "Crime",
+      "Drama",
+      "Thriller"
+    ],
+    "directors": [
+      "Todd Phillips"
+    ],
+    "mainStars": [
+      "Joaquin Phoenix",
+      "Robert De Niro",
+      "Zazie Beetz"
+    ],
+    "description": "A mentally troubled stand-up comedian embarks on a downward spiral that leads to the creation of an iconic villain.",
+    "datePublished": "2019-10-04",
+    "duration": 122
+  },
+  {
+    "id": 5,
+    "title": "Morbius",
+    "movieIMDbRating": 5.2,
+    "movieGenres": [
+      "Action",
+      "Adventure",
+      "Horror"
+    ],
+    "directors": [
+      "Daniel Espinosa"
+    ],
+    "mainStars": [
+      "Jared Leto",
+      "Matt Smith",
+      "Adria Arjona"
+    ],
+    "description": "Biochemist Michael Morbius tries to cure himself of a rare blood disease, but he inadvertently infects himself with a form of vampirism instead.",
+    "datePublished": "2022-04-01",
+    "duration": 104
+  },
+  {
+    "id": 6,
+    "title": "Pulp Fiction",
+    "movieIMDbRating": 8.9,
+    "movieGenres": [
+      "Crime",
+      "Drama"
+    ],
+    "directors": [
+      "Quentin Tarantino"
+    ],
+    "mainStars": [
+      "John Travolta",
+      "Uma Thurman",
+      "Samuel L. Jackson"
+    ],
+    "description": "The lives of two mob hitmen, a boxer, a gangster and his wife, and a pair of diner bandits intertwine in four tales of violence and redemption.",
+    "datePublished": "1994-10-14",
+    "duration": 154
+  },
+  {
+    "id": 7,
+    "title": "SpiderMan No Way Home",
+    "movieIMDbRating": 8.3,
+    "movieGenres": [
+      "Action",
+      "Adventure",
+      "Fantasy"
+    ],
+    "directors": [
+      "Jon Watts"
+    ],
+    "mainStars": [
+      "Tom Holland",
+      "Zendaya",
+      "Benedict Cumberbatch"
+    ],
+    "description": "With Spider-Man's identity now revealed, Peter asks Doctor Strange for help. When a spell goes wrong, dangerous foes from other worlds start to appear, forcing Peter to discover what it truly means to be Spider-Man.",
+    "datePublished": "2021-12-17",
+    "duration": 148
+  },
+  {
+    "id": 8,
+    "title": "The Avengers",
+    "movieIMDbRating": 8,
+    "movieGenres": [
+      "Action",
+      "Adventure",
+      "Sci-Fi"
+    ],
+    "directors": [
+      "Joss Whedon"
+    ],
+    "mainStars": [
+      "Robert Downey Jr.",
+      "Chris Evans",
+      "Scarlett Johansson"
+    ],
+    "description": "Earth's mightiest heroes must come together and learn to fight as a team if they are going to stop the mischievous Loki and his alien army from enslaving humanity.",
+    "datePublished": "2012-05-11",
+    "duration": 143
+  },
+  {
+    "id": 9,
+    "title": "The Dark Knight",
+    "movieIMDbRating": 9,
+    "movieGenres": [
+      "Action",
+      "Crime",
+      "Drama"
+    ],
+    "directors": [
+      "Christopher Nolan"
+    ],
+    "mainStars": [
+      "Christian Bale",
+      "Heath Ledger",
+      "Aaron Eckhart"
+    ],
+    "description": "When the menace known as the Joker wreaks havoc and chaos on the people of Gotham, Batman must accept one of the greatest psychological and physical tests of his ability to fight injustice.",
+    "datePublished": "2008-07-18",
+    "duration": 152
+  },
+  {
+    "id": 10,
+    "title": "Thor Ragnarok",
+    "movieIMDbRating": 7.9,
+    "movieGenres": [
+      "Action",
+      "Adventure",
+      "Comedy"
+    ],
+    "directors": [
+      "Taika Waititi"
+    ],
+    "mainStars": [
+      "Chris Hemsworth",
+      "Tom Hiddleston",
+      "Cate Blanchett"
+    ],
+    "description": "Imprisoned on the planet Sakaar, Thor must race against time to return to Asgard and stop Ragnar\u00f6k, the destruction of his world, at the hands of the powerful and ruthless villain Hela.",
+    "datePublished": "2017-11-03",
+    "duration": 130
+  }
+]

@@ -2,18 +2,18 @@ from pydantic import BaseModel
 from typing import Optional
 
 class User(BaseModel):
-    userId: int
-    firstname: str
-    lastname: str
-    age: int
-    email: str
+    id: int
+    firstName: Optional[str] = ""
+    lastName: Optional[str] = ""
+    age: Optional[int] = None
+    email: Optional[str] = ""
     username: str
-    pw: str
+    pw: Optional[str] = ""
     role: str
 
 class UserCreate(BaseModel):
-    firstname: str
-    lastname: str
+    firstName: str
+    lastName: str
     age: int
     email: str
     username: str
@@ -21,8 +21,8 @@ class UserCreate(BaseModel):
     role: str
 
 class UserUpdate(BaseModel):
-    firstname: Optional[str] = None
-    lastname: Optional[str] = None
+    firstName: Optional[str] = None
+    lastName: Optional[str] = None
     age: Optional[int] = None
     email: Optional[str] = None
     username: Optional[str] = None

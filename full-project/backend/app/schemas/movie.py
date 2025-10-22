@@ -1,4 +1,4 @@
-# ...existing code...
+
 from pydantic import BaseModel, Field, root_validator
 from typing import List, Optional
 
@@ -87,4 +87,3 @@ class MovieUpdate(BaseModel):
     actors: Optional[List[str]] = None
     genre: Optional[str] = None
     duration: Optional[int] = None
-# ...existing code...

@@ -3,11 +3,13 @@ import json
 from pathlib import Path
 from typing import List, Dict
 
-DATA_FILE = Path(__file__).resolve().parent / "movies.json"
+# use project-level data folder under backend/data
+DATA_FILE = Path(__file__).resolve().parents[1] / "data" / "movies.json"
+print(f"🎬 Using data file: {DATA_FILE}")
 
 def _ensure_file():
     if not DATA_FILE.exists():
-        DATA_FILE.write_text("[]", encoding="utf-8")
+       raise FileNotFoundError(f"Missing data file: {DATA_FILE}") 
 
 def loadAll() -> List[Dict]:
     _ensure_file()

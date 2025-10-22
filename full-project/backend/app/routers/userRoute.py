@@ -1,7 +1,7 @@
 from typing import List
 from fastapi import APIRouter, status
-from schemas.user import User, UserCreate, UserUpdate
-from services.userService import listUsers, createUser, deleteUser, updateUser, getUserById
+from ..schemas.user import User, UserCreate, UserUpdate
+from ..services.userService import listUsers, createUser, deleteUser, updateUser, getUserById
 
 router = APIRouter(prefix = "/users", tags = ["users"])
 

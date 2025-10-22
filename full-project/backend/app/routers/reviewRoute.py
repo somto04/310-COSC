@@ -1,7 +1,7 @@
 from typing import List
 from fastapi import APIRouter, status
-from schemas.review import Review, ReviewCreate, ReviewUpdate
-from services.reviewService import listReviews, createReview, deleteReview, updateReview, getReviewById
+from ..schemas.review import Review, ReviewCreate, ReviewUpdate
+from ..services.reviewService import listReviews, createReview, deleteReview, updateReview, getReviewById
 
 router = APIRouter(prefix = "/reviews", tags = ["reviews"])
 

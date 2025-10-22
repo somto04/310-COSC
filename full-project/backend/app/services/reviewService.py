@@ -1,8 +1,8 @@
 import uuid
 from typing import List
 from fastapi import HTTPException
-from schemas.review import Review, ReviewUpdate, ReviewCreate
-from repos.reviewRepo import loadAll, saveAll
+from ..schemas.review import Review, ReviewUpdate, ReviewCreate
+from ..repos.reviewRepo import loadAll, saveAll
 
 def listReviews() -> List[Review]:
     return [Review(**it) for it in loadAll()]

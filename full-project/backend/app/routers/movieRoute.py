@@ -1,4 +1,4 @@
-# ...existing code...
+
 from typing import List
 from fastapi import APIRouter, HTTPException, status
 from ..schemas.movie import Movie, MovieCreate, MovieUpdate
@@ -37,4 +37,3 @@ def removeMovie(movieId: str):
 @router.get("/search", response_model=List[Movie])
 def searchMovies(query: str):
     return searchMovie(query)
-# ...existing code...

@@ -1,6 +1,6 @@
 # 310-COSC
 
-# i am confused * 4
+# Use the camel case naming convention for functions and variables
 
 api website: http://127.0.0.1:8000/docs#/
 test push

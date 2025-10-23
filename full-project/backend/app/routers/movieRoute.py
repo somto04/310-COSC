@@ -1,7 +1,7 @@
 from typing import List # imports the List function from the typing moduel for list creatio
 from fastapi import APIRouter, HTTPException, status #creates a mini FastAPI for organizing related movie routes
 from schemas.movie import Movie, MovieCreate, MovieUpdate #imports movie schemas for request and response validation
-from services.movieService import listMovies, createMovie, getMovieById, updateMovie, deleteMovie, searchMovie 
+from services.movieService import listMovies, createMovie, updateMovie, deleteMovie, searchMovie 
 
 #create a router object that will handle all routes starting with /movies
 #tags organize the routes under the "movies" category in the API documentation

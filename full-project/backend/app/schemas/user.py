@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, field_validator
 from typing import Optional
 
 class User(BaseModel):
@@ -14,11 +14,18 @@ class User(BaseModel):
 class UserCreate(BaseModel):
     firstName: str
     lastName: str
-    age: int
+    age: int = Field(..., ge=0, description="User must be 16 years or older")
     email: str
     username: str
     pw: str
     role: str
+
+    @field_validator('age')
+    @classmethod
+    def check_age(cls, value):
+        if value < 16:
+            raise ValueError("User must be 16 years or older to create an account")
+        return value
 
 class UserUpdate(BaseModel):
     firstName: Optional[str] = None
@@ -28,3 +35,4 @@ class UserUpdate(BaseModel):
     username: Optional[str] = None
     pw: Optional[str] = None
     role: Optional[str] = None
+

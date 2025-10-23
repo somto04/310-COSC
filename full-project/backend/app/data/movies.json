@@ -207,5 +207,26 @@
     "description": "Imprisoned on the planet Sakaar, Thor must race against time to return to Asgard and stop Ragnar\u00f6k, the destruction of his world, at the hands of the powerful and ruthless villain Hela.",
     "datePublished": "2017-11-03",
     "duration": 130
+  },
+  {
+    "id": 11,
+    "title": "Thor Ragnarok",
+    "movieIMDbRating": 7.9,
+    "movieGenres": [
+      "Action",
+      "Adventure",
+      "Comedy"
+    ],
+    "directors": [
+      "Taika Waititi"
+    ],
+    "mainStars": [
+      "Chris Hemsworth",
+      "Tom Hiddleston",
+      "Cate Blanchett"
+    ],
+    "description": "Imprisoned on the planet Sakaar, Thor must race against time to return to Asgard and stop Ragnar\u00f6k, the destruction of his world, at the hands of the powerful and ruthless villain Hela.",
+    "datePublished": "2017-11-03",
+    "duration": 130
   }
 ]

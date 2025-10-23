@@ -1,6 +1,7 @@
 # 310-COSC
 
 # Use the camel case naming convention for functions and variables
+#api website: http://127.0.0.1:8000/docs#/
 
 test push
 api key for themoviedb.org, an api that returns the name and details of the movie including posters, actors and synopses: af9b006f6a9b9e43349e63bedd6ea43b

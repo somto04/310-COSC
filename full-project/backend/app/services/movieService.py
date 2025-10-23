@@ -1,45 +1,89 @@
+# ...existing code...
 import uuid
-from typing import List
+from typing import List,Dict
 from fastapi import HTTPException
-from schemas.movie import Movie, MovieUpdate, MovieCreate
-from repos.movieRepo import loadAll, saveAll #import functions to load and save movie data
-
-
+from ..schemas.movie import Movie, MovieUpdate, MovieCreate
+from ..repos.movieRepo import loadAll, saveAll  # import functions to load and save movie data
 
 def listMovies() -> List[Movie]:
-    return [Movie(**it) for it in loadAll()] #load all movies from the repository and convert to Movie objects
+    data = loadAll()
+    print("Loaded", len(data), "movies")
+    # just return raw data for debugging
+    return data
 
-def createMovie(payLoad: MovieCreate) -> Movie:
-    movies = loadAll() #load existing movies from the repository
-    newMovie = Movie()
-    newId = str(uuid.uuid4()) #generate a unique ID for the new movie
-    if any(it.get("id") == newId for it in movies):
-        raise HTTPException(status_code=409, detail="ID collision; retry." )
-    newMovie = Movie(
-        id=newId,
-        movieName = payLoad.movieName.strip(),
-        yearReleased = payLoad.yearReleased,
-        actors = payLoad.actors,
-        genre = payLoad.genre.strip(),
-        length = payLoad.length
-    )
-    movies.append(newMovie.model_dump()) #add the new movie to the list
-    saveAll(movies) #save the updated movie list back to the repository
-    return newMovie #returns the new movie object
+def createMovie(payload: MovieCreate) -> Movie:
+    movies = loadAll()
+    new_movie = payload.dict()
+    new_movie["id"] = str(uuid.uuid4())
+    movies.append(new_movie)
+    saveAll(movies)
+    return Movie(**new_movie)
 
-def updateMovie(movieId: str, payLoad: MovieUpdate) -> Movie:
-    movies = loadAll() #load existing movies from the repository
-    for idx, it in enumerate(movies):
-        if it.get("id") == movieId:
-            updated = Movie(
-                movieId = movieId,
-                movieName = payLoad.movieName.strip(),
-                yearReleased = payLoad.yearReleased,
-                actors = payLoad.actors,
-                genre = payLoad.genre.strip(),
-                length = payLoad.length
-            )
-            movies[idx] = updated.model_dump() #update the movie in the list
-            saveAll(movies) #save the updated movie list back to the repository
-            return updated #return the updated movie object
-    raise HTTPException(status_code=404, detail=f"Movie '{movieId}' not found")
+# added/missing service functions required by routers
+def getMovieById(movieId: str) -> Movie:
+    for m in loadAll():
+        if str(m.get("id")) == str(movieId):   # <-- convert both to string
+            return Movie(**m)
+    raise HTTPException(status_code=404, detail="Movie not found")
+
+def updateMovie(movieId: str, payload: MovieUpdate) -> Movie:
+    movies = loadAll()
+    for idx, m in enumerate(movies):
+        if m.get("id") == movieId:
+            updates = payload.dict(exclude_unset=True)
+            movies[idx] = {**m, **updates}
+            saveAll(movies)
+            return Movie(**movies[idx])
+    raise HTTPException(status_code=404, detail="Movie not found")
+
+def deleteMovie(movieId: str) -> None:
+    movies = loadAll()
+    filtered = [m for m in movies if m.get("id") != movieId]
+    if len(filtered) == len(movies):
+        raise HTTPException(status_code=404, detail="Movie not found")
+    saveAll(filtered)
+
+def _normalize_record(m: Dict) -> Dict:
+    # produce minimal fields expected by your Movie schema
+    out = {}
+    out["id"] = str(m.get("id") or m.get("movieId") or "")
+    out["title"] = m.get("title") or m.get("movieName") or ""
+    # try to extract year from datePublished (YYYY-MM-DD) or fall back to yearReleased or 0
+    dp = m.get("datePublished") or ""
+    try:
+        out["yearReleased"] = int(dp.split("-")[0]) if dp else int(m.get("yearReleased") or 0)
+    except Exception:
+        out["yearReleased"] = int(m.get("yearReleased") or 0)
+    out["actors"] = m.get("mainStars") or m.get("actors") or []
+    out["genre"] = (m.get("movieGenres")[0] if isinstance(m.get("movieGenres"), list) and m.get("movieGenres") else m.get("genre") or "") 
+    out["duration"] = int(m.get("duration") or m.get("length") or 0)
+    return out
+
+def searchMovie(query: str) -> List[Movie]:
+    q = (query or "").lower().strip()
+    if not q:
+        return []
+
+    results = []
+    for m in loadAll():
+        # check across multiple fields
+        title = str(m.get("title", "")).lower()
+        desc = str(m.get("description", "")).lower()
+        genres = " ".join(m.get("movieGenres", []))
+        stars = " ".join(m.get("mainStars", []))
+        directors = " ".join(m.get("directors", []))
+
+        if any(q in field for field in [title, desc, genres, stars, directors]):
+            normalized = {
+                "id": m.get("id"),
+                "title": m.get("title"),
+                "movieIMDbRating": m.get("movieIMDbRating"),
+                "movieGenres": m.get("movieGenres"),
+                "directors": m.get("directors"),
+                "mainStars": m.get("mainStars"),
+                "description": m.get("description"),
+                "datePublished": m.get("datePublished"),
+                "duration": m.get("duration"),
+            }
+            results.append(normalized)
+    return results

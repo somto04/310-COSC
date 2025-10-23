@@ -1,35 +1,44 @@
-from typing import List # imports the List function from the typing moduel for list creatio
-from fastapi import APIRouter, HTTPException, status #creates a mini FastAPI for organizing related movie routes
-from schemas.movie import Movie, MovieCreate, MovieUpdate #imports movie schemas for request and response validation
-from services.movieService import listMovies, createMovie, updateMovie, deleteMovie, searchMovie 
 
-#create a router object that will handle all routes starting with /movies
-#tags organize the routes under the "movies" category in the API documentation
-router = APIRouter(prefix = "/movies", tags = ["movies'])"])
+from typing import List, Optional
+from fastapi import APIRouter, HTTPException, status
+from ..schemas.movie import Movie, MovieCreate, MovieUpdate
+from ..services.movieService import (
+    listMovies,
+    createMovie,
+    getMovieById,
+    updateMovie,
+    deleteMovie,
+    searchMovie,
+)
 
-#GET /movies - retrieves a list of all movies
-@router.get("", responseModel = List[Movie]) #used camelcase for responseModel
-def getMovies(): #retrieve a list of all movies from the database
-    return listMovies() #return the list of movie objects from the database
+router = APIRouter(prefix="/movies", tags=["movies"])
 
-#POST /movies - creates a new movie
-@router.post("", responseModel = Movie, statusCode = 201)
-def postMovie(payload: MovieCreate): #will create a new movie in the database
-    return createMovie(payload) #return the newly created movie object
+@router.get("/search", response_model=List[Movie])
+def searchMovies(q: Optional[str] = None, query: Optional[str] = None):
+    keyword = q or query or ""
+    results = searchMovie(keyword)
+    if not results:
+        raise HTTPException(status_code=404, detail="Movie not found")
+    return results
 
-#PUT /movies - updates an existing movie 
-@router.put("/{movieId}", responseModel = Movie)
-def putMovie(movieId: str, payload: MovieUpdate): #update an existing movie in the database
-    return updateMovie(movieId, payload) #return the updated movie object
+@router.get("", response_model=List[Movie])
+def getMovies():
+    return listMovies()
 
-#DELETE /movies - deletes a movie by its ID
-@router.delete("/{movieId}", statusCode = 204)
-def removeMovie(movieId: str): #delete a movie from the database
-    deleteMovie(movieId) #perform the deletion operation
-    return None #return no contentd
+@router.post("", response_model=Movie, status_code=status.HTTP_201_CREATED)
+def postMovie(payload: MovieCreate):
+    return createMovie(payload)
 
-@router.get("/movies/search", response_model=List[Movie]) #added a search endpoint 
-def searchMovies(query: str): #search for movies based on a query string
-    #example: /movies/search?query=inception
-    return searchMovie(query)
+@router.get("/{movieId}", response_model=Movie)
+def getMovie(movieId: str):
+    return getMovieById(movieId)
+
+@router.put("/{movieId}", response_model=Movie)
+def putMovie(movieId: str, payload: MovieUpdate):
+    return updateMovie(movieId, payload)
+
+@router.delete("/{movieId}", status_code=status.HTTP_204_NO_CONTENT)
+def removeMovie(movieId: str):
+    deleteMovie(movieId)
+    return None
 

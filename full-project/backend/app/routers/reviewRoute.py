@@ -1,7 +1,8 @@
 from typing import List
-from fastapi import APIRouter, status
+from fastapi import APIRouter, status, Depends, HTTPException
 from ..schemas.review import Review, ReviewCreate, ReviewUpdate
 from ..services.reviewService import listReviews, createReview, deleteReview, updateReview, getReviewById
+from app.routers.auth import getCurrentUser
 
 router = APIRouter(prefix = "/reviews", tags = ["reviews"])
 
@@ -22,6 +23,13 @@ def putReview(reviewId: str, payload: ReviewUpdate):
     return updateReview(reviewId, payload)
 
 @router.delete("/{reviewId}", status_code=status.HTTP_204_NO_CONTENT)
-def removeReview(reviewId: str):
+# gets the current user from auth
+def removeReview(reviewId: str, currentUser: dict = Depends(getCurrentUser)): 
+    review = getReviewById(reviewId)
+    if not review:
+        raise HTTPException(status_code=404, detail="Review not found")
+    
+    if currentUser["role"] != "admin" and review["username"] != currentUser["username"]:
+        raise HTTPException(status_code=403, detail="not authorised to delete this review")
     deleteReview(reviewId)
     return None

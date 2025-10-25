@@ -9,9 +9,9 @@ def listUsers() -> List[User]:
 
 def createUser(payload: UserCreate) -> User:
     users = loadAll()
-    newId = str(uuid.uuid4())
+    newId = max([int(u["id"]) for u in users], default=0) + 1
 
-    if any(str(it.get("id")) == newId for it in users):
+    if any(int(it.get("id")) == newId for it in users):
         raise HTTPException(status_code=409, detail="ID collision; retry.")
 
     newUser = User(

@@ -30,15 +30,15 @@ def postMovie(payload: MovieCreate):
     return createMovie(payload)
 
 @router.get("/{movieId}", response_model=Movie)
-def getMovie(movieId: str):
+def getMovie(movieId: int):
     return getMovieById(movieId)
 
 @router.put("/{movieId}", response_model=Movie)
-def putMovie(movieId: str, payload: MovieUpdate):
+def putMovie(movieId: int, payload: MovieUpdate):
     return updateMovie(movieId, payload)
 
 @router.delete("/{movieId}", status_code=status.HTTP_204_NO_CONTENT)
-def removeMovie(movieId: str):
+def removeMovie(movieId: int):
     deleteMovie(movieId)
     return None
 

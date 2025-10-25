@@ -1,9 +1,14 @@
 from typing import List
 from fastapi import APIRouter, status
 from ..schemas.review import Review, ReviewCreate, ReviewUpdate
-from ..services.reviewService import listReviews, createReview, deleteReview, updateReview, getReviewById
+from ..services.reviewService import listReviews, createReview, deleteReview, updateReview, getReviewById, searchReviews
 
 router = APIRouter(prefix = "/reviews", tags = ["reviews"])
+
+@router.get("/search", response_model=List[Review])
+def searchReview(q: str = "", limit: int = 50, offset: int = 0):
+    results = searchReviews(q)
+    return results[offset : offset + limit]
 
 @router.get("", response_model=List[Review])
 def getReviews():

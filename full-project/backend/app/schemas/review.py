@@ -17,6 +17,7 @@ class ReviewCreate(BaseModel):
     reviewBody: str
     rating: str
     datePosted: Optional[str] = None
+    flagged: Optional[bool] = False
 
 class ReviewUpdate(BaseModel):
     movieId: Optional[int] = None
@@ -25,3 +26,4 @@ class ReviewUpdate(BaseModel):
     reviewBody: Optional[str] = None
     rating: Optional[str] = None
     datePosted: Optional[str] = None
+    flagged: Optional[bool] = None

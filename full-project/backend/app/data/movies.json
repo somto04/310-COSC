@@ -207,24 +207,5 @@
     "description": "Imprisoned on the planet Sakaar, Thor must race against time to return to Asgard and stop Ragnarök, the destruction of his world, at the hands of the powerful and ruthless villain Hela.",
     "datePublished": "2017-11-03",
     "duration": 130
-  },
-  {
-    "title": "Test Movie",
-    "yearReleased": 2024,
-    "actors": [
-      "Actor 1",
-      "Actor 2"
-    ],
-    "genre": "Test Genre",
-    "duration": 120,
-    "id": "ac20a8df-a9ae-455f-a5ed-8d1918449a87"
-  },
-  {
-    "title": "Movie to Delete",
-    "yearReleased": 2023,
-    "actors": [],
-    "genre": "Genre",
-    "duration": 90,
-    "id": "7a6ff404-e8a0-4d2a-81a0-95d170930ede"
   }
 ]

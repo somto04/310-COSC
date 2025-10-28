@@ -39,68 +39,64 @@ def searchReviews(query: str) -> List[Review]:
 
 
 def listReviews() -> List[Review]:
-    """Return all reviews as Review objects."""
     return [Review(**it) for it in loadAll()]
 
 
 def createReview(payload: ReviewCreate) -> Review:
-    """Create a new review and save it."""
     reviews = loadAll()
+    # Generate a new unique ID for the review using uuid4
     newId = str(uuid.uuid4())
-
     if any(it.get("id") == newId for it in reviews):
         raise HTTPException(status_code=409, detail="ID collision; retry.")
-
-    newReview = Review(
-        id=newId,
-        movieId=int(payload.movieId),
-        userId=int(payload.userId),  # ✅ Added
-        reviewTitle=payload.reviewTitle.strip(),
-        rating=payload.rating.strip(),
-        reviewBody=payload.reviewBody.strip(),
-        datePosted=payload.datePosted or "Unknown",  # ✅ Safe fallback
-        flagged=payload.flagged,
-    )
-
+    newReview = Review(id=newId, 
+                   movieId = payload.movieId.strip(), 
+                   reviewTitle = payload.reviewTitle.strip(), 
+                   rating = payload.rating.strip(),
+                   reviewBody = payload.reviewBody.strip(),
+                   flagged = payload.flagged)
     reviews.append(newReview.dict())
     saveAll(reviews)
     return newReview
 
 
 def getReviewById(reviewId: str) -> Review:
-    """Retrieve a single review by ID."""
     reviews = loadAll()
-    for it in reviews:
-        if it.get("id") == reviewId:
-            return Review(**it)
+
+    # go through each review dict and if the ID matches, 
+    # unpack it into a Review object and return it
+    for review in reviews:
+        if review.get("id") == reviewId:
+            return Review(**review)
     raise HTTPException(status_code=404, detail=f"Review '{reviewId}' not found")
 
 
 def updateReview(reviewId: str, payload: ReviewUpdate) -> Review:
-    """Update an existing review."""
     reviews = loadAll()
     for idx, it in enumerate(reviews):
         if it.get("id") == reviewId:
             updated = Review(
                 id=reviewId,
-                movieId=int(payload.movieId),
-                userId=payload.userId or it.get("userId"),  # ✅ Added
-                reviewTitle=payload.reviewTitle.strip(),
-                rating=payload.rating.strip(),
-                reviewBody=payload.reviewBody.strip(),
-                datePosted=payload.datePosted or it.get("datePosted"),  # ✅ Preserve existing date
-                flagged=payload.flagged,
+                movieId = payload.movieId.strip(), 
+                reviewTitle = payload.reviewTitle.strip(), 
+                rating = payload.rating.strip(),
+                reviewBody = payload.reviewBody.strip(),
+                flagged = payload.flagged,
             )
             reviews[idx] = updated.dict()
             saveAll(reviews)
             return updated
+    # If we finish the loop without finding the review, raise 404
     raise HTTPException(status_code=404, detail=f"Review '{reviewId}' not found")
 
 
 def deleteReview(reviewId: str) -> None:
-    """Delete a review by ID."""
     reviews = loadAll()
-    newReviews = [it for it in reviews if it.get("id") != reviewId]
+
+    # Filter out the review with the matching ID
+    newReviews = [review for review in reviews if review.get("id") != reviewId]
+
+    # If no review was removed, raise 404
     if len(newReviews) == len(reviews):
         raise HTTPException(status_code=404, detail=f"Review '{reviewId}' not found")
+    
     saveAll(newReviews)

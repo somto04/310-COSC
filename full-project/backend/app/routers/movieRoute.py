@@ -27,7 +27,7 @@ def getMovies():
     return listMovies()
 
 @router.get("/{movieId}", response_model=Movie)
-def getMovie(movieId: str):
+def getMovie(movieId: int):
     return getMovieById(movieId)
 
 # ---------- #
@@ -40,11 +40,11 @@ def postMovie(payload: MovieCreate, admin: dict = Depends(requireAdmin)):
     return createMovie(payload)
 
 @router.put("/{movieId}", response_model=Movie)
-def putMovie(movieId: str, payload: MovieUpdate, admin: dict = Depends(requireAdmin)):
+def putMovie(movieId: str, payload: MovieUpdate):
     return updateMovie(movieId, payload)
 
 @router.delete("/{movieId}", status_code=status.HTTP_204_NO_CONTENT)
-def removeMovie(movieId: str, admin: dict = Depends(requireAdmin)):
+def removeMovie(movieId: str):
     deleteMovie(movieId)
     return None
 

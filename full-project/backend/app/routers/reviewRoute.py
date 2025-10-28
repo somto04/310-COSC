@@ -6,7 +6,7 @@ from app.routers.auth import getCurrentUser
 
 router = APIRouter(prefix = "/reviews", tags = ["reviews"])
 
-@router.get("", response_model=List[Review])
+@router.listReviews("", response_model=List[Review])
 def getReviews():
     return listReviews()
 

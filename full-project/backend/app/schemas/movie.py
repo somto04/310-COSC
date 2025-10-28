@@ -10,7 +10,7 @@ class Movie(BaseModel):
     directors: List[str] = Field(default_factory=list)
     mainStars: List[str] = Field(default_factory=list)
     description: Optional[str] = None
-    datePublished: Optional[str] = None  # ISO date string
+    datePublished: Optional[str] = None
     duration: int  # minutes
 
     @model_validator(mode="before")

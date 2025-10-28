@@ -2,9 +2,13 @@ from typing import List
 from fastapi import APIRouter, status, Depends, HTTPException
 from ..schemas.review import Review, ReviewCreate, ReviewUpdate
 from ..services.reviewService import listReviews, createReview, deleteReview, updateReview, getReviewById
-from app.routers.auth import getCurrentUser
 
 router = APIRouter(prefix = "/reviews", tags = ["reviews"])
+
+@router.get("/search", response_model=List[Review])
+def searchReview(q: str = "", limit: int = 50, offset: int = 0):
+    results = searchReviews(q)
+    return results[offset : offset + limit]
 
 @router.get("", response_model=List[Review])
 def getReviews():

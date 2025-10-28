@@ -48,6 +48,39 @@ def deleteMovie(movieId: int) -> None:
         raise HTTPException(status_code=404, detail="Movie not found")
     saveAll(filtered)
 
+def searchViaFilters(filters: Dict) -> List[Dict]:
+    results = []
+    for m in loadAll():
+        match = True
+        for key, value in filters.items():
+            if key not in m:
+                match = False
+                break
+            if isinstance(value, str):
+                if str(m[key]).lower() != value.lower():
+                    match = False
+                    break
+            elif isinstance(value, (int, float)):
+                if m[key] != value:
+                    match = False
+                    break
+            elif isinstance(value, list):
+                if not all(item in m[key] for item in value):
+                    match = False
+                    break
+        if match:
+            results.append({
+                "id": m.get("id"),
+                "title": m.get("title"),
+                "movieIMDbRating": m.get("movieIMDbRating"),
+                "movieGenres": m.get("movieGenres"),
+                "directors": m.get("directors"),
+                "mainStars": m.get("mainStars"),
+                "description": m.get("description"),
+                "datePublished": m.get("datePublished"),
+                "duration": m.get("duration"),
+            })
+    return results
 
 def searchMovie(query: str) -> List[Dict]:
     q = (query or "").lower().strip()

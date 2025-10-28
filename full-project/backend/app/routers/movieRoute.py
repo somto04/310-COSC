@@ -1,6 +1,7 @@
 
 from typing import List, Optional
-from fastapi import APIRouter, HTTPException, status
+from app.routers.auth import requireAdmin
+from fastapi import APIRouter, HTTPException, status, Depends
 from ..schemas.movie import Movie, MovieCreate, MovieUpdate
 from ..services.movieService import (
     listMovies,
@@ -25,20 +26,25 @@ def searchMovies(q: Optional[str] = None, query: Optional[str] = None):
 def getMovies():
     return listMovies()
 
-@router.post("", response_model=Movie, status_code=status.HTTP_201_CREATED)
-def postMovie(payload: MovieCreate):
-    return createMovie(payload)
-
 @router.get("/{movieId}", response_model=Movie)
 def getMovie(movieId: str):
     return getMovieById(movieId)
 
+# ---------- #
+# ADMIN ONLY #
+# ---------- #
+# admin: dict = Depends(requireAdmin) - require admin function has to return true
+
+@router.post("", response_model=Movie, status_code=status.HTTP_201_CREATED)
+def postMovie(payload: MovieCreate, admin: dict = Depends(requireAdmin)):
+    return createMovie(payload)
+
 @router.put("/{movieId}", response_model=Movie)
-def putMovie(movieId: str, payload: MovieUpdate):
+def putMovie(movieId: str, payload: MovieUpdate, admin: dict = Depends(requireAdmin)):
     return updateMovie(movieId, payload)
 
 @router.delete("/{movieId}", status_code=status.HTTP_204_NO_CONTENT)
-def removeMovie(movieId: str):
+def removeMovie(movieId: str, admin: dict = Depends(requireAdmin)):
     deleteMovie(movieId)
     return None
 

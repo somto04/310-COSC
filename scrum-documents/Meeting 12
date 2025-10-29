@@ -1,0 +1,24 @@
+ ## Meeting 12
+
+# WHEN? 
+10/28/2025 17:00 - 18:30
+
+# WHO ATTENDED?
+Somto
+Zander
+Camilla
+Gamu 
+
+# TOPIC OF DISCUSSION
+Adding comments to code
+Updating M1
+Searching by filters
+Movie route test
+
+# ACTION ITEMS
+Stay Positive!!!
+Remember to create a new branch for each feature
+Figure out logic behind penalties - flagged for review, penalties for user, everytime the penalty is increased/ logs in then the number is checked to 
+see if its reached the threshold before being sent to the admin page for review.
+Make sure that usernames must be unique not just the id
+Set up github automation

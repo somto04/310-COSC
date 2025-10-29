@@ -11,6 +11,7 @@ class user:
         self.role = role
 
     # user getters
+    # user getters
     def get_userId(self):
         return self.userId
     
@@ -31,9 +32,6 @@ class user:
     
     def get_penaltiesCount(self):
         return self.penaltiesCount
-    
-    def get_role(self):
-        return self.role
     
     # user setters
     

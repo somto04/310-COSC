@@ -5,7 +5,7 @@ import pytest
 from ..user import user
 
 def test_userGetterSetter():
-    newUser = user(1, "Somto", 21, "somto@gmail.com", "userSomto", "encryptedpassword", "admin")
+    newUser = user(1, "Somto", 21, "somto@gmail.com", "userSomto", "encryptedpassword")
     assert newUser.userId == 1
     assert newUser.name == "Somto"
     assert newUser.age == 21
@@ -13,4 +13,3 @@ def test_userGetterSetter():
     assert newUser.username == "userSomto"
     assert newUser.password == "encryptedpassword"
     assert newUser.penaltiesCount == 0
-    assert newUser.role == "admin"

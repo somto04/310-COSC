@@ -133,9 +133,9 @@ def searchMovie(query: str) -> List[Dict]:
     for m in loadAll():
         title = str(m.get("title", "")).lower()
         desc = str(m.get("description", "")).lower()
-        genres = " ".join(m.get("movieGenres", []))
-        stars = " ".join(m.get("mainStars", []))
-        directors = " ".join(m.get("directors", []))
+        genres = " ".join(m.get("movieGenres", [])).lower()
+        stars = " ".join(m.get("mainStars", [])).lower()
+        directors = " ".join(m.get("directors", [])).lower()
 
         if any(q in field for field in [title, desc, genres, stars, directors]):
             results.append({

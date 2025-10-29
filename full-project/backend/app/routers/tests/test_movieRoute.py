@@ -262,7 +262,7 @@ class TestMovieServiceUnit:
 class TestMovieRouterIntegration:
     """Integration tests for movie API endpoints"""
     
-    @patch('app.services.movieService.listMovies')
+    @patch('app.routers.movieRoute.listMovies')  # Changed from app.services.movieService
     def test_get_all_movies_endpoint(self, mock_list, client, sample_movies_list):
         """Test GET /movies returns all movies"""
         # Arrange
@@ -279,7 +279,7 @@ class TestMovieRouterIntegration:
         assert data[1]["title"] == "The Matrix"
     
     
-    @patch('app.services.movieService.getMovieById')
+    @patch('app.routers.movieRoute.getMovieById')  # Changed from app.services.movieService
     def test_get_movie_by_id_endpoint(self, mock_get, client, sample_movie_data):
         """Test GET /movies/{id} returns specific movie"""
         # Arrange
@@ -297,7 +297,7 @@ class TestMovieRouterIntegration:
         mock_get.assert_called_once_with(1)
     
     
-    @patch('app.services.movieService.getMovieById')
+    @patch('app.routers.movieRoute.getMovieById')  # Changed from app.services.movieService
     def test_get_movie_by_id_not_found(self, mock_get, client):
         """Test GET /movies/{id} with non-existent ID returns 404"""
         # Arrange
@@ -312,7 +312,7 @@ class TestMovieRouterIntegration:
         assert response.json()["detail"] == "Movie not found"
     
     
-    @patch('app.services.movieService.searchMovie')
+    @patch('app.routers.movieRoute.searchMovie')  # Changed from app.services.movieService
     def test_search_movies_with_query(self, mock_search, client, sample_movie_data):
         """Test GET /movies/search?q=keyword returns matching movies"""
         # Arrange
@@ -329,7 +329,7 @@ class TestMovieRouterIntegration:
         mock_search.assert_called_once_with("inception")
     
     
-    @patch('app.services.movieService.searchMovie')
+    @patch('app.routers.movieRoute.searchMovie')  # Changed from app.services.movieService
     def test_search_movies_no_results(self, mock_search, client):
         """Test search with no results returns 404"""
         # Arrange
@@ -341,7 +341,6 @@ class TestMovieRouterIntegration:
         # Assert
         assert response.status_code == 404
         assert response.json()["detail"] == "Movie not found"
-
 
 # ============================================================================
 # EDGE CASE TESTS

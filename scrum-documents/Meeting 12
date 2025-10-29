@@ -22,3 +22,5 @@ Figure out logic behind penalties - flagged for review, penalties for user, ever
 see if its reached the threshold before being sent to the admin page for review.
 Make sure that usernames must be unique not just the id
 Set up github automation
+Create tests for all the files
+Figure out what models does and comment code

@@ -9,7 +9,6 @@ def listUsers() -> List[User]:
 
 def createUser(payload: UserCreate) -> User:
     users = loadAll()
-    newId = str(uuid.uuid4())
     uniqueUsername = payload.username.strip()
     newId = max([int(u["id"]) for u in users], default=0) + 1
 

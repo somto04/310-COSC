@@ -9,10 +9,17 @@ def listUsers() -> List[User]:
 
 def createUser(payload: UserCreate) -> User:
     users = loadAll()
+    newId = str(uuid.uuid4())
+    uniqueUsername = payload.username.strip()
     newId = max([int(u["id"]) for u in users], default=0) + 1
 
     if any(int(it.get("id")) == newId for it in users):
         raise HTTPException(status_code=409, detail="ID collision; retry.")
+    
+    # converts both usernames to lowercase before comparing to ensure that its case insensitive
+    # makes sure that the new username is unique
+    if any(it.get("username", "").strip().lower() == uniqueUsername.lower() for it in users):
+        raise HTTPException(status_code=40, detail="username already taken; retry.")
 
     newUser = User(
         id=newId,
@@ -20,7 +27,7 @@ def createUser(payload: UserCreate) -> User:
         lastName=payload.lastName.strip(),
         age=payload.age,
         email=payload.email.strip(),
-        username=payload.username.strip(),
+        username=uniqueUsername,
         pw=payload.pw.strip(),
         role=payload.role,
     )

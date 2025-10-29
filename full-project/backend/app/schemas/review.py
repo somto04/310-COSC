@@ -27,3 +27,17 @@ class ReviewUpdate(BaseModel):
     rating: Optional[str] = None
     datePosted: Optional[str] = None
     flagged: Optional[bool] = None
+
+class Reply(BaseModel):
+    id: str
+    #this refers to the review the reply is associated with
+    reviewId: str
+    userId: int
+    replyBody:str
+    datePosted: str
+
+class ReplyCreate(BaseModel):
+    reviewId: str
+    userId: int
+    replyBody:str
+    datePosted:str

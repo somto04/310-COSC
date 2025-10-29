@@ -1,0 +1,13 @@
+1.	A line should break before the binary operator; improves readability and makes it easier to pick out and prevent errors.
+2.	One statement per line; improves readability and makes it easier to pick out and prevent errors.
+3.	Comments should be placed on the line before the statement in question; a lot easier to format on the line before rather than inline.
+4.	No more than 79 characters per line; means that you won’t have to scroll to see the entire line of code.
+    a.	Instead of using backslashes if a line goes over 79 characters, we should use brackets.
+5.	Curly braces after a function should be placed on the same line as the function name; this makes the code more compact and gets rid of unnecessary white space.
+6.	Use the automatic indentation in python to keep the code uniform.
+7.	Use the camel case naming convention for functions and variables.
+8.	All constants should be in full caps to differentiate them from variables.
+9.	Separating each function with a blank line; makes it easier to collaborate on the code.
+10.	When writing functions operators and values should be separated with spaces. E.g. a + b.
+11.	When doing selection statements, new if’s and else’s should start on a new line in order to maintain organisation.
+12.	Comments should be written on the line before the comment that is being referenced

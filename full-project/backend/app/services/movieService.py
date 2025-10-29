@@ -22,7 +22,49 @@ def createMovie(payload: MovieCreate) -> Movie:
     saveAll(movies)
     return Movie(**new_movie)
 
+#this function filters movies based on genre, year, director, and star
+def getMovieByFilter(genre: str = None, year: int = None, director: str = None, star: str = None) -> List[Dict]:
+    movies = loadAll()
+    results = []
 
+    for m in movies:
+        #prepare fields for matching by accepting substrings and ignoring case
+        genres = [g.lower().strip() for g in m.get("movieGenres", [])]
+        directors = [d.lower().strip() for d in m.get("directors", [])]
+        stars = [s.lower().strip() for s in m.get("mainStars", [])]
+        # extract year from datePublished
+        date = str(m.get("datePublished", ""))[:4]  
+
+        #you can combine multiple filters or use only one and still get a result
+        #genre check: look for substring match anywhere in the list
+        if genre and not any(genre.lower() in g for g in genres):
+            continue
+
+        if year and date != str(year):
+            continue
+        
+        if director and not any(director.lower() in d for d in directors):
+            continue
+
+        if star and not any(star.lower() in s for s in stars):
+            continue
+        
+        #if all checks passed, add to results
+        results.append({
+            "id": m.get("id"),
+            "title": m.get("title"),
+            "movieIMDbRating": m.get("movieIMDbRating"),
+            "movieGenres": m.get("movieGenres"),
+            "directors": m.get("directors"),
+            "mainStars": m.get("mainStars"),
+            "description": m.get("description"),
+            "datePublished": m.get("datePublished"),
+            "duration": m.get("duration"),
+        })
+    return results
+
+
+    
 def getMovieById(movieId: int) -> Movie:
     for m in loadAll():
         if int(m.get("id")) == int(movieId):   #match ints or str

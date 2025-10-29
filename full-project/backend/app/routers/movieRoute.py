@@ -27,7 +27,7 @@ def getMovies():
     return listMovies()
 
 @router.get("/{movieId}", response_model=Movie)
-def getMovie(movieId: str):
+def getMovie(movieId: int):
     return getMovieById(movieId)
 
 # ---------- #

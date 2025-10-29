@@ -5,6 +5,7 @@ from ..schemas.review import Review, ReviewUpdate, ReviewCreate
 from ..repos.reviewRepo import loadAll, saveAll
 
 def listReviews() -> List[Review]:
+    """Return all reviews as Review objects."""
     """
     MODIFIES: None
     EFFECTS:  Returns a list of Review objects. 

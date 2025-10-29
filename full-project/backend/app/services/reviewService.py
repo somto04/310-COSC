@@ -83,12 +83,12 @@ def updateReview(reviewId: str, payload: ReviewUpdate) -> Review:
         if it.get("id") == reviewId:
             updated = Review(
                 id=reviewId,
-                movieId = payload.movieId, 
-                userId= payload.userId,
-                reviewTitle = payload.reviewTitle.strip(), 
-                rating = payload.rating.strip(),
-                reviewBody = payload.reviewBody.strip(),
-                flagged = payload.flagged,
+                movieId=payload.movieId or it.get("movieId"),
+                userId=payload.userId or it.get("userId"),
+                reviewTitle=payload.reviewTitle.strip() if payload.reviewTitle else it.get("reviewTitle"),
+                rating=payload.rating.strip() if payload.rating else it.get("rating"),
+                reviewBody=payload.reviewBody.strip() if payload.reviewBody else it.get("reviewBody"),
+                datePosted=payload.datePosted or it.get("datePosted"),
             )
             reviews[idx] = updated.dict()
             saveAll(reviews)

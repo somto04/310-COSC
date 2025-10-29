@@ -86,7 +86,10 @@ def sample_movies_list(sample_movie_data):
         }
     ]
 
+
+# ============================================================================
 # UNIT TESTS - Testing service functions in isolation
+# ============================================================================
 
 class TestMovieServiceUnit:
     """Unit tests for movie service functions"""
@@ -190,23 +193,23 @@ class TestMovieServiceUnit:
         mock_save.assert_called_once()
     
     
-    # @patch('app.services.movieService.saveAll')
-    # @patch('app.services.movieService.loadAll')
-    # def test_delete_movie_success(self, mock_load, mock_save, sample_movies_list):
-    #     """Test deleting a movie successfully"""
-    #     # Arrange
-    #     mock_load.return_value = sample_movies_list
-    #     from app.services.movieService import deleteMovie
+    @patch('app.services.movieService.saveAll')
+    @patch('app.services.movieService.loadAll')
+    def test_delete_movie_success(self, mock_load, mock_save, sample_movies_list):
+        """Test deleting a movie successfully"""
+        # Arrange
+        mock_load.return_value = sample_movies_list
+        from app.services.movieService import deleteMovie
         
-    #     # Act
-    #     deleteMovie(1)
+        # Act
+        deleteMovie(1)
         
-    #     # Assert
-    #     # Verify saveAll was called with filtered list (without movie id=1)
-    #     mock_save.assert_called_once()
-    #     saved_movies = mock_save.call_args[0][0]
-    #     assert len(saved_movies) == 3
-    #     assert saved_movies[0]["id"] == 2
+        # Assert
+        # Verify saveAll was called with filtered list (without movie id=1)
+        mock_save.assert_called_once()
+        saved_movies = mock_save.call_args[0][0]
+        assert len(saved_movies) == 3
+        assert saved_movies[0]["id"] == 2
     
     
     @patch('app.services.movieService.loadAll')
@@ -251,12 +254,15 @@ class TestMovieServiceUnit:
         # Assert
         assert len(results) == 0
 
+
+# ============================================================================
 # INTEGRATION TESTS - Testing API endpoints with HTTP requests
+# ============================================================================
 
 class TestMovieRouterIntegration:
     """Integration tests for movie API endpoints"""
     
-    @patch('app.routers.movieRoute.listMovies')  # Changed from app.services.movieService
+    @patch('app.services.movieService.listMovies')
     def test_get_all_movies_endpoint(self, mock_list, client, sample_movies_list):
         """Test GET /movies returns all movies"""
         # Arrange
@@ -273,7 +279,7 @@ class TestMovieRouterIntegration:
         assert data[1]["title"] == "The Matrix"
     
     
-    @patch('app.routers.movieRoute.getMovieById')  # Changed from app.services.movieService
+    @patch('app.services.movieService.getMovieById')
     def test_get_movie_by_id_endpoint(self, mock_get, client, sample_movie_data):
         """Test GET /movies/{id} returns specific movie"""
         # Arrange
@@ -291,7 +297,7 @@ class TestMovieRouterIntegration:
         mock_get.assert_called_once_with(1)
     
     
-    @patch('app.routers.movieRoute.getMovieById')  # Changed from app.services.movieService
+    @patch('app.services.movieService.getMovieById')
     def test_get_movie_by_id_not_found(self, mock_get, client):
         """Test GET /movies/{id} with non-existent ID returns 404"""
         # Arrange
@@ -306,7 +312,7 @@ class TestMovieRouterIntegration:
         assert response.json()["detail"] == "Movie not found"
     
     
-    @patch('app.routers.movieRoute.searchMovie')  # Changed from app.services.movieService
+    @patch('app.services.movieService.searchMovie')
     def test_search_movies_with_query(self, mock_search, client, sample_movie_data):
         """Test GET /movies/search?q=keyword returns matching movies"""
         # Arrange
@@ -323,7 +329,7 @@ class TestMovieRouterIntegration:
         mock_search.assert_called_once_with("inception")
     
     
-    @patch('app.routers.movieRoute.searchMovie')  # Changed from app.services.movieService
+    @patch('app.services.movieService.searchMovie')
     def test_search_movies_no_results(self, mock_search, client):
         """Test search with no results returns 404"""
         # Arrange
@@ -335,8 +341,11 @@ class TestMovieRouterIntegration:
         # Assert
         assert response.status_code == 404
         assert response.json()["detail"] == "Movie not found"
-        
+
+
+# ============================================================================
 # EDGE CASE TESTS
+# ============================================================================
 
 class TestMovieEdgeCases:
     """Test edge cases and error scenarios"""
@@ -392,4 +401,18 @@ class TestMovieEdgeCases:
 To run all tests:
     pytest app/routers/tests/test_movieRoute.py -v
 
+To run only unit tests:
+    pytest app/routers/tests/test_movieRoute.py::TestMovieServiceUnit -v
+
+To run only integration tests:
+    pytest app/routers/tests/test_movieRoute.py::TestMovieRouterIntegration -v
+
+To run a specific test:
+    pytest app/routers/tests/test_movieRoute.py::TestMovieServiceUnit::test_list_movies_returns_all_movies -v
+
+To see print statements:
+    pytest app/routers/tests/test_movieRoute.py -v -s
+
+To see coverage:
+    pytest app/routers/tests/test_movieRoute.py --cov=app.services.movieService --cov=app.routers.movieRoute
 """

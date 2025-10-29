@@ -23,18 +23,29 @@ def postReview(payload: ReviewCreate):
 def getReview(reviewId: str):
     return getReviewById(reviewId)
 
+# updating the review can only be done by the owner
 @router.put("/{reviewId}", response_model = Review)
-def putReview(reviewId: str, payload: ReviewUpdate):
+def putReview(reviewId: str, payload: ReviewUpdate, currentUser: dict = Depends(getCurrentUser)):
+    # first checks if the review exists
+    review = getReviewById(reviewId)
+    if not review:
+        raise HTTPException(status_code=404, detail="Review not found")
+    
+    # if the user trying to edit it is not the author of the review
+    if currentUser["userId"] != review["userId"]:
+        raise HTTPException(status_code=403, detail="not authorised to update this review")
+
     return updateReview(reviewId, payload)
 
 @router.delete("/{reviewId}", status_code=status.HTTP_204_NO_CONTENT)
 # gets the current user from auth
 def removeReview(reviewId: str, currentUser: dict = Depends(getCurrentUser)): 
+    # first checks if the review exists
     review = getReviewById(reviewId)
     if not review:
         raise HTTPException(status_code=404, detail="Review not found")
     
-    if currentUser["role"] != "admin" and review["username"] != currentUser["username"]:
+    if currentUser["role"] != "admin" and review["userId"] != currentUser["userId"]:
         raise HTTPException(status_code=403, detail="not authorised to delete this review")
     deleteReview(reviewId)
     return None

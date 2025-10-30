@@ -15,10 +15,13 @@ def test_CreateMovie():
     #create a movie
     newMovie = {
         "title": "Test Movie",
-        "director": "Test Director",
-        "year": 2024,
-        "genre": "Test Genre",
-        "id": 1234
+        "movieIMDbRating": 7.5,
+        "movieGenres": ["Test Genre"],
+        "directors": ["Test Director"],
+        "mainStars": ["Actor 1", "Actor 2"],
+        "description": "Test movie description",
+        "datePublished": "2024-01-01",
+        "duration": 120
     }
     createResponse = client.post("/movies", json=newMovie)
     assert createResponse.status_code == 201 #assert movie creation was successful
@@ -35,10 +38,13 @@ def test_DeleteMovie():
     #first create a movie to delete
     newMovie = {
         "title": "Movie to Delete",
-        "director": "Director",
-        "year": 2023,
-        "genre": "Genre",
-        "id": 5678
+        "movieIMDbRating": 6.5,
+        "movieGenres": ["Genre"],
+        "directors": ["Director"],
+        "mainStars": [],
+        "description": "Test movie description",
+        "datePublished": "2023-01-01",
+        "duration": 90
     }   
     createResponse = client.post("/movies", json=newMovie)
     assert createResponse.status_code == 201

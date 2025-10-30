@@ -79,17 +79,24 @@ def updateReview(reviewId: str, payload: ReviewUpdate) -> Review:
     reviews = loadAll()
     #idx enumerate to get both index and item
     for idx, it in enumerate(reviews):
-        # if the ID matches, create an updated Review object
+        # if the ID matches, update only the provided fields
         if it.get("id") == reviewId:
-            updated = Review(
-                id=reviewId,
-                movieId = payload.movieId, 
-                userId= payload.userId,
-                reviewTitle = payload.reviewTitle.strip() if payload.reviewTitle else None, 
-                rating = payload.rating.strip() if payload.rating  else None,
-                reviewBody = payload.reviewBody.strip() if payload.reviewBody else None,
-                flagged = payload.flagged,
-            )
+            current_review = Review(**it)
+            update_data = payload.model_dump(exclude_unset=True)
+            
+            # Create updated review by merging current data with update data
+            updated_dict = current_review.model_dump()
+            updated_dict.update(update_data)
+            
+            # Strip fields if they're provided
+            if 'reviewTitle' in update_data and updated_dict['reviewTitle']:
+                updated_dict['reviewTitle'] = updated_dict['reviewTitle'].strip()
+            if 'reviewBody' in update_data and updated_dict['reviewBody']:
+                updated_dict['reviewBody'] = updated_dict['reviewBody'].strip()
+            if 'rating' in update_data and updated_dict['rating']:
+                updated_dict['rating'] = updated_dict['rating'].strip()
+            
+            updated = Review(**updated_dict)
             reviews[idx] = updated.dict()
             saveAll(reviews)
             return updated

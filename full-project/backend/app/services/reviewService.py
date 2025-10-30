@@ -98,7 +98,7 @@ def updateReview(reviewId: str, payload: ReviewUpdate) -> Review:
                 updated_dict['rating'] = updated_dict['rating'].strip()
             
             updated = Review(**updated_dict)
-            reviews[idx] = updated.dict()
+            reviews[idx] = updated.model_dump()
             saveAll(reviews)
             return updated
     # If we finish the loop without finding the review, raise 404

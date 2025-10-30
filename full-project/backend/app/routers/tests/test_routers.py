@@ -10,7 +10,7 @@ def test_GetMovies():
     assert isinstance(response.json(), list) #assert that the reponse body is a list
     
 def test_CreateMovie():
-    from app.model.main import app
+    from app.app import app
     client = TestClient(app)
     #create a movie
     newMovie = {
@@ -21,19 +21,20 @@ def test_CreateMovie():
         "mainStars": ["Actor 1", "Actor 2"],
         "description": "Test movie description",
         "datePublished": "2024-01-01",
-        "duration": 120
+        "duration": 120,
+        "yearReleased": 2024
     }
     createResponse = client.post("/movies", json=newMovie)
     assert createResponse.status_code == 201 #assert movie creation was successful
     createdMovie = createResponse.json()
     assert createdMovie["title"] == newMovie["title"]
-    assert createdMovie["director"] == newMovie["director"]
-    assert createdMovie["year"] == newMovie["year"]
-    assert createdMovie["genre"] == newMovie["genre"]
+    assert createdMovie["yearReleased"] == newMovie["yearReleased"]
+    assert createdMovie["movieGenres"] == newMovie["movieGenres"]
+    assert createdMovie["directors"] == newMovie["directors"]
     movieId = createdMovie["id"]
     
 def test_DeleteMovie():
-    from app.model.main import app
+    from app.app import app
     client = TestClient(app)
     #first create a movie to delete
     newMovie = {
@@ -44,7 +45,8 @@ def test_DeleteMovie():
         "mainStars": [],
         "description": "Test movie description",
         "datePublished": "2023-01-01",
-        "duration": 90
+        "duration": 90,
+        "yearReleased": 2023
     }   
     createResponse = client.post("/movies", json=newMovie)
     assert createResponse.status_code == 201

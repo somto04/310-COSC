@@ -80,6 +80,7 @@ def updateReview(reviewId: str, payload: ReviewUpdate) -> Review:
     #idx enumerate to get both index and item
     for idx, it in enumerate(reviews):
         # if the ID matches, update only the provided fields
+        # if the ID matches, update only the provided fields
         if it.get("id") == reviewId:
             current_review = Review(**it)
             update_data = payload.model_dump(exclude_unset=True)
@@ -97,7 +98,7 @@ def updateReview(reviewId: str, payload: ReviewUpdate) -> Review:
                 updated_dict['rating'] = updated_dict['rating'].strip()
             
             updated = Review(**updated_dict)
-            reviews[idx] = updated.model_dump()
+            reviews[idx] = updated.dict()
             saveAll(reviews)
             return updated
     # If we finish the loop without finding the review, raise 404

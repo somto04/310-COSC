@@ -6,37 +6,27 @@ This file contains integration tests for the review API endpoints.
 
 import pytest
 from fastapi.testclient import TestClient
-from fastapi import FastAPI
-from fastapi import status
-from unittest.mock import patch
-from app.routers.reviewRoute import router, getCurrentUser
-from app.schemas.review import Review, ReviewCreate, ReviewUpdate
-from fastapi import HTTPException
+from app.routers.reviewRoute import getReview, postReview, getReviews, putReview, removeReview
+from app.services.reviewService import ReviewCreate
+from app.app import app
+from app.routers.auth import requireAdmin
 
-# ============================================================================
-# SETUP & FIXTURES
-# ============================================================================
+# mock user for testing overriding the authentication file requiring an admin
+app.dependency_overrides[requireAdmin] = lambda: {"username": "testuser", "role": "admin"}
 
-# this method creates a FastAPI app instance for testing
-@pytest.fixture
-def app():
-    """Create a FastAPI app instance for testing"""
-    app = FastAPI()
-    app.include_router(router)
-    return app
+# temporary mock for testing
+#def getCurrentUser():
+#    return {"username": "testuser", "role": "admin"}
 
-# creates a test client for making HTTP requests to the app
-@pytest.fixture
-def client(app):
-    """Create a test client for making HTTP requests"""
-    return TestClient(app)
+client = TestClient(app)
 
-# sample review data for testing
-@pytest.fixture
-def sample_review_data():
-    """Sample review data for testing"""
-    return {
-        "id": "1",
+def test_getReviews():
+    response = client.get("/reviews")  
+    assert response.status_code == 200
+    assert isinstance(response.json(), list)
+
+def test_postReview():
+    payload = {
         "movieId": 1,
         "userId": 1,
         "username": "testuser",

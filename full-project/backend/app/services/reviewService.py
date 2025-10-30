@@ -85,9 +85,9 @@ def updateReview(reviewId: str, payload: ReviewUpdate) -> Review:
                 id=reviewId,
                 movieId = payload.movieId, 
                 userId= payload.userId,
-                reviewTitle = payload.reviewTitle.strip(), 
-                rating = payload.rating.strip(),
-                reviewBody = payload.reviewBody.strip(),
+                reviewTitle = payload.reviewTitle.strip() if payload.reviewTitle else None, 
+                rating = payload.rating.strip() if payload.rating  else None,
+                reviewBody = payload.reviewBody.strip() if payload.reviewBody else None,
                 flagged = payload.flagged,
             )
             reviews[idx] = updated.dict()

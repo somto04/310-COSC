@@ -3,10 +3,14 @@ from fastapi.testclient import TestClient
 from app.routers.reviewRoute import getReview, postReview, getReviews, putReview, removeReview
 from app.services.reviewService import ReviewCreate
 from app.app import app
+from app.routers.auth import requireAdmin
+
+# mock user for testing overriding the authentication file requiring an admin
+app.dependency_overrides[requireAdmin] = lambda: {"username": "testuser", "role": "admin"}
 
 # temporary mock for testing
-def getCurrentUser():
-    return {"username": "testuser", "role": "admin"}
+#def getCurrentUser():
+#    return {"username": "testuser", "role": "admin"}
 
 client = TestClient(app)
 

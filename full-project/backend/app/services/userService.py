@@ -30,7 +30,7 @@ def createUser(payload: UserCreate) -> User:
         pw=payload.pw.strip(),
         role=payload.role,
     )
-    users.append(newUser.dict())
+    users.append(newUser.model_dump())
     saveAll(users)
     return newUser
 
@@ -55,7 +55,7 @@ def updateUser(userId: str, payload: UserUpdate) -> User:
                 pw=payload.pw.strip(),
                 role=payload.role,
             )
-            users[idx] = updated.dict()
+            users[idx] = updated.model_dump()
             saveAll(users)
             return updated
     raise HTTPException(status_code=404, detail=f"User '{userId}' not found")

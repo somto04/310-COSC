@@ -3,7 +3,7 @@ from fastapi.testclient import TestClient
 
 #one integration test: testing MovieRouter
 def test_GetMovies():
-    from app.model.main import app #import the main FastAPI app instance
+    from app.app import app #import the main FastAPI app instance
     client = TestClient(app) #create a test client for the FastAPI app
     response = client.get("/movies") #send a GET request to the /movies endpoint
     assert response.status_code == 200 #assert that the response status code is 200 meaning success

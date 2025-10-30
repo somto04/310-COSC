@@ -13,11 +13,14 @@ def test_GetMovies():
     
 def test_CreateMovie():
     newMovie = {
-        "movieName": "Test Movie",
-        "yearReleased": 2024,
-        "actors": ["Actor 1", "Actor 2"],
-        "genre": "Test Genre",
-        "length": 120
+        "title": "Test Movie",
+        "movieIMDbRating": 7.5,
+        "movieGenres": ["Test Genre"],
+        "directors": ["Director 1"],
+        "mainStars": ["Actor 1", "Actor 2"],
+        "description": "Test movie description",
+        "datePublished": "2024-01-01",
+        "duration": 120
     }
     createResponse = client.post("/movies", json=newMovie)
     assert createResponse.status_code == 201
@@ -30,11 +33,14 @@ def test_CreateMovie():
 
 def test_DeleteMovie():
     newMovie = {
-        "movieName": "Movie to Delete",
-        "yearReleased": 2023,
-        "actors": [],
-        "genre": "Genre",
-        "length": 90
+        "title": "Movie to Delete",
+        "movieIMDbRating": 6.5,
+        "movieGenres": ["Genre"],
+        "directors": ["Director 1"],
+        "mainStars": [],
+        "description": "Test movie description",
+        "datePublished": "2023-01-01",
+        "duration": 90
     }   
     createResponse = client.post("/movies", json=newMovie)
     assert createResponse.status_code == 201

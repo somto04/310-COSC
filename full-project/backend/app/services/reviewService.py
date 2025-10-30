@@ -58,7 +58,7 @@ def createReview(payload: ReviewCreate) -> Review:
     newData = newReview.model_dump()
     newData["flagged"] = payload.flagged or False
     # Append the new review and save all reviews
-    reviews.append(newReview.dict())
+    reviews.append(newReview.model_dump())
     saveAll(reviews)
     return newReview
 
@@ -97,7 +97,7 @@ def updateReview(reviewId: str, payload: ReviewUpdate) -> Review:
                 updated_dict['rating'] = updated_dict['rating'].strip()
             
             updated = Review(**updated_dict)
-            reviews[idx] = updated.dict()
+            reviews[idx] = updated.model_dump()
             saveAll(reviews)
             return updated
     # If we finish the loop without finding the review, raise 404

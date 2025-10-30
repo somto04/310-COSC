@@ -18,7 +18,7 @@ def createUser(payload: UserCreate) -> User:
     # converts both usernames to lowercase before comparing to ensure that its case insensitive
     # makes sure that the new username is unique
     if any(it.get("username", "").strip().lower() == uniqueUsername.lower() for it in users):
-        raise HTTPException(status_code=40, detail="username already taken; retry.")
+        raise HTTPException(status_code=409, detail="username already taken; retry.")
 
     newUser = User(
         id=newId,
@@ -45,16 +45,26 @@ def updateUser(userId: str, payload: UserUpdate) -> User:
     users = loadAll()
     for idx, it in enumerate(users):
         if str(it.get("id")) == str(userId):
-            updated = User(
-                id=userId,
-                firstName=payload.firstName.strip(),
-                lastName=payload.lastName.strip(),
-                age=payload.age,
-                email=payload.email.strip(),
-                username=payload.username.strip(),
-                pw=payload.pw.strip(),
-                role=payload.role,
-            )
+            current_user = User(**it)
+            update_data = payload.model_dump(exclude_unset=True)
+            
+            # Create updated user by merging current data with update data
+            updated_dict = current_user.model_dump()
+            updated_dict.update(update_data)
+            
+            # Strip string fields if they're provided
+            if 'firstName' in update_data and updated_dict['firstName']:
+                updated_dict['firstName'] = updated_dict['firstName'].strip()
+            if 'lastName' in update_data and updated_dict['lastName']:
+                updated_dict['lastName'] = updated_dict['lastName'].strip()
+            if 'email' in update_data and updated_dict['email']:
+                updated_dict['email'] = updated_dict['email'].strip()
+            if 'username' in update_data and updated_dict['username']:
+                updated_dict['username'] = updated_dict['username'].strip()
+            if 'pw' in update_data and updated_dict['pw']:
+                updated_dict['pw'] = updated_dict['pw'].strip()
+            
+            updated = User(**updated_dict)
             users[idx] = updated.model_dump()
             saveAll(users)
             return updated

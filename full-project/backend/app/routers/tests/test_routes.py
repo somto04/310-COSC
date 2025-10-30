@@ -25,7 +25,7 @@ def test_CreateMovie():
     createResponse = client.post("/movies", json=newMovie)
     assert createResponse.status_code == 201
     createdMovie = createResponse.json()
-    assert createdMovie["movieName"] == newMovie["movieName"]
+    assert createdMovie["title"] == newMovie["title"]
     assert createdMovie["yearReleased"] == newMovie["yearReleased"]
     assert createdMovie["genre"] == newMovie["genre"]
     assert createdMovie["length"] == newMovie["length"]
@@ -44,7 +44,7 @@ def test_DeleteMovie():
     }   
     createResponse = client.post("/movies", json=newMovie)
     assert createResponse.status_code == 201
-    movieId = createResponse.json()["movieId"]
+    movieId = createResponse.json()["id"]
     
     deleteResponse = client.delete(f"/movies/{movieId}")
     assert deleteResponse.status_code == 204

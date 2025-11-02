@@ -41,7 +41,7 @@ def requireAdmin(user: dict = Depends(getCurrentUser)):
 
 # logging in returns a token which is currently just the username
 @router.post("/token")
-def login(username: str = Form(...), password: str = Form(...)):
+def login(username: str = Form(...), password: str = Form(...), user: dict = Depends(getCurrentUser)):
     user = getUserFromJson(username)
     # if the username is not found or the password is incorrect
     if not user or user.get("pw") != password:
@@ -50,4 +50,11 @@ def login(username: str = Form(...), password: str = Form(...)):
             detail="Invalid username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    return {"access_token": username, "token_type": "bearer"}
+    return {"access_token": username, "token_type": "bearer", "role": user.get("role")}
+
+# this is for when an admin is trying to access the admin dashboard via the button
+@router.get("/adminDashboard")
+# uses the requireAdmin function to verify that they are an admin
+def getAdminDashboard(admin = Depends(requireAdmin)):
+    return "in admin"
+

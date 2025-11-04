@@ -15,8 +15,9 @@ def searchReview(q: str = "", limit: int = 50, offset: int = 0):
 def getReviews():
     return listReviews()
 
-@router.post("", response_model=Review, currentUser: dict = Depends(getCurrentUser), status_code=201)
-def postReview(payload: ReviewCreate):
+@router.post("", response_model=Review, status_code=201)
+def postReview(payload: ReviewCreate, currentUser: dict = Depends(getCurrentUser)):
+    payload.userId = currentUser["id"]
     return createReview(payload)
 
 @router.get("/{reviewId}", response_model = Review)

@@ -12,6 +12,7 @@ class Movie(BaseModel):
     description: Optional[str] = None
     datePublished: Optional[str] = None
     duration: int  # minutes
+    yearReleased: Optional[int] = None
 
     @model_validator(mode="before")
     def accept_legacy_keys(cls, values):
@@ -29,6 +30,17 @@ class Movie(BaseModel):
         if "length" in values and "duration" not in values:
             values["duration"] = values.pop("length")
 
+        # handle year alias
+        if "year" in values and "yearReleased" not in values:
+            values["yearReleased"] = int(values.pop("year"))
+
+        # extract year from datePublished if yearReleased not provided
+        if "yearReleased" not in values and "datePublished" in values and values["datePublished"]:
+            try:
+                values["yearReleased"] = int(str(values["datePublished"])[:4])
+            except (ValueError, TypeError):
+                pass
+
         return values
 
 class MovieCreate(BaseModel):
@@ -41,6 +53,7 @@ class MovieCreate(BaseModel):
     description: Optional[str] = None
     datePublished: Optional[str] = None  # ISO date string
     duration: int  # minutes
+    yearReleased: Optional[int] = None
 
     @model_validator(mode="before")
     def accept_legacy_create_keys(cls, values):
@@ -60,3 +73,4 @@ class MovieUpdate(BaseModel):
     description: Optional[str] = None
     datePublished: Optional[str] = None  # ISO date string
     duration: Optional[int] = None # minutes
+    yearReleased: Optional[int] = None

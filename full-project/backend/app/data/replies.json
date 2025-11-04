@@ -1,9 +1,16 @@
 [
   {
-    "id": "62ed6481-27c5-42c6-8c69-1e3d5d62b44b",
-    "reviewId": "1",
+    "id": 1,
+    "reviewId": 1,
     "userId": 1,
     "replyBody": "testing repliesss",
     "datePosted": "string"
+  },
+  {
+    "id": 2,
+    "reviewId": 1,
+    "userId": 100,
+    "replyBody": "This is a simple test reply!",
+    "datePosted": "3 Nov 2025"
   }
 ]

@@ -3,6 +3,7 @@ from typing import List
 from fastapi import HTTPException
 from ..schemas.user import User, UserCreate, UserUpdate
 from ..repos.userRepo import loadAll, saveAll
+from ..utilities.security import hashPassword, verifyPassword
 
 def listUsers() -> List[User]:
     return [User(**it) for it in loadAll()]
@@ -21,7 +22,8 @@ def createUser(payload: UserCreate) -> User:
         age=payload.age,
         email=payload.email.strip(),
         username=payload.username.strip(),
-        pw=payload.pw.strip(),
+        #encrypt the user password before storing it
+        pw=hashPassword(payload.pw.strip()),
         role=payload.role,
     )
     users.append(newUser.dict())
@@ -46,7 +48,7 @@ def updateUser(userId: str, payload: UserUpdate) -> User:
                 age=payload.age,
                 email=payload.email.strip(),
                 username=payload.username.strip(),
-                pw=payload.pw.strip(),
+                pw=hashPassword(payload.pw.strip()),
                 role=payload.role,
             )
             users[idx] = updated.dict()

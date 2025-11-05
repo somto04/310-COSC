@@ -102,7 +102,7 @@ def updateReview(reviewId: int, payload: ReviewUpdate) -> Review:
             if 'reviewBody' in update_data and updated_dict['reviewBody']:
                 updated_dict['reviewBody'] = updated_dict['reviewBody'].strip()
             if 'rating' in update_data and updated_dict['rating']:
-                updated_dict['rating'] = updated_dict['rating'].strip()
+                updated_dict['rating'] = int(updated_dict['rating'])
             
             updated = Review(**updated_dict)
             reviews[idx] = updated.model_dump()

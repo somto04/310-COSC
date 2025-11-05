@@ -32,7 +32,7 @@ def test_postReview():
         "userId": 1,
         "reviewTitle": "Avengers Endgame is bad",
         "reviewBody": "This is a review about Avengers Endgame and I thought it was terrible",
-        "rating": 1,      # int now
+        "rating": 1,      
         "flagged": False
     }
 

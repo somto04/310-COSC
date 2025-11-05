@@ -12,6 +12,7 @@ from unittest.mock import patch
 from app.routers.reviewRoute import router, getCurrentUser
 from app.schemas.review import Review, ReviewCreate, ReviewUpdate
 from fastapi import HTTPException
+from app.app import app 
 
 client = TestClient(app)
 

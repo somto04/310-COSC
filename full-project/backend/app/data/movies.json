@@ -2,8 +2,8 @@
   {
     "id": 1,
     "title": "Avengers Endgame",
-    "movieIMDb": 8.4,
-    "movieGenre":  [
+    "movieIMDbRating": 8.4,
+    "movieGenres":  [
       "Action", 
       "Adventure", 
       "Drama"
@@ -11,7 +11,7 @@
     "directors": [
       "Anthony Russo", "Joe Russo"
     ],
-    "mainstars": [
+    "mainStars": [
       "Robert Downey Jr.",
       "Chris Evans",
       "Mark Ruffalo"

@@ -9,6 +9,7 @@ from fastapi.testclient import TestClient
 from fastapi import FastAPI
 from fastapi import status
 from unittest.mock import patch
+from app.app import app
 from app.routers.reviewRoute import router, getCurrentUser
 from app.schemas.review import Review, ReviewCreate, ReviewUpdate
 from fastapi import HTTPException

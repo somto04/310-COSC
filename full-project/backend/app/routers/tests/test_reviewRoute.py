@@ -1,10 +1,17 @@
+"""
+Integration Tests for Review Router
+
+This file contains integration tests for the review API endpoints.
+"""
+
 import pytest
 from fastapi.testclient import TestClient
-from app.app import app
-from app.routers.auth import requireAdmin
-
-# mock user for testing overriding the authentication file requiring an admin
-app.dependency_overrides[requireAdmin] = lambda: {"username": "testuser", "role": "admin"}
+from fastapi import FastAPI
+from fastapi import status
+from unittest.mock import patch
+from app.routers.reviewRoute import router, getCurrentUser
+from app.schemas.review import Review, ReviewCreate, ReviewUpdate
+from fastapi import HTTPException
 
 client = TestClient(app)
 

@@ -11,7 +11,6 @@ from ..auth import(
      decodeToken,
 )
 
-
 client = TestClient(app)
 
 testUser = [{"username": "squig", 

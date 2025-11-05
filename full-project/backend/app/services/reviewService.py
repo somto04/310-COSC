@@ -58,7 +58,7 @@ def createReview(payload: ReviewCreate) -> Review:
     newData = newReview.model_dump()
     newData["flagged"] = payload.flagged or False
     # Append the new review and save all reviews
-    reviews.append(newReview.dict())
+    reviews.append(newReview.model_dump())
     saveAll(reviews)
     return newReview
 
@@ -79,18 +79,25 @@ def updateReview(reviewId: str, payload: ReviewUpdate) -> Review:
     reviews = loadAll()
     #idx enumerate to get both index and item
     for idx, it in enumerate(reviews):
-        # if the ID matches, create an updated Review object
+        # if the ID matches, update only the provided fields
         if it.get("id") == reviewId:
-            updated = Review(
-                id=reviewId,
-                movieId = payload.movieId, 
-                userId= payload.userId,
-                reviewTitle = payload.reviewTitle.strip(), 
-                rating = payload.rating.strip(),
-                reviewBody = payload.reviewBody.strip(),
-                flagged = payload.flagged,
-            )
-            reviews[idx] = updated.dict()
+            current_review = Review(**it)
+            update_data = payload.model_dump(exclude_unset=True)
+            
+            # Create updated review by merging current data with update data
+            updated_dict = current_review.model_dump()
+            updated_dict.update(update_data)
+            
+            # Strip fields if they're provided
+            if 'reviewTitle' in update_data and updated_dict['reviewTitle']:
+                updated_dict['reviewTitle'] = updated_dict['reviewTitle'].strip()
+            if 'reviewBody' in update_data and updated_dict['reviewBody']:
+                updated_dict['reviewBody'] = updated_dict['reviewBody'].strip()
+            if 'rating' in update_data and updated_dict['rating']:
+                updated_dict['rating'] = updated_dict['rating'].strip()
+            
+            updated = Review(**updated_dict)
+            reviews[idx] = updated.model_dump()
             saveAll(reviews)
             return updated
     # If we finish the loop without finding the review, raise 404

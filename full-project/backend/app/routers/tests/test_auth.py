@@ -7,12 +7,8 @@ from ...schemas.user import User, UserCreate, UserUpdate
 import tempfile
 import builtins
 from ..auth import(
-     getAdminDashboard, 
-     getCurrentUser, 
-     getUserFromJson,
+     getUsernameFromJsonDB,
      decodeToken,
-     requireAdmin,
-     login
 )
 
 
@@ -33,7 +29,6 @@ def getFakeOpen(filepath):
     return fakeOpen
 
 # unit tests
-
 def test_getUsernameFromJsonDB(tmp_path, monkeypatch):
     filepath = tmp_path / "users.json"
 
@@ -43,11 +38,21 @@ def test_getUsernameFromJsonDB(tmp_path, monkeypatch):
     fakeOpen = getFakeOpen(filepath)    
     monkeypatch.setattr(builtins, "open", fakeOpen)
 
-    user = getUserFromJson("squig")
+    user = getUsernameFromJsonDB("squig")
     assert user["username"] == "squig"
 
-#def test_decodeToken
+def test_decodeToken(tmp_path, monkeypatch):
+    filepath = tmp_path / "users.json"
 
+    with open(filepath, "w") as file:
+       json.dump(testUser, file)
+    
+    fakeOpen = getFakeOpen(filepath)    
+    monkeypatch.setattr(builtins, "open", fakeOpen)
+
+    assert decodeToken("squig") == {"username": "squig", "pw": "password", "role": "admin" }
+
+# intergration tests
 def test_validUserLogin(monkeypatch, tmp_path):
     filepath = tmp_path / "users.json"
 
@@ -58,8 +63,23 @@ def test_validUserLogin(monkeypatch, tmp_path):
     monkeypatch.setattr(builtins, "open", fakeOpen)
 
     response = client.post("/token", data={"username": "squig", "password": "password"})
+    assert response.status_code == 200
+    data = response.json()
+    assert data["access_token"] == "squig"
+    assert data["role"] == "admin"
 
-# def test_getAdminDashboard():
-#     ans = getAdminDashboard()
-#     assert ans == "in admin"
+def test_getAdminDashboard(monkeypatch, tmp_path):
+    filepath = tmp_path / "users.json"
+
+    with open(filepath, "w") as file:
+       json.dump(testUser, file)
+
+    fakeOpen = getFakeOpen(filepath)    
+    monkeypatch.setattr(builtins, "open", fakeOpen)
+
+    response = client.get("/adminDashboard", headers={"Authorization": "Bearer squig"})
+    assert response.status_code == 200
+    data = response.json()
+    assert data["message"] == "in admin"
+
 

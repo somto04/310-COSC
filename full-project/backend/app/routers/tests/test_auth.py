@@ -18,37 +18,48 @@ from ..auth import(
 
 client = TestClient(app)
 
-testUser = User(
-    id = 10000,
-    firstName = "somto",
-    lastName = "azubuike",
-    age = 20,
-    email = "somto@gmail.com",
-    username = "squig",
-    pw = "password",
-    role = "admin")
+testUser = [{"username": "squig", 
+             "pw": "password",
+              "role": "admin" }]
 
-# unit tests
-
-def test_getUsernameFromJsonDB(tmp_path, monkeypatch):
-    users = [{"username": "squig", "pw": "password"}]
-    filepath = tmp_path / "users.json"
-
-    with open(filepath, "w") as file:
-       json.dump(users, file)
-    
+def getFakeOpen(filepath):
     realOpen = builtins.open
 
     def fakeOpen(path, mode="r", *args, **kwargs):
        if path == "app/data/users.json":
            path = filepath
        return realOpen(path, mode, *args, **kwargs)
-   
-    monkeypatch.setattr(builtins, "open", fakeOpen)
     
+    return fakeOpen
+
+# unit tests
+
+def test_getUsernameFromJsonDB(tmp_path, monkeypatch):
+    filepath = tmp_path / "users.json"
+
+    with open(filepath, "w") as file:
+       json.dump(testUser, file)
+    
+    fakeOpen = getFakeOpen(filepath)    
+    monkeypatch.setattr(builtins, "open", fakeOpen)
+
     user = getUserFromJson("squig")
     assert user["username"] == "squig"
+
+#def test_decodeToken
+
+def test_validUserLogin(monkeypatch, tmp_path):
+    filepath = tmp_path / "users.json"
+
+    with open(filepath, "w") as file:
+       json.dump(testUser, file)
+
+    fakeOpen = getFakeOpen(filepath)    
+    monkeypatch.setattr(builtins, "open", fakeOpen)
+
+    response = client.post("/token", data={"username": "squig", "password": "password"})
 
 # def test_getAdminDashboard():
 #     ans = getAdminDashboard()
 #     assert ans == "in admin"
+

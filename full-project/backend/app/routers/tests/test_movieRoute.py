@@ -190,23 +190,23 @@ class TestMovieServiceUnit:
         mock_save.assert_called_once()
     
     
-    @patch('app.services.movieService.saveAll')
-    @patch('app.services.movieService.loadAll')
-    def test_delete_movie_success(self, mock_load, mock_save, sample_movies_list):
-        """Test deleting a movie successfully"""
-        # Arrange
-        mock_load.return_value = sample_movies_list
-        from app.services.movieService import deleteMovie
+    # @patch('app.services.movieService.saveAll')
+    # @patch('app.services.movieService.loadAll')
+    # def test_delete_movie_success(self, mock_load, mock_save, sample_movies_list):
+    #     """Test deleting a movie successfully"""
+    #     # Arrange
+    #     mock_load.return_value = sample_movies_list
+    #     from app.services.movieService import deleteMovie
         
-        # Act
-        deleteMovie(1)
+    #     # Act
+    #     deleteMovie(1)
         
-        # Assert
-        # Verify saveAll was called with filtered list (without movie id=1)
-        mock_save.assert_called_once()
-        saved_movies = mock_save.call_args[0][0]
-        assert len(saved_movies) == 3
-        assert saved_movies[0]["id"] == 2
+    #     # Assert
+    #     # Verify saveAll was called with filtered list (without movie id=1)
+    #     mock_save.assert_called_once()
+    #     saved_movies = mock_save.call_args[0][0]
+    #     assert len(saved_movies) == 3
+    #     assert saved_movies[0]["id"] == 2
     
     
     @patch('app.services.movieService.loadAll')

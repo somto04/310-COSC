@@ -6,7 +6,7 @@ from app.services import userService
 from app.schemas.user import User, UserCreate, UserUpdate
 
 
-# ---------- Fixtures ----------
+#these fixtures provide mock user data for testing that follows our user schema
 @pytest.fixture
 def fake_users():
     return [
@@ -33,8 +33,8 @@ def fake_users():
     ]
 
 
-# ---------- Tests ----------
 
+#this tests that all users currently stored are listed correctly
 @patch("app.services.userService.loadAll")
 def test_list_users(mock_load, fake_users):
     mock_load.return_value = fake_users
@@ -42,7 +42,7 @@ def test_list_users(mock_load, fake_users):
     assert len(result) == 2
     assert all(isinstance(u, User) for u in result)
 
-
+#this tests that a new user is created and saved correctly according to our schema
 @patch("app.services.userService.saveAll")
 @patch("app.services.userService.loadAll")
 def test_create_user(mock_load, mock_save, fake_users):
@@ -63,14 +63,14 @@ def test_create_user(mock_load, mock_save, fake_users):
     assert new_user.username == "samh"
     mock_save.assert_called_once()
 
-
+#this tests that a user can be retrieved by their ID correctly
 @patch("app.services.userService.loadAll")
 def test_get_user_by_id_found(mock_load, fake_users):
     mock_load.return_value = fake_users
     result = userService.getUserById(1)
     assert result.username == "alexm"
 
-
+#this tests that an error is raised when trying to get a user that does not exist
 @patch("app.services.userService.loadAll")
 def test_get_user_by_id_not_found(mock_load):
     mock_load.return_value = []
@@ -78,7 +78,7 @@ def test_get_user_by_id_not_found(mock_load):
         userService.getUserById(999)
     assert exc.value.status_code == 404
 
-
+# this tests that a current user is updated and saved correctly according to our schema
 @patch("app.services.userService.saveAll")
 @patch("app.services.userService.loadAll")
 def test_update_user_success(mock_load, mock_save, fake_users):
@@ -99,7 +99,7 @@ def test_update_user_success(mock_load, mock_save, fake_users):
     assert updated.role == "admin"
     mock_save.assert_called_once()
 
-
+# this tests that an error is raised when trying to update a user that does not exist
 @patch("app.services.userService.saveAll")
 @patch("app.services.userService.loadAll")
 def test_update_user_not_found(mock_load, mock_save):
@@ -118,7 +118,7 @@ def test_update_user_not_found(mock_load, mock_save):
         userService.updateUser(999, payload)
     assert exc.value.status_code == 404
 
-
+# this tests that a user is deleted correctly
 @patch("app.services.userService.saveAll")
 @patch("app.services.userService.loadAll")
 def test_delete_user_success(mock_load, mock_save, fake_users):
@@ -126,7 +126,7 @@ def test_delete_user_success(mock_load, mock_save, fake_users):
     userService.deleteUser(1)
     mock_save.assert_called_once()
 
-
+# this tests that an error is raised when trying to delete a user that does not exist
 @patch("app.services.userService.saveAll")
 @patch("app.services.userService.loadAll")
 def test_delete_user_not_found(mock_load, mock_save, fake_users):

@@ -1,6 +1,5 @@
 # 310-COSC
 
-# Use the camel case naming convention for functions and variables
 #api website: http://127.0.0.1:8000/docs#/
 
 api website: http://127.0.0.1:8000/docs#/

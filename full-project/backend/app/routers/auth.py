@@ -5,6 +5,7 @@ import json
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
+# gets the username from the database
 def getUserFromJson(username: str):
     with open("app/data/users.json", "r") as f:
         users = json.load(f)
@@ -13,7 +14,7 @@ def getUserFromJson(username: str):
             return user
     return None
 
-# currently just the username not an actual token
+# uses the token  passed through to get the user
 def decodeToken(token: str):
     user = getUserFromJson(token)
     if not user:
@@ -24,10 +25,12 @@ def decodeToken(token: str):
         )
     return user
 
+# function used by other files to get the current user - passes in the token
 def getCurrentUser(token: str = Depends(oauth2_scheme)):
     return decodeToken(token)
 
 # checks if the current user is an admin
+# Depends(getCurrentUser) makes sure that the function returns true
 def requireAdmin(user: dict = Depends(getCurrentUser)):
     if user.get("role") != "admin":
         raise HTTPException(
@@ -40,6 +43,7 @@ def requireAdmin(user: dict = Depends(getCurrentUser)):
 @router.post("/token")
 def login(username: str = Form(...), password: str = Form(...)):
     user = getUserFromJson(username)
+    # if the username is not found or the password is incorrect
     if not user or user.get("pw") != password:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

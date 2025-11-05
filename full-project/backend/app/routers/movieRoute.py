@@ -10,6 +10,7 @@ from ..services.movieService import (
     updateMovie,
     deleteMovie,
     searchMovie,
+    getMovieByFilter,
 )
 
 router = APIRouter(prefix="/movies", tags=["movies"])
@@ -22,6 +23,19 @@ def searchMovies(q: Optional[str] = None, query: Optional[str] = None):
         raise HTTPException(status_code=404, detail="Movie not found")
     return results
 
+# this function filters movies based on genre, year, director, and star
+@router.get("/filter", response_model=List[Movie])
+def filterMovies(
+    genre: Optional[str] = None,
+    year: Optional[int] = None,
+    director: Optional[str] = None,
+    star: Optional[str] = None,
+):
+    results = getMovieByFilter(genre, year, director, star)
+    if not results:
+        raise HTTPException(status_code=404, detail="No movies found with the given filters")
+    return results
+
 @router.get("", response_model=List[Movie])
 def getMovies():
     return listMovies()
@@ -29,6 +43,8 @@ def getMovies():
 @router.get("/{movieId}", response_model=Movie)
 def getMovie(movieId: int):
     return getMovieById(movieId)
+
+
 
 # ---------- #
 # ADMIN ONLY #

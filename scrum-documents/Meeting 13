@@ -1,0 +1,23 @@
+ ## Meeting 13
+
+# WHEN? 
+10/30/2025 9:30 - 10:45
+
+# WHO ATTENDED?
+Somto
+Zander
+Camilla
+Gamu 
+
+# TOPIC OF DISCUSSION
+Getting github automations to work
+
+# ACTION ITEMS
+Start thinking about M3
+Fix the issues in the discord
+Refactor all Ids to be an integer
+Make sure that all pull requests are linked to issues, also making sure to comment and do code reviews
+Figure out logic behind penalties - flagged for review, penalties for user, everytime the penalty is increased/ logs in then the number is checked to 
+see if its reached the threshold before being sent to the admin page for review.
+Create tests for all the files
+Learn what code does for the code comprehension

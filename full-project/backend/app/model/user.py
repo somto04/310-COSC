@@ -1,15 +1,16 @@
 class user:
     penaltiesCount = 0
 
-    def __init__(self, userId, name, age, email, username, password):
+    def __init__(self, userId, name, age, email, username, password, role):
         self.userId = userId
         self.name = name
         self.age = age
         self.email = email
         self.username = username
         self.password = password
+        self.role = role
 
-    #user getters
+    # user getters
     def get_userId(self):
         return self.userId
     
@@ -31,7 +32,10 @@ class user:
     def get_penaltiesCount(self):
         return self.penaltiesCount
     
-    #user setters
+    def get_role(self):
+        return self.role
+    
+    # user setters
     
     def set_userId(self, userId):
         self.userId = userId
@@ -54,4 +58,7 @@ class user:
     def set_penaltiesCount(self, penaltiesCount):
         self.penaltiesCount = penaltiesCount
 
+    def set_role(self, role):
+        self.role = role
+    
 

@@ -25,14 +25,18 @@ def getReview(reviewId: str):
     return getReviewById(reviewId)
 
 @router.put("/{reviewId}", response_model = Review)
-def putReview(reviewId: str, payload: ReviewUpdate):
+def putReview(reviewId: str, payload: ReviewUpdate, currentUser: dict = Depends(getCurrentUser)):
+    review = getReviewById(reviewId)
+    validateReviewOwner(currentUser, review)
+    payload.userId = currentUser["id"]
     return updateReview(reviewId, payload)
 
 @router.delete("/{reviewId}", status_code=status.HTTP_204_NO_CONTENT)
 def removeReview(reviewId: str, currentUser: dict = Depends(getCurrentUser)): 
     review = getReviewById(reviewId)
     validateReview(review)
-    validateAdminOrReveiwOwner(currentUser, review)
+    validateAdmin(currentUser)
+    validateReviewOwner(currentUser, review)
     deleteReview(reviewId)
     return None
 
@@ -40,6 +44,11 @@ def validateReview(review):
     if not review:
         raise HTTPException(status_code=404, detail="Review not found")
     
-def validateAdminOrReveiwOwner(currentUser, review):
-    if currentUser["role"] != "admin" and review["username"] != currentUser["username"]:
-        raise HTTPException(status_code=403, detail="not authorised to delete this review")
+def validateAdmin(currentUser):
+    if currentUser["role"] != "admin" :
+        raise HTTPException(status_code=403, detail="not authorised")
+    
+def validateReviewOwner(currentUser, review):
+    if review["username"] != currentUser["username"]:
+        raise HTTPException(status_code=403, detail="not authorised")
+    

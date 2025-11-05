@@ -86,10 +86,7 @@ def sample_movies_list(sample_movie_data):
         }
     ]
 
-
-# ============================================================================
 # UNIT TESTS - Testing service functions in isolation
-# ============================================================================
 
 class TestMovieServiceUnit:
     """Unit tests for movie service functions"""
@@ -254,10 +251,7 @@ class TestMovieServiceUnit:
         # Assert
         assert len(results) == 0
 
-
-# ============================================================================
 # INTEGRATION TESTS - Testing API endpoints with HTTP requests
-# ============================================================================
 
 class TestMovieRouterIntegration:
     """Integration tests for movie API endpoints"""
@@ -341,10 +335,8 @@ class TestMovieRouterIntegration:
         # Assert
         assert response.status_code == 404
         assert response.json()["detail"] == "Movie not found"
-
-# ============================================================================
+        
 # EDGE CASE TESTS
-# ============================================================================
 
 class TestMovieEdgeCases:
     """Test edge cases and error scenarios"""
@@ -400,18 +392,4 @@ class TestMovieEdgeCases:
 To run all tests:
     pytest app/routers/tests/test_movieRoute.py -v
 
-To run only unit tests:
-    pytest app/routers/tests/test_movieRoute.py::TestMovieServiceUnit -v
-
-To run only integration tests:
-    pytest app/routers/tests/test_movieRoute.py::TestMovieRouterIntegration -v
-
-To run a specific test:
-    pytest app/routers/tests/test_movieRoute.py::TestMovieServiceUnit::test_list_movies_returns_all_movies -v
-
-To see print statements:
-    pytest app/routers/tests/test_movieRoute.py -v -s
-
-To see coverage:
-    pytest app/routers/tests/test_movieRoute.py --cov=app.services.movieService --cov=app.routers.movieRoute
 """

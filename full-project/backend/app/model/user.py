@@ -11,7 +11,6 @@ class user:
         self.role = role
 
     # user getters
-    # user getters
     def get_userId(self):
         return self.userId
     

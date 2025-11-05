@@ -80,7 +80,6 @@ def updateReview(reviewId: str, payload: ReviewUpdate) -> Review:
     #idx enumerate to get both index and item
     for idx, it in enumerate(reviews):
         # if the ID matches, update only the provided fields
-        # if the ID matches, update only the provided fields
         if it.get("id") == reviewId:
             current_review = Review(**it)
             update_data = payload.model_dump(exclude_unset=True)

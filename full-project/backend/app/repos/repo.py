@@ -1,12 +1,15 @@
 import json
 from pathlib import Path
 from typing import List, Dict, Any
+from app.tools.Paths import get_project_root
 
-DATA_DIR = Path(__file__).resolve().parents[1] / "data"
+DATA_DIR = get_project_root() / "backend" / "app" / "data"
 
 def _path(name: str | Path) -> Path:
-    """if given a string, return the full path in the data directory;
-    provide a Path object to use a custom location."""
+    """
+    if given a string, return the full path in the data directory;
+    provide a Path object to use a custom location.
+    """
     if isinstance(name, Path):
         return name            # already a Path object, no need to wrap
     else:

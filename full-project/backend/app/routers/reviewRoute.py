@@ -2,7 +2,8 @@ from typing import List
 from fastapi import APIRouter, status, Depends, HTTPException
 from ..schemas.review import Review, ReviewCreate, ReviewUpdate
 from ..services.reviewService import listReviews, createReview, deleteReview, updateReview, getReviewById, searchReviews
-from .auth import getCurrentUser
+from app.routers.auth import getCurrentUser  
+
 
 router = APIRouter(prefix = "/reviews", tags = ["reviews"])
 

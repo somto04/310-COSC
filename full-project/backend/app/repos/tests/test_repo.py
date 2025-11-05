@@ -1,7 +1,8 @@
 import pytest
 import json
 
-from app.repos.repo import _path, _ensure_file, loadAll, saveAll
+from ...tools.Paths import get_project_root
+from ..repo import _path, _ensure_file, _base_load_all
 from pathlib import Path
 
 @pytest.fixture
@@ -9,9 +10,9 @@ def sample_users():
     return [{"id": 1, "name": "Neo"}]
 
 def test_path_with_string():
-    data_dir = Path(__file__).resolve().parents[1] / "data"
+    expected_dir = get_project_root() / "backend" / "app" / "data"
     result = _path("users.json")
-    assert result == data_dir / "users.json"
+    assert result == expected_dir / "users.json"
 
 def test_path_with_path():
     p = Path("/some/path/data.json")
@@ -44,7 +45,7 @@ def test_load_all(mocker, sample_users):
     m = mocker.mock_open(read_data = json.dumps(sample_users))
     mocker.patch("app.repos.repo.Path.open", m)
 
-    assert repo.loadAll("users.json") == sample_users
+    assert repo._base_load_all("users.json") == sample_users
 
     # Assert we opened for read with utf-8
     # Bound method call includes the Path instance as arg[0]
@@ -59,5 +60,5 @@ def test_load_all_missing_file(mocker):
     mocker.patch.object(repo.Path, "exists", return_value=False)
 
     with pytest.raises(FileNotFoundError):
-        repo.loadAll("nonexistent.json")
+        repo._base_load_all("nonexistent.json")
 

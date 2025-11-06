@@ -48,27 +48,6 @@ def putReview(reviewId: int, payload: ReviewUpdate, currentUser: dict = Depends(
     return updateReview(reviewId, payload)
 
 @router.delete("/{reviewId}", status_code=status.HTTP_204_NO_CONTENT)
-def removeReview(reviewId: str, currentUser: dict = Depends(getCurrentUser)): 
-def putReview(reviewId: int, payload: ReviewUpdate, currentUser: dict = Depends(getCurrentUser)):
-    """
-    Allows reviews to only be updated by the owner.
-
-    Returns:
-        The updated review.
-    
-    Raises:
-        HTTPException: If the person trying to update is not the owner.
-    """
-    review = getReviewById(reviewId)
-    if not review:
-        raise HTTPException(status_code=404, detail="Review not found")
-    
-    if currentUser["userId"] != review["userId"]:
-        raise HTTPException(status_code=403, detail="not authorised to update this review")
-
-    return updateReview(reviewId, payload)
-
-@router.delete("/{reviewId}", status_code=status.HTTP_204_NO_CONTENT)
 def removeReview(reviewId: int, currentUser: dict = Depends(getCurrentUser)): 
     """
     Makes sure that only review owners and admins can delete reviews.

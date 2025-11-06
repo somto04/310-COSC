@@ -19,4 +19,5 @@ more testing
 figure out fast api bugs
 start working on report notifications 
 look at M3
+think of data structures: should we be loading and saving all reviews for every request?
 Keep working hard and staying positive <3

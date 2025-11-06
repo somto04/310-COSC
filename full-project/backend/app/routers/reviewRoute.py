@@ -48,12 +48,12 @@ def putReview(reviewId: int, payload: ReviewUpdate, currentUser: dict = Depends(
     return updateReview(reviewId, payload)
 
 @router.delete("/{reviewId}", status_code=status.HTTP_204_NO_CONTENT)
-def removeReview(reviewId: int, currentUser: dict = Depends(getCurrentUser)): 
+def removeReview(reviewId: int, currentUser: dict = Depends(getCurrentUser)):
     """
     Makes sure that only review owners and admins can delete reviews.
 
     Returns:
-        Deletes the review.
+        204 No Content on successful deletion
     
     Raises:
         HTTPException: If the review isn't found or they are not the owner or an admin.

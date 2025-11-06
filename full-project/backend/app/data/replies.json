@@ -12,5 +12,12 @@
     "userId": 100,
     "replyBody": "This is a simple test reply!",
     "datePosted": "3 Nov 2025"
+  },
+  {
+    "id": 3,
+    "reviewId": 1,
+    "userId": 100,
+    "replyBody": "This is a simple test reply!",
+    "datePosted": "3 Nov 2025"
   }
 ]

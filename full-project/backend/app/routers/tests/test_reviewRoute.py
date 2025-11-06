@@ -1,53 +1,203 @@
-import pytest 
+"""
+Integration Tests for Review Router
+
+This file contains integration tests for the review API endpoints.
+"""
+
+import pytest
 from fastapi.testclient import TestClient
-from app.routers.reviewRoute import getReview, postReview, getReviews, putReview, removeReview
-from app.services.reviewService import ReviewCreate
+from fastapi import FastAPI, status, HTTPException
+from unittest.mock import patch
 from app.app import app
+from app.routers.reviewRoute import router, getCurrentUser
+from app.schemas.review import Review, ReviewCreate, ReviewUpdate
 
-# temporary mock for testing
-def getCurrentUser():
-    return {"username": "testuser", "role": "admin"}
+# ============================================================================ #
+# SETUP & FIXTURES
+# ============================================================================ #
 
-client = TestClient(app)
+@pytest.fixture
+def app():
+    """Create a FastAPI app instance for testing"""
+    app = FastAPI()
+    app.include_router(router)
+    return app
 
-def test_getReviews():
-    response = client.get("/reviews")  
-    assert response.status_code == 200
-    assert isinstance(response.json(), list)
 
-def test_postReview():
-    payload = {
+@pytest.fixture
+def client(app):
+    """Create a test client for making HTTP requests"""
+    return TestClient(app)
+
+
+@pytest.fixture
+def sample_review_data():
+    """Sample review data for testing"""
+    return {
+        "id": 1,
         "movieId": 1,
         "userId": 1,
-        "reviewTitle": "Avengers Endgame is bad",
-        "reviewBody": "This is a review about Avengers Endgame and I thought it was terrible",
-        "rating": "1",
+        "username": "testuser",
+        "reviewTitle": "Great Movie!",
+        "reviewBody": "This movie was amazing, highly recommend",
+        "rating": 5,
         "flagged": False
     }
 
-    response = client.post("/reviews", json=payload)
-    assert response.status_code == 201
-    data = response.json()
-    assert data["reviewTitle"] == payload["reviewTitle"]
-    assert data["rating"] == payload["rating"]
 
-def test_getReview():
-    # Assuming a review with ID 1 exists after posting
-    response = client.get("/reviews/1")
-    assert response.status_code in [200, 404]  # depends if ID 1 exists
-    if response.status_code == 200:
-        assert "reviewBody" in response.json()
+@pytest.fixture
+def sample_reviews_list(sample_review_data):
+    """Sample list of reviews for testing"""
+    return [
+        sample_review_data,
+        {
+            "id": 2,
+            "movieId": 1,
+            "userId": 2,
+            "username": "anotheruser",
+            "reviewTitle": "Not bad",
+            "reviewBody": "It was okay, nothing special",
+            "rating": 3,
+            "flagged": False
+        },
+        {
+            "id": 3,
+            "movieId": 2,
+            "userId": 1,
+            "username": "testuser",
+            "reviewTitle": "Disappointed",
+            "reviewBody": "Expected better from this film",
+            "rating": 2,
+            "flagged": False
+        }
+    ]
 
-def test_putReview():
-    review_id = 1
-    update_payload = {
-        "reviewBody": "I changed my mind, it was actually alright",
-        "rating": "4"
-    }
 
-    response = client.put(f"/reviews/{review_id}", json=update_payload)
-    assert response.status_code in [200, 404]  # if review exists
-    if response.status_code == 200:
+# ============================================================================ #
+# INTEGRATION TESTS
+# ============================================================================ #
+
+class TestReviewRouterIntegration:
+    """Integration tests for review API endpoints"""
+
+    @patch('app.routers.reviewRoute.listReviews')
+    def test_get_all_reviews_endpoint(self, mock_list, client, sample_reviews_list):
+        mock_list.return_value = sample_reviews_list
+
+        response = client.get("/reviews")
+
+        assert response.status_code == 200
         data = response.json()
-        assert data["reviewBody"] == update_payload["reviewBody"]
-        
+        assert len(data) == 3
+        assert data[0]["reviewTitle"] == "Great Movie!"
+        assert data[1]["reviewTitle"] == "Not bad"
+
+    @patch('app.routers.reviewRoute.getReviewById')
+    def test_get_review_by_id_endpoint(self, mock_get, client, sample_review_data):
+        mock_get.return_value = sample_review_data
+
+        response = client.get("/reviews/1")
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["id"] == 1
+        assert data["reviewTitle"] == "Great Movie!"
+        assert data["rating"] == 5
+        mock_get.assert_called_once_with(1)
+
+    @patch('app.routers.reviewRoute.getReviewById')
+    def test_get_review_by_id_not_found(self, mock_get, client):
+        mock_get.side_effect = HTTPException(status_code=404, detail="Review not found")
+
+        response = client.get("/reviews/999")
+
+        assert response.status_code == 404
+        assert response.json()["detail"] == "Review not found"
+
+    @patch('app.routers.reviewRoute.searchReviews')
+    def test_search_reviews_with_query(self, mock_search, client, sample_review_data):
+        mock_search.return_value = [sample_review_data]
+
+        response = client.get("/reviews/search?q=great")
+
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data) == 1
+        assert data[0]["reviewTitle"] == "Great Movie!"
+        mock_search.assert_called_once_with("great")
+
+    @patch('app.routers.reviewRoute.searchReviews')
+    def test_search_reviews_with_limit_and_offset(self, mock_search, client, sample_reviews_list):
+        mock_search.return_value = sample_reviews_list
+
+        response = client.get("/reviews/search?q=movie&limit=2&offset=1")
+
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data) == 2
+        assert data[0]["id"] == 2  # now int, not str
+
+    @patch('app.routers.reviewRoute.createReview')
+    def test_create_review_endpoint(self, mock_create, client, sample_review_data):
+        mock_create.return_value = sample_review_data
+
+        new_review = {
+            "movieId": 1,
+            "userId": 1,
+            "reviewTitle": "Great Movie!",
+            "reviewBody": "This movie was amazing, highly recommend",
+            "rating": 5
+        }
+
+        response = client.post("/reviews", json=new_review)
+
+        assert response.status_code == 201
+        data = response.json()
+        assert data["reviewTitle"] == "Great Movie!"
+        assert data["rating"] == 5
+
+    @patch('app.routers.reviewRoute.updateReview')
+    def test_update_review_endpoint(self, mock_update, client, sample_review_data):
+        updated_review = sample_review_data.copy()
+        updated_review["reviewBody"] = "Updated review text"
+        updated_review["rating"] = 4
+        mock_update.return_value = updated_review
+
+        update_data = {
+            "reviewBody": "Updated review text",
+            "rating": 4
+        }
+
+        response = client.put("/reviews/1", json=update_data)
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["reviewBody"] == "Updated review text"
+        assert data["rating"] == 4
+
+    @patch('app.routers.reviewRoute.deleteReview')
+    @patch('app.routers.reviewRoute.getReviewById')
+    def test_delete_review_as_admin(self, mock_get_review, mock_delete, client, sample_review_data, app):
+        app.dependency_overrides[getCurrentUser] = lambda: {"username": "admin", "role": "admin"}
+
+        mock_get_review.return_value = sample_review_data
+        mock_delete.return_value = None
+
+        response = client.delete("/reviews/1")
+
+        assert response.status_code == status.HTTP_204_NO_CONTENT
+        mock_delete.assert_called_once_with(1)
+
+        app.dependency_overrides = {}
+
+    @patch('app.routers.reviewRoute.getReviewById')
+    def test_delete_review_not_found(self, mock_get_review, client, app):
+        app.dependency_overrides[getCurrentUser] = lambda: {"username": "admin", "role": "admin"}
+        mock_get_review.return_value = None
+
+        response = client.delete("/reviews/999")
+
+        assert response.status_code == 404
+        assert response.json()["detail"] == "Review not found"
+
+        app.dependency_overrides = {}

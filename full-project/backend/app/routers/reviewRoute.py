@@ -1,7 +1,7 @@
 from typing import List
 from fastapi import APIRouter, status, Depends, HTTPException
 from ..schemas.review import Review, ReviewCreate, ReviewUpdate
-from ..services.reviewService import listReviews, createReview, deleteReview, updateReview, getReviewById
+from ..services.reviewService import listReviews, createReview, deleteReview, updateReview, getReviewById, searchReviews
 from .auth import getCurrentUser
 
 router = APIRouter(prefix = "/reviews", tags = ["reviews"])
@@ -23,24 +23,37 @@ def postReview(payload: ReviewCreate):
 def getReview(reviewId: str):
     return getReviewById(reviewId)
 
-# updating the review can only be done by the owner
 @router.put("/{reviewId}", response_model = Review)
 def putReview(reviewId: str, payload: ReviewUpdate, currentUser: dict = Depends(getCurrentUser)):
-    # first checks if the review exists
+    """
+    Allows reviews to only be updated by the owner.
+
+    Returns:
+        The updated review.
+    
+    Raises:
+        HTTPException: If the person trying to update is not the owner.
+    """
     review = getReviewById(reviewId)
     if not review:
         raise HTTPException(status_code=404, detail="Review not found")
     
-    # if the user trying to edit it is not the author of the review
     if currentUser["userId"] != review["userId"]:
         raise HTTPException(status_code=403, detail="not authorised to update this review")
 
     return updateReview(reviewId, payload)
 
 @router.delete("/{reviewId}", status_code=status.HTTP_204_NO_CONTENT)
-# gets the current user from auth
 def removeReview(reviewId: str, currentUser: dict = Depends(getCurrentUser)): 
-    # first checks if the review exists
+    """
+    Makes sure that only review owners and admins can delete reviews.
+
+    Returns:
+        Deletes the review.
+    
+    Raises:
+        HTTPException: If the review isn't found or they are not the owner or an admin.
+    """
     review = getReviewById(reviewId)
     if not review:
         raise HTTPException(status_code=404, detail="Review not found")

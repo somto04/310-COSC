@@ -6,10 +6,12 @@ from app.app import app
 from ...schemas.user import User, UserCreate, UserUpdate
 import tempfile
 import builtins
-from ..auth import(
-     getUsernameFromJsonDB,
-     decodeToken,
+from ..auth import (
+    getUsernameFromJsonDB,
+    decodeToken,
 )
+from ...repos.userRepo import loadAll  # Add this import
+from unittest.mock import patch
 
 client = TestClient(app)
 
@@ -24,27 +26,34 @@ testUser = [
 ]
 
 def getFakeOpen(filepath):
+    """Creates a fake open function that redirects app/data/users.json to our test file
+    
+    Returns:
+        The fake open file path
+    """
     realOpen = builtins.open
 
     def fakeOpen(path, mode="r", *args, **kwargs):
-       if path == "app/data/users.json":
-           path = filepath
-       return realOpen(path, mode, *args, **kwargs)
+        if path.replace("\\", "/") == "app/data/users.json":
+            return realOpen(filepath, mode, *args, **kwargs)
+        return realOpen(path, mode, *args, **kwargs)
     
     return fakeOpen
 
 # unit tests
-def test_getUsernameFromJsonDB(tmp_path, monkeypatch):
-    filepath = tmp_path / "users.json"
+@patch('app.repos.userRepo.loadAll')
+def test_getUsernameFromJsonDB(mock_load):
+    """Test that we can get a user from the JSON DB"""
+    # Arrange
+    mock_load.return_value = testUser
 
-    with open(filepath, "w") as file:
-       json.dump(testUser, file)
-    
-    fakeOpen = getFakeOpen(filepath)    
-    monkeypatch.setattr(builtins, "open", fakeOpen)
-
+    # Act
     user = getUsernameFromJsonDB("squig")
-    assert user["username"] == "squig"
+
+    # Assert
+    assert user is not None
+    assert user == testUser[0]  # Compare with the first user in our test data
+    mock_load.assert_called_once()
 
 def test_decodeToken(tmp_path, monkeypatch):
     filepath = tmp_path / "users.json"
@@ -64,15 +73,11 @@ def test_decodeToken(tmp_path, monkeypatch):
     assert decodeToken("squig") == expected
 
 # intergration tests
-def test_validUserLogin(monkeypatch, tmp_path):
+@patch('app.repos.userRepo.loadAll')
+def test_validUserLogin(mock_load):
     """Test valid login credentials return proper token"""
     # Arrange
-    filepath = tmp_path / "users.json"
-    with open(filepath, "w") as file:
-       json.dump(testUser, file)
-    
-    fakeOpen = getFakeOpen(filepath)    
-    monkeypatch.setattr(builtins, "open", fakeOpen)
+    mock_load.return_value = testUser
 
     # Act
     response = client.post(
@@ -104,5 +109,3 @@ def test_getAdminDashboard(monkeypatch, tmp_path):
     assert response.status_code == 200
     data = response.json()
     assert data["message"] == "in admin"
-
-

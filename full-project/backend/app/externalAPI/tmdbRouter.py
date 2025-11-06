@@ -1,0 +1,15 @@
+from fastapi import APIRouter, HTTPException
+from app.externalAPI.tmdbService import getMovieDetails, getRecommendations
+
+router = APIRouter(prefix="/tmdb", tags=["tmdb"])
+
+@router.get("/details/{movie_name}")
+def movie_details(movie_name: str):
+    details = getMovieDetails(movie_name)
+    if not details:
+        raise HTTPException(status_code=404, detail="Movie not found")
+    return details
+
+@router.get("/recommendations/{movie_id}")
+def movie_recommendations(movie_id: int):
+    return getRecommendations(movie_id)

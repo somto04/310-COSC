@@ -1,20 +1,24 @@
+from typing import List, Dict, Any
+from .repo import _base_load_all, _base_save_all, DATA_DIR
 
-import json
-from pathlib import Path
-from typing import List, Dict
+REVIEW_DATA_FILE = DATA_DIR / "reviews.json"
 
-DATA_FILE = Path(__file__).parent.parent / "data" / "reviews.json"
+def loadAll() -> List[Dict[str, Any]]:
+    """
+    Load all reviews from the reviews data file.
 
+    Returns:
+        List[Dict[str, Any]]: A list of review items.
+    """
+    return _base_load_all(REVIEW_DATA_FILE)
+    
+def saveAll(items: List[Dict[str, Any]]) -> None:
+    """
+    Save all reviews to the reviews data file.
 
-def _ensure_file():
-    if not DATA_FILE.exists():
-        raise FileNotFoundError(f"Missing data file: {DATA_FILE}")
-def loadAll() -> List[Dict]:
-    _ensure_file()
-    with DATA_FILE.open("r", encoding="utf-8") as f:
-        return json.load(f)
+    Args:
+        items (List[Dict[str, Any]]): A list of review items to save.
+    """
+    _base_save_all(REVIEW_DATA_FILE, items)
 
-def saveAll(items: List[Dict]) -> None:
-    DATA_FILE.parent.mkdir(parents=True, exist_ok=True)
-    with DATA_FILE.open("w", encoding="utf-8") as f:
-        json.dump(items, f, indent=2, ensure_ascii=False)
+__all__ = ["loadAll", "saveAll"]

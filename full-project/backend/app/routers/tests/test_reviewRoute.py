@@ -138,18 +138,29 @@ class TestReviewRouterIntegration:
         assert data[0]["id"] == 2  # now int, not str
 
     @patch('app.routers.reviewRoute.createReview')
-    def test_create_review_endpoint(self, mock_create, client, sample_review_data):
+    def test_create_review_endpoint(self, mock_create, client, sample_review_data, app):
+        """Test POST /reviews creates a new review"""
+        # Arrange
         mock_create.return_value = sample_review_data
 
         new_review = {
             "movieId": 1,
-            "userId": 1,
             "reviewTitle": "Great Movie!",
             "reviewBody": "This movie was amazing, highly recommend",
             "rating": 5
         }
-
-        response = client.post("/reviews", json=new_review)
+        
+        # Set up auth
+        app.dependency_overrides[getCurrentUser] = lambda: {
+            "username": "testuser", 
+            "userId": 1,
+            "role": "user"
+        }
+        
+        # Send request with auth header
+        response = client.post("/reviews", 
+                             json=new_review,
+                             headers={"Authorization": "Bearer testuser"})
 
         assert response.status_code == 201
         data = response.json()
@@ -157,7 +168,17 @@ class TestReviewRouterIntegration:
         assert data["rating"] == 5
 
     @patch('app.routers.reviewRoute.updateReview')
-    def test_update_review_endpoint(self, mock_update, client, sample_review_data):
+    @patch('app.routers.reviewRoute.getReviewById')
+    def test_update_review_endpoint(self, mock_get_review, mock_update, client, sample_review_data, app):
+        """Test PUT /reviews/{id} updates a review.
+        It verifies that the FastAPI route for updating a review correctly
+        updates an existing review's data and returns the modified view. 
+        """
+        # Arrange
+        # Mock getting the existing review (for ownership check)
+        mock_get_review.return_value = sample_review_data
+        
+        # Set up expected updated review
         updated_review = sample_review_data.copy()
         updated_review["reviewBody"] = "Updated review text"
         updated_review["rating"] = 4
@@ -168,7 +189,19 @@ class TestReviewRouterIntegration:
             "rating": 4
         }
 
-        response = client.put("/reviews/1", json=update_data)
+        # Set up auth to match the review owner
+        app.dependency_overrides[getCurrentUser] = lambda: {
+            "username": "testuser",  # Must match the review's username
+            "userId": 1,  # Must match the review's userId
+            "role": "user"
+        }
+
+        response = client.put("/reviews/1", 
+                            json=update_data,
+                            headers={"Authorization": "Bearer testuser"})
+        
+        # Assert
+        app.dependency_overrides = {}
 
         assert response.status_code == 200
         data = response.json()

@@ -34,8 +34,13 @@ def requireAdmin(user: dict = Depends(getCurrentUser)):
 # logging in returns a token which is currently just the username
 @router.post("/token")
 def login(username: str = Form(...), password: str = Form(...)):
+    """
+    Login endpoint that validates username and password and returns a token.
+    The token is simply the username in this implementation.
+    """
     user = getUsernameFromJsonDB(username)
-    return validateUsernameAndPw(username, password, user)
+    result = validateUsernameAndPw(username, password, user)
+    return result
 
 @router.get("/adminDashboard")
 def getAdminDashboard(admin = Depends(requireAdmin)):

@@ -44,7 +44,7 @@ def putReview(reviewId: int, payload: ReviewUpdate, currentUser: dict = Depends(
     review = getReviewById(reviewId)
     validateReview(review)
     validateReviewOwner(currentUser, review)
-    payload.userId = currentUser["id"]
+    payload.userId = currentUser["userId"]
     return updateReview(reviewId, payload)
 
 @router.delete("/{reviewId}", status_code=status.HTTP_204_NO_CONTENT)

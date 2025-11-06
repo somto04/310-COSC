@@ -141,32 +141,26 @@ class TestReviewRouterIntegration:
     def test_create_review_endpoint(self, mock_create, client, sample_review_data, app):
         """Test POST /reviews creates a new review"""
         # Arrange
-    def test_create_review_endpoint(self, mock_create, client, sample_review_data):
         mock_create.return_value = sample_review_data
 
         new_review = {
             "movieId": 1,
-            "userId": 1,
             "reviewTitle": "Great Movie!",
             "reviewBody": "This movie was amazing, highly recommend",
             "rating": 5
         }
         
-        # Act
-        # Add auth header and mock getCurrentUser
+        # Set up auth
         app.dependency_overrides[getCurrentUser] = lambda: {
             "username": "testuser", 
-            "id": 1,
+            "userId": 1,
             "role": "user"
         }
+        
+        # Send request with auth header
         response = client.post("/reviews", 
                              json=new_review,
                              headers={"Authorization": "Bearer testuser"})
-        app.dependency_overrides = {}
-        
-        # Assert
-
-        response = client.post("/reviews", json=new_review)
 
         assert response.status_code == 201
         data = response.json()
@@ -185,21 +179,6 @@ class TestReviewRouterIntegration:
         mock_get_review.return_value = sample_review_data
         
         # Set up expected updated review
-        """
-        Set up user auth to matching sample_review_data and override the header check in auth.py
-
-        Returns:
-            The updated review.
-        
-        Raises:
-            Fails the test.
-        """
-        app.dependency_overrides[getCurrentUser] = lambda: {"username": "testuser", "userId": 1}
-        
-        # Mock getReviewById to return the review (for ownership check)
-        mock_get_review.return_value = sample_review_data
-        
-        # Set up the expected updated review
         updated_review = sample_review_data.copy()
         updated_review["reviewBody"] = "Updated review text"
         updated_review["rating"] = 4
@@ -210,21 +189,16 @@ class TestReviewRouterIntegration:
             "rating": 4
         }
 
-        response = client.put("/reviews/1", 
-                              json=update_data,
-                              headers={"Authorization": "Bearer testuser"})
-        
-        # Act
-        # Add auth header and mock getCurrentUser for the review owner
+        # Set up auth to match the review owner
         app.dependency_overrides[getCurrentUser] = lambda: {
-            "username": "testuser",  # Matches the review's username
-            "id": 1,
+            "username": "testuser",  # Must match the review's username
+            "userId": 1,  # Must match the review's userId
             "role": "user"
         }
+
         response = client.put("/reviews/1", 
                             json=update_data,
                             headers={"Authorization": "Bearer testuser"})
-        app.dependency_overrides = {}
         
         # Assert
         app.dependency_overrides = {}

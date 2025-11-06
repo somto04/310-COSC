@@ -4,7 +4,7 @@ from ..schemas.review import Review, ReviewCreate, ReviewUpdate
 from ..services.reviewService import listReviews, createReview, deleteReview, updateReview, getReviewById, searchReviews
 from .auth import getCurrentUser
 
-router = APIRouter(prefix = "/reviews", tags = ["reviews"])
+router = APIRouter(prefix="/reviews", tags=["reviews"])
 
 @router.get("/search", response_model=List[Review])
 def searchReview(q: str = "", limit: int = 50, offset: int = 0):
@@ -19,22 +19,24 @@ def getReviews():
 def postReview(payload: ReviewCreate):
     return createReview(payload)
 
-@router.get("/{reviewId}", response_model = Review)
-def getReview(reviewId: str):
+@router.get("/{reviewId}", response_model=Review)
+def getReview(reviewId: int):
     return getReviewById(reviewId)
 
-@router.put("/{reviewId}", response_model = Review)
-def putReview(reviewId: str, payload: ReviewUpdate):
+@router.put("/{reviewId}", response_model=Review)
+def putReview(reviewId: int, payload: ReviewUpdate):
     return updateReview(reviewId, payload)
 
 @router.delete("/{reviewId}", status_code=status.HTTP_204_NO_CONTENT)
 # gets the current user from auth
-def removeReview(reviewId: str, currentUser: dict = Depends(getCurrentUser)): 
+def removeReview(reviewId: int, currentUser: dict = Depends(getCurrentUser)): 
     review = getReviewById(reviewId)
     if not review:
         raise HTTPException(status_code=404, detail="Review not found")
     
-    if currentUser["role"] != "admin" and review["username"] != currentUser["username"]:
-        raise HTTPException(status_code=403, detail="not authorised to delete this review")
+    # only admin or the user who posted the review can delete it
+    if currentUser["role"] != "admin" and review.userId != currentUser["id"]:
+        raise HTTPException(status_code=403, detail="Not authorised to delete this review")
+    
     deleteReview(reviewId)
     return None

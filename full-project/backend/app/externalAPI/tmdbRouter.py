@@ -4,7 +4,9 @@ from app.externalAPI.tmdbService import getMovieDetails, getRecommendations
 router = APIRouter(prefix="/tmdb", tags=["tmdb"])
 
 @router.get("/details/{movie_name}")
+
 def movie_details(movie_name: str):
+    """Fetch movie details from TMDB by movie name."""
     details = getMovieDetails(movie_name)
     if not details:
         raise HTTPException(status_code=404, detail="Movie not found")
@@ -12,4 +14,5 @@ def movie_details(movie_name: str):
 
 @router.get("/recommendations/{movie_id}")
 def movie_recommendations(movie_id: int):
+    """Fetch movie recommendations from TMDB by movie ID."""
     return getRecommendations(movie_id)

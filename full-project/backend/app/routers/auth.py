@@ -1,13 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Form
 from fastapi.security import OAuth2PasswordBearer
+from ..repos.userRepo import loadAll, saveAll
 import json
 
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 def getUsernameFromJsonDB(username: str):
-    with open("app/data/users.json", "r") as f:
-        users = json.load(f)
+    users = loadAll()
     for user in users:
         if user["username"] == username:
             return user

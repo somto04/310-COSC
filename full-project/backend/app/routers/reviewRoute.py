@@ -23,7 +23,7 @@ def postReview(payload: ReviewCreate, currentUser: dict = Depends(getCurrentUser
     Returns:
       The new review.
     """
-    payload.userId = currentUser["userId"]  # Changed from "id" to "userId" to match auth token structure
+    payload.userId = currentUser["userId"]  
     return createReview(payload)
 
 @router.get("/{reviewId}", response_model=Review)

@@ -157,7 +157,23 @@ class TestReviewRouterIntegration:
         assert data["rating"] == 5
 
     @patch('app.routers.reviewRoute.updateReview')
-    def test_update_review_endpoint(self, mock_update, client, sample_review_data):
+    @patch('app.routers.reviewRoute.getReviewById')
+    def test_update_review_endpoint(self, mock_get_review, mock_update, client, sample_review_data, app):
+        """
+        Set up user auth to matching sample_review_data and override the header check in auth.py
+
+        Returns:
+            The updated review.
+        
+        Raises:
+            Fails the test.
+        """
+        app.dependency_overrides[getCurrentUser] = lambda: {"username": "testuser", "userId": 1}
+        
+        # Mock getReviewById to return the review (for ownership check)
+        mock_get_review.return_value = sample_review_data
+        
+        # Set up the expected updated review
         updated_review = sample_review_data.copy()
         updated_review["reviewBody"] = "Updated review text"
         updated_review["rating"] = 4
@@ -168,7 +184,11 @@ class TestReviewRouterIntegration:
             "rating": 4
         }
 
-        response = client.put("/reviews/1", json=update_data)
+        response = client.put("/reviews/1", 
+                              json=update_data,
+                              headers={"Authorization": "Bearer testuser"})
+        
+        app.dependency_overrides = {}
 
         assert response.status_code == 200
         data = response.json()

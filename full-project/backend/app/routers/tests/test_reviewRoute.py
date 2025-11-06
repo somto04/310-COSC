@@ -184,7 +184,9 @@ class TestReviewRouterIntegration:
             "rating": 4
         }
 
-        response = client.put("/reviews/1", json=update_data)
+        response = client.put("/reviews/1", 
+                              json=update_data,
+                              headers={"Authorization": "Bearer testuser"})
         
         app.dependency_overrides = {}
 

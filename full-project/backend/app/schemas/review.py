@@ -13,7 +13,7 @@ class Review(BaseModel):
 
 class ReviewCreate(BaseModel):
     movieId: int
-    userId: int
+    userId: Optional[int] = None 
     reviewTitle: str
     reviewBody: str
     rating: int

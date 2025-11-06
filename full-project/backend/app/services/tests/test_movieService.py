@@ -3,7 +3,7 @@ from fastapi import HTTPException
 from app.services import movieService
 from app.schemas.movie import MovieCreate, MovieUpdate
 
-#Mock data for testing movie service
+# Mock data for testing movie service
 sample_movies = [
     {
         "id": 1,
@@ -31,7 +31,7 @@ sample_movies = [
 
 @pytest.fixture(autouse=True)
 def mock_repo(monkeypatch):
-    #Automatically mock loadAll/saveAll for all tests
+    # Automatically mock loadAll/saveAll for all tests
     monkeypatch.setattr(movieService, "loadAll", lambda: sample_movies.copy())
     monkeypatch.setattr(movieService, "saveAll", lambda data: None)
 
@@ -43,13 +43,13 @@ def test_list_movies():
 
 # this tests that getMovieById returns the correct movie
 def test_get_movie_by_id_success():
-    movie = movieService.getMovieById("1")
+    movie = movieService.getMovieById(1)
     assert movie.title == "Avengers Endgame"
 
 # this tests that getMovieById raises an exception for a non-existent movie
 def test_get_movie_by_id_not_found():
     with pytest.raises(HTTPException) as e:
-        movieService.getMovieById("999")
+        movieService.getMovieById(999)
     assert e.value.status_code == 404
     assert "Movie not found" in e.value.detail
 
@@ -78,8 +78,8 @@ def test_delete_movie_removes_correct_id(monkeypatch):
         captured["saved"] = data
 
     monkeypatch.setattr(movieService, "saveAll", fake_saveAll)
-    movieService.deleteMovie("1")
-    assert all(m["id"] != "1" for m in captured["saved"])
+    movieService.deleteMovie(1)
+    assert all(m["id"] != 1 for m in captured["saved"])
 
 # this tests that createMovie adds a new movie correctly based on our schema
 def test_create_movie():
@@ -101,10 +101,10 @@ def test_create_movie():
 
     new_movie = movieService.createMovie(payload)
 
-    #assertions
+    # assertions
     assert new_movie.title == "Testing Movie"
     assert new_movie.datePublished == "2024-01-01"
-    assert len(saved_movies) == 3 
+    assert len(saved_movies) == 3
     assert any(m["title"] == "Testing Movie" for m in saved_movies)
 
 # this tests that updateMovie modifies an existing movie correctly
@@ -114,9 +114,9 @@ def test_update_movie():
     movieService.saveAll = lambda movies: saved_movies.extend(movies)
 
     payload = MovieUpdate(title="Updated Title", duration=190)
-    updated_movie = movieService.updateMovie("1", payload)
+    updated_movie = movieService.updateMovie(1, payload)
 
-    #assertions
+    # assertions
     assert updated_movie.title == "Updated Title"
     assert updated_movie.duration == 190
 
@@ -124,7 +124,7 @@ def test_update_movie():
     assert len(saved_movies) == 2
     assert saved_movies[0]["title"] == "Updated Title"
 
-#these tests verify filtering functionality in getMovieByFilter
+# these tests verify filtering functionality in getMovieByFilter
 def test_get_movie_by_filter_genre():
     results = movieService.getMovieByFilter(genre="Action")
     assert len(results) == 1

@@ -20,11 +20,11 @@ def postReview(payload: ReviewCreate):
     return createReview(payload)
 
 @router.get("/{reviewId}", response_model = Review)
-def getReview(reviewId: str):
+def getReview(reviewId: int):
     return getReviewById(reviewId)
 
 @router.put("/{reviewId}", response_model = Review)
-def putReview(reviewId: str, payload: ReviewUpdate, currentUser: dict = Depends(getCurrentUser)):
+def putReview(reviewId: int, payload: ReviewUpdate, currentUser: dict = Depends(getCurrentUser)):
     """
     Allows reviews to only be updated by the owner.
 
@@ -44,7 +44,7 @@ def putReview(reviewId: str, payload: ReviewUpdate, currentUser: dict = Depends(
     return updateReview(reviewId, payload)
 
 @router.delete("/{reviewId}", status_code=status.HTTP_204_NO_CONTENT)
-def removeReview(reviewId: str, currentUser: dict = Depends(getCurrentUser)): 
+def removeReview(reviewId: int, currentUser: dict = Depends(getCurrentUser)): 
     """
     Makes sure that only review owners and admins can delete reviews.
 

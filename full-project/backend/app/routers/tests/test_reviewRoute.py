@@ -32,9 +32,8 @@ def test_postReview():
     assert data["rating"] == payload["rating"]
 
 def test_getReview():
-    # Assuming a review with ID 1 exists after posting
     response = client.get("/reviews/1")
-    assert response.status_code in [200, 404]  # depends if ID 1 exists
+    assert response.status_code in [200, 404]  
     if response.status_code == 200:
         assert "reviewBody" in response.json()
 
@@ -45,8 +44,12 @@ def test_putReview():
         "rating": "4"
     }
 
-    response = client.put(f"/reviews/{review_id}", json=update_payload)
-    assert response.status_code in [200, 404]  # if review exists
+    response = client.put(
+        f"/reviews/{review_id}",
+        json=update_payload,
+        headers={"Authorization": "Bearer testuser"} 
+    )
+    assert response.status_code in [200, 404] 
     if response.status_code == 200:
         data = response.json()
         assert data["reviewBody"] == update_payload["reviewBody"]

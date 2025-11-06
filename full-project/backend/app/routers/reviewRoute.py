@@ -4,7 +4,7 @@ from ..schemas.review import Review, ReviewCreate, ReviewUpdate
 from ..services.reviewService import listReviews, createReview, deleteReview, updateReview, getReviewById, searchReviews
 from .auth import getCurrentUser
 
-router = APIRouter(prefix = "/reviews", tags = ["reviews"])
+router = APIRouter(prefix="/reviews", tags=["reviews"])
 
 @router.get("/search", response_model=List[Review])
 def searchReview(q: str = "", limit: int = 50, offset: int = 0):
@@ -19,7 +19,7 @@ def getReviews():
 def postReview(payload: ReviewCreate):
     return createReview(payload)
 
-@router.get("/{reviewId}", response_model = Review)
+@router.get("/{reviewId}", response_model=Review)
 def getReview(reviewId: int):
     return getReviewById(reviewId)
 

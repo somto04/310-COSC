@@ -1,4 +1,3 @@
-import uuid
 from typing import List
 from fastapi import HTTPException
 from ..schemas.review import Review, ReviewUpdate, ReviewCreate
@@ -18,52 +17,61 @@ def searchReviews(query: str) -> List[Review]:
 
     # If query is a number, treat as movie ID
     if q.isdigit():
+        movie_id = int(q)
         for r in reviews:
-            if str(r.get("movieId")) == q:
+            if r.get("movieId") == movie_id:
                 matched_reviews.append(Review(**r))
         return matched_reviews
 
     # Otherwise, search for movie title 
     matching_movie_ids = [
-        str(m["id"]) for m in movies
+        m["id"] for m in movies
         if q in str(m.get("title", "")).lower()
     ]
     # Now find reviews for these movie IDs
     for r in reviews:
-        if str(r.get("movieId")) in matching_movie_ids:
+        if r.get("movieId") in matching_movie_ids:
             matched_reviews.append(Review(**r))
 
     return matched_reviews
 
-#this function lists all reviews currently stored
+# this function lists all reviews currently stored
 def listReviews() -> List[Review]:
     return [Review(**it) for it in loadAll()]
 
-#this function creates a new review and saves it according to our review schema
+# this function creates a new review and saves it according to our review schema
 def createReview(payload: ReviewCreate) -> Review:
     reviews = loadAll()
-    # Generate a new unique ID for the review using uuid4
-    newId = str(uuid.uuid4())
+
+    # Generate a new unique integer ID (auto-increment)
+    if reviews:
+        newId = max([int(r.get("id", 0)) for r in reviews]) + 1
+    else:
+        newId = 1
+
+    # Check for accidental duplicate
     if any(it.get("id") == newId for it in reviews):
-        # if that ID already exists, raise a conflict error
         raise HTTPException(status_code=409, detail="ID collision; retry.")
-    newReview = Review(id=newId, 
-                   movieId = payload.movieId, 
-                   userId= payload.userId,
-                   reviewTitle = payload.reviewTitle.strip(), 
-                   rating = payload.rating.strip(),
-                   reviewBody = payload.reviewBody.strip(),
-                   flagged = payload.flagged)
+    
+    newReview = Review(
+        id=newId, 
+        movieId=payload.movieId, 
+        userId=payload.userId,
+        reviewTitle=payload.reviewTitle.strip(), 
+        rating=payload.rating if isinstance(payload.rating, int) else int(payload.rating),
+        reviewBody=payload.reviewBody.strip(),
+        flagged=payload.flagged or False,
+    )
     
     newData = newReview.model_dump()
     newData["flagged"] = payload.flagged or False
     # Append the new review and save all reviews
-    reviews.append(newReview.dict())
+    reviews.append(newReview.model_dump())
     saveAll(reviews)
     return newReview
 
-#this function retrieves a review by its ID
-def getReviewById(reviewId: str) -> Review:
+# this function retrieves a review by its ID
+def getReviewById(reviewId: int) -> Review:
     reviews = loadAll()
 
     # go through each review dict and if the ID matches, 
@@ -74,30 +82,37 @@ def getReviewById(reviewId: str) -> Review:
     # If no matching review is found, raise 404
     raise HTTPException(status_code=404, detail=f"Review '{reviewId}' not found")
 
-#this function updates an existing review identified by its ID
-def updateReview(reviewId: str, payload: ReviewUpdate) -> Review:
+# this function updates an existing review identified by its ID
+def updateReview(reviewId: int, payload: ReviewUpdate) -> Review:
     reviews = loadAll()
-    #idx enumerate to get both index and item
+    # idx enumerate to get both index and item
     for idx, it in enumerate(reviews):
-        # if the ID matches, create an updated Review object
+        # if the ID matches, update only the provided fields
         if it.get("id") == reviewId:
-            updated = Review(
-                id=reviewId,
-                movieId = payload.movieId, 
-                userId= payload.userId,
-                reviewTitle = payload.reviewTitle.strip(), 
-                rating = payload.rating.strip(),
-                reviewBody = payload.reviewBody.strip(),
-                flagged = payload.flagged,
-            )
-            reviews[idx] = updated.dict()
+            current_review = Review(**it)
+            update_data = payload.model_dump(exclude_unset=True)
+            
+            # Create updated review by merging current data with update data
+            updated_dict = current_review.model_dump()
+            updated_dict.update(update_data)
+            
+            # Strip fields if they're provided
+            if 'reviewTitle' in update_data and updated_dict['reviewTitle']:
+                updated_dict['reviewTitle'] = updated_dict['reviewTitle'].strip()
+            if 'reviewBody' in update_data and updated_dict['reviewBody']:
+                updated_dict['reviewBody'] = updated_dict['reviewBody'].strip()
+            if 'rating' in update_data and updated_dict['rating']:
+                updated_dict['rating'] = int(updated_dict['rating'])
+            
+            updated = Review(**updated_dict)
+            reviews[idx] = updated.model_dump()
             saveAll(reviews)
             return updated
     # If we finish the loop without finding the review, raise 404
     raise HTTPException(status_code=404, detail=f"Review '{reviewId}' not found")
 
 # this function deletes a review by its ID
-def deleteReview(reviewId: str) -> None:
+def deleteReview(reviewId: int) -> None:
     reviews = loadAll()
 
     # Filter out the review with the matching ID

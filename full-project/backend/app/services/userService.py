@@ -3,6 +3,7 @@ from typing import List
 from fastapi import HTTPException
 from ..schemas.user import User, UserCreate, UserUpdate
 from ..repos.userRepo import loadAll, saveAll
+from ..utilities.security import hashPassword, verifyPassword
 
 def listUsers() -> List[User]:
     return [User(**it) for it in loadAll()]

@@ -1,5 +1,5 @@
 from fastapi import APIRouter, status, Depends, HTTPException, Form
-from auth import getCurrentUser, getUsernameFromJsonDB  # adjust if auth.py is in same folder
+from .auth import getCurrentUser, getUsernameFromJsonDB  # adjust if auth.py is in same folder
 from ..utilities.security import verifyPassword
 
 router = APIRouter()

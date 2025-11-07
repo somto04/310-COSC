@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Form
 from fastapi.security import OAuth2PasswordBearer
 from ..repos.userRepo import loadAll, saveAll
-import json
 from ..utilities.security import verifyPassword
 
 router = APIRouter()
@@ -19,21 +18,10 @@ def decodeToken(token: str):
     validateUser(user)
     return user
 
-# function used by other files to get the current user - passes in the token
 def getCurrentUser(token: str = Depends(oauth2_scheme)):
     return decodeToken(token)
 
-# Depends(getCurrentUser) makes sure that the function returns true
 def requireAdmin(user: dict = Depends(getCurrentUser)):
-    """
-    Ensures that the user is an admin.
-
-    Returns:
-      The user.
-
-    Raises:
-      HTTPException: If the user is not an admin.
-      """
     if user.get("role") != "admin":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -41,7 +29,6 @@ def requireAdmin(user: dict = Depends(getCurrentUser)):
         )
     return user
 
-# logging in returns a token which is currently just the username
 @router.post("/token")
 def login(username: str = Form(...), password: str = Form(...)):
     user = getUsernameFromJsonDB(username)
@@ -52,9 +39,8 @@ def login(username: str = Form(...), password: str = Form(...)):
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    hashed_pw = user.get("pw")
-    # now verify hashed password
-    if not verifyPassword(password, hashed_pw):
+    hashedPw = user.get("pw")
+    if not verifyPassword(password, hashedPw):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid username or password",
@@ -64,43 +50,32 @@ def login(username: str = Form(...), password: str = Form(...)):
     return {"access_token": username, "token_type": "bearer"}
 
 @router.get("/adminDashboard")
-def getAdminDashboard(admin = Depends(requireAdmin)):
-    """
-    Retrieves the admin dashboard (not yet implemented).
-
-    Returns:
-      Admin dashboard.
-
-    Raises:
-      HTTPException: If the user is not an admin.
-      """
-    return "in admin"
+def getAdminDashboard(admin=Depends(requireAdmin)):
+    return {"message": "Welcome to the admin dashboard"}
 
 def validateUsernameAndPw(username, password, user):
-    """
-    Checks if the username and password are correct.
-
-    Returns:
-      login info including the username, role and token.
-
-    Raises:
-      HTTPException: If the username or password is incorrect.
-      """
-    if not user or user.get("pw") != password:
+    if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    return {"access_token": username, "token_type": "bearer", "role": user.get("role")}
+
+    hashedPw = user.get("pw")
+    if not verifyPassword(password, hashedPw):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    return {
+        "access_token": username,
+        "token_type": "bearer",
+        "role": user.get("role"),
+    }
 
 def validateUser(user):
-    """
-    Checks if the user exists.
-
-    Raises:
-      HTTPException: If the user doesnt exist.
-      """
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

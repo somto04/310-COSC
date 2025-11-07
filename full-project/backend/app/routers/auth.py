@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Form
 from fastapi.security import OAuth2PasswordBearer
 from ..repos.userRepo import loadAll, saveAll
 import json
+from ..utilities.security import verifyPassword
 
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -42,15 +43,25 @@ def requireAdmin(user: dict = Depends(getCurrentUser)):
 
 # logging in returns a token which is currently just the username
 @router.post("/token")
-def login(username: str = Form(...), password: str = Form(...), user: dict = Depends(getCurrentUser)):
-    """
-    Logs in a user.
-
-    Raises:
-      HTTPException: if the username or password is incorrect.
-      """
+def login(username: str = Form(...), password: str = Form(...)):
     user = getUsernameFromJsonDB(username)
-    validateUsernameAndPw(username, password, user)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    hashed_pw = user.get("pw")
+    # now verify hashed password
+    if not verifyPassword(password, hashed_pw):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    return {"access_token": username, "token_type": "bearer"}
 
 @router.get("/adminDashboard")
 def getAdminDashboard(admin = Depends(requireAdmin)):

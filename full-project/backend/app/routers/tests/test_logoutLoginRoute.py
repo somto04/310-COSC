@@ -18,17 +18,27 @@ def mock_user(monkeypatch):
 
 def test_login_valid(monkeypatch):
     """Should return success message when username and password are valid"""
-    from app.routers import auth
+    from app.routers import loginRoute
+    from app.utilities import security
 
-    # Mock getCurrentUser to return a valid user
-    def fake_get_current_user(username):
-        return {"username": "testuser", "pw": "12345"}
+    # fake db lookup
+    def fake_get_user(username):
+        # simulate stored *hashed* password
+        return {"username": "testuser", "pw": "$2b$12$FakeHashString1234567890"}
 
-    monkeypatch.setattr(auth, "getCurrentUser", fake_get_current_user)
+    # fake password verification always succeeds
+    def fake_verify_password(plain, hashed):
+        return True
+
+    monkeypatch.setattr(loginRoute, "getUsernameFromJsonDB", fake_get_user)
+    monkeypatch.setattr(loginRoute, "verifyPassword", fake_verify_password)
 
     response = client.post("/login", data={"username": "testuser", "password": "12345"})
     assert response.status_code == 200
-    assert "Welcome back" in response.json()["message"]
+    body = response.json()
+    assert "Login successful" in body["message"]
+
+
 
 
 def test_login_invalid(monkeypatch):
@@ -51,4 +61,4 @@ def test_logout_success(mock_user):
     assert response.status_code == 200
     body = response.json()
     assert "logged out successfully" in body["message"]
-    assert "testuser" in body["message"]
+    assert "tester" in body["message"]

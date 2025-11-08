@@ -1,5 +1,5 @@
 from fastapi import APIRouter, status, Depends, HTTPException, Form
-from auth.py import getCurrentUser
+from app.routers.auth import getCurrentUser
 
 router = APIRouter()
 

@@ -29,4 +29,4 @@ testUser = User(
 
 def test_getAdminDashboard():
     ans = getAdminDashboard()
-    assert ans == "in admin"
+    assert ans == {"message": "Welcome to the admin dashboard"}

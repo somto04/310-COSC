@@ -1,0 +1,23 @@
+ ## Meeting 15
+
+# WHEN? 
+11/06/2025 09:30 - 11:45
+
+# WHO ATTENDED?
+Somto
+Zander
+Camilla
+Gamu 
+
+# TOPIC OF DISCUSSION
+Making more test files
+
+# ACTION ITEMS
+fix auth.py tests
+more refactoring 
+more testing
+figure out fast api bugs
+start working on report notifications 
+look at M3
+think of data structures: should we be loading and saving all reviews for every request?
+Keep working hard and staying positive <3

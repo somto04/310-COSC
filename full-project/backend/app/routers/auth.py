@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Form
 from fastapi.security import OAuth2PasswordBearer
 from ..repos.userRepo import loadAll, saveAll
-import json
+from ..utilities.security import verifyPassword
 
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -18,21 +18,10 @@ def decodeToken(token: str):
     validateUser(user)
     return user
 
-# function used by other files to get the current user - passes in the token
 def getCurrentUser(token: str = Depends(oauth2_scheme)):
     return decodeToken(token)
 
-# Depends(getCurrentUser) makes sure that the function returns true
 def requireAdmin(user: dict = Depends(getCurrentUser)):
-    """
-    Ensures that the user is an admin.
-
-    Returns:
-      The user.
-
-    Raises:
-      HTTPException: If the user is not an admin.
-      """
     if user.get("role") != "admin":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -40,7 +29,6 @@ def requireAdmin(user: dict = Depends(getCurrentUser)):
         )
     return user
 
-# logging in returns a token which is currently just the username
 @router.post("/token")
 def login(username: str = Form(...), password: str = Form(...)):
     """
@@ -62,15 +50,14 @@ def validateUsernameAndPw(username, password, user):
             detail="Invalid username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    return {"access_token": username, "token_type": "bearer", "role": user.get("role")}
+
+    return {
+        "access_token": username,
+        "token_type": "bearer",
+        "role": user.get("role"),
+    }
 
 def validateUser(user):
-    """
-    Checks if the user exists.
-
-    Raises:
-      HTTPException: If the user doesnt exist.
-      """
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

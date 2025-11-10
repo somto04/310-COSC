@@ -85,3 +85,7 @@ def test_getAdminDashboardInvalidUser(monkeypatch):
     assert response.status_code == 403
 
 
+
+def test_getAdminDashboard():
+    ans = getAdminDashboard()
+    assert ans == {"message": "Welcome to the admin dashboard"}

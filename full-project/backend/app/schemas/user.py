@@ -10,6 +10,8 @@ class User(BaseModel):
     username: str
     pw: Optional[str] = ""
     role: str
+    penalties: int = 0
+    isBanned: bool = False
 
 class UserCreate(BaseModel):
     firstName: str
@@ -19,6 +21,8 @@ class UserCreate(BaseModel):
     username: str
     pw: str
     role: str
+    penalties: int = 0
+    isBanned: bool = False
 
     @field_validator('age')
     @classmethod
@@ -35,4 +39,6 @@ class UserUpdate(BaseModel):
     username: Optional[str] = None
     pw: Optional[str] = None
     role: Optional[str] = None
+    penalties: Optional[int] = None
+    isBanned: Optional[bool] = None
 

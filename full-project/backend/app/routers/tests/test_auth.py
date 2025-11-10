@@ -81,5 +81,5 @@ def test_getAdminDashboard(monkeypatch):
 def test_getAdminDashboardInvalidUser(monkeypatch):
     monkeypatch.setattr(auth, "loadAll", lambda: testUsers)
     
-    response = client.get("/adminDashboard", headers={"Authorization": "Bearer somto"})
+    response = client.get("/adminDashboard", headers={"Authorization": "Bearer ***"})
     assert response.status_code == 403

@@ -22,6 +22,13 @@ def getCurrentUser(token: str = Depends(oauth2_scheme)):
     return decodeToken(token)
 
 def requireAdmin(user: dict = Depends(getCurrentUser)):
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid username",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
     if user.get("role") != "admin":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,

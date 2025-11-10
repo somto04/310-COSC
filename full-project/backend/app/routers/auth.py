@@ -41,7 +41,7 @@ def login(username: str = Form(...), password: str = Form(...)):
 
 @router.get("/adminDashboard")
 def getAdminDashboard(admin = Depends(requireAdmin)):
-    return {"message": "in admin"}
+    return {"message": "Welcome to the admin dashboard"}
 
 def validateUsernameAndPw(username, password, user):
     if not user or user.get("pw") != password:

@@ -76,16 +76,10 @@ def test_getAdminDashboard(monkeypatch):
     response = client.get("/adminDashboard", headers={"Authorization": "Bearer squig"})
     assert response.status_code == 200
     data = response.json()
-    assert data["message"] == "in admin"
+    assert data["message"] == "Welcome to the admin dashboard"
 
 def test_getAdminDashboardInvalidUser(monkeypatch):
     monkeypatch.setattr(auth, "loadAll", lambda: testUsers)
     
     response = client.get("/adminDashboard", headers={"Authorization": "Bearer somto"})
     assert response.status_code == 403
-
-
-
-def test_getAdminDashboard():
-    ans = getAdminDashboard()
-    assert ans == {"message": "Welcome to the admin dashboard"}

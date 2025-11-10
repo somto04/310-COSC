@@ -37,6 +37,12 @@ def test_getUsernameFromJsonDB(monkeypatch):
     assert user is not None
     assert user["username"] == "squig"
 
+def test_getInvalidUsernameFromJsonDB(monkeypatch):   
+    monkeypatch.setattr(auth, "loadAll", lambda: testUsers)
+
+    user = getUsernameFromJsonDB("No user")
+    assert user is None
+
 def test_decodeToken(monkeypatch):
     monkeypatch.setattr(auth, "loadAll", lambda: testUsers)
 
@@ -57,6 +63,12 @@ def test_validUserLogin(monkeypatch):
     data = response.json()
     assert data["access_token"] == "squig"
     assert data["role"] == "admin"
+
+def test_invalidUserLoginWrongPw(monkeypatch):
+    monkeypatch.setattr(auth, "loadAll", lambda: testUsers)
+
+    response = client.post("/token", data={"username": "squig", "password": "pw"})
+    assert response.status_code == 401
 
 def test_getAdminDashboard(monkeypatch):
     monkeypatch.setattr(auth, "loadAll", lambda: testUsers)

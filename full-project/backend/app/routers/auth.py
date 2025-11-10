@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Form
 from fastapi.security import OAuth2PasswordBearer
 from ..repos.userRepo import loadAll, saveAll
-from ..utilities.security import verifyPassword
+#from ..utilities.security import verifyPassword
 
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -51,16 +51,16 @@ def validateUsernameAndPw(username, password, user):
             detail="Invalid username",
             headers={"WWW-Authenticate": "Bearer"},
         )
-
-    hashedPw = user.get("pw")
-    if not verifyPassword(password, hashedPw):
+    # hashed pw not yet implemented on this branch
+    #hashedPw = user.get("pw")
+    if user.get("pw") != password:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    return {"access_token": username, "token_type": "bearer"}
+    return {"access_token": username, "token_type": "bearer", "role": user.get("role"),}
 
 def validateUser(user):
     if not user:

@@ -41,6 +41,29 @@ def login(username: str = Form(...), password: str = Form(...)):
 
 @router.get("/adminDashboard")
 def getAdminDashboard(admin = Depends(requireAdmin)):
+    return {"message": "in admin"}
+
+def validateUsernameAndPw(username, password, user):
+    user = getUsernameFromJsonDB(username)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    hashedPw = user.get("pw")
+    if not verifyPassword(password, hashedPw):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    return {"access_token": username, "token_type": "bearer"}
+
+@router.get("/adminDashboard")
+def getAdminDashboard(admin=Depends(requireAdmin)):
     return {"message": "Welcome to the admin dashboard"}
 
 def validateUsernameAndPw(username, password, user):

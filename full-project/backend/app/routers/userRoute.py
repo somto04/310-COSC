@@ -26,6 +26,18 @@ def removeUser(userId: str):
     deleteUser(userId)
     return None
 
+@router.get("/userProfile/{userId}")
+def getUserProfile():
+    """
+    Gets the user profile of either the owner or another reviewer
+
+    Returns:
+        Iser profile.
+    
+    Raises:
+        HTTPException: If the user doesnt exist.
+    """
+
 @router.post("/forgot-password")
 def forgotPassword(email: str = Form(...)):
     """

@@ -1,6 +1,6 @@
 from typing import List
 from fastapi import APIRouter, status, HTTPException, Form, Depends
-from auth import getCurrentUser
+from app.routers.auth import getCurrentUser
 from ..schemas.user import User, UserCreate, UserUpdate
 from ..services.userService import listUsers, createUser, deleteUser, updateUser, getUserById, emailExists, generateResetToken, resetPassword
 
@@ -39,7 +39,7 @@ def getUserProfile(userId: str, currentUser = Depends(getCurrentUser)):
         HTTPException: If the user doesnt exist.
     """
     user = getUserById(userId)
-    isOwner = currentUser.id = userId
+    isOwner = currentUser.id == userId
     return {"user": user, "isOwner": isOwner}
 
 @router.post("/forgot-password")

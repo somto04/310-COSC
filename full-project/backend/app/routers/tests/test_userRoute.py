@@ -9,10 +9,13 @@ This file contains:
 import pytest
 from fastapi.testclient import TestClient
 from fastapi import FastAPI, status, HTTPException
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 from app.app import app
+from app import app as main_app
 from app.routers.userRoute import router
 from app.schemas.user import User, UserCreate, UserUpdate
+from ..userRoute import getUserProfile
+from app.routers.auth import getCurrentUser
 
 
 @pytest.fixture
@@ -137,4 +140,22 @@ def test_delete_user(mock_delete, client):
     response = client.delete("/users/1")
     assert response.status_code == 204
     mock_delete.assert_called_once_with("1")
-            
+
+def fake_get_current_user():
+    return MagicMock(id="1")
+
+def test_get_user_profile(sample_users):
+    """Gets the user profile based on the userId given"""
+    main_app.app.dependency_overrides[getCurrentUser] = fake_get_current_user
+    client = TestClient(main_app.app)
+    with patch("app.routers.userRoute.getUserById", return_value = sample_users[0]):
+        response = client.get("/users/userProfile/1")
+
+    assert response.status_code == 200
+    data = response.json()
+
+    assert data["user"]["id"] == 1          
+    assert data["user"]["username"] == "alicej"
+    assert data["isOwner"] is True    
+
+    main_app.app.dependency_overrides = {} 

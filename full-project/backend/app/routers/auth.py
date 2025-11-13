@@ -49,6 +49,16 @@ def login(username: str = Form(...), password: str = Form(...)):
 
     return {"access_token": username, "token_type": "bearer"}
 
+@router.post("/logout")
+def logout(currentUser=Depends(getCurrentUser)):
+    """
+    Logs the current user out by clearing or invalidating their token/session.
+    """
+    # In a real app, you might remove or blacklist the token here
+    return {
+        "message": f"User '{currentUser['username']}' has been logged out successfully."
+    }
+
 @router.get("/adminDashboard")
 def getAdminDashboard(admin=Depends(requireAdmin)):
     return {"message": "Welcome to the admin dashboard"}

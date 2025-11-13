@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Form
 from fastapi.security import OAuth2PasswordBearer
 from ..repos.userRepo import loadAll, saveAll
 from ..utilities.security import verifyPassword
+from app.utilities.security import verifyPassword
 
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -39,6 +40,13 @@ def login(username: str = Form(...), password: str = Form(...)):
             headers={"WWW-Authenticate": "Bearer"},
         )
 
+    # Block banned users before verifying password
+    if user.get("isBanned"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Account banned due to repeated violations",
+        )
+
     hashedPw = user.get("pw")
     if not verifyPassword(password, hashedPw):
         raise HTTPException(
@@ -47,7 +55,9 @@ def login(username: str = Form(...), password: str = Form(...)):
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    return {"access_token": username, "token_type": "bearer"}
+    return {"message": "Login successful",
+            "access_token": username,
+            "token_type": "bearer"}
 
 @router.post("/logout")
 def logout(currentUser=Depends(getCurrentUser)):

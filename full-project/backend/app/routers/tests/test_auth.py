@@ -31,15 +31,15 @@ def test_getUsernameFromJsonDB(monkeypatch):
     # Fake loadAll() returns a mock "database" of users
     def fake_loadAll():
         return [
-            {"username": "squig", "pw": "password", "role": "admin", "userId": 1},
+            {"username": "testUser", "pw": "password", "role": "admin", "userId": 1},
             {"username": "other", "pw": "1234", "role": "user", "userId": 2},
         ]
 
     monkeypatch.setattr(auth, "loadAll", fake_loadAll)
 
-    user = getUsernameFromJsonDB("squig")
+    user = getUsernameFromJsonDB("testUser")
     assert user is not None
-    assert user["username"] == "squig"
+    assert user["username"] == "testUser"
 
 
 def test_getInvalidUsernameFromJsonDB(monkeypatch):
@@ -48,7 +48,7 @@ def test_getInvalidUsernameFromJsonDB(monkeypatch):
 
     def fake_loadAll():
         return [
-            {"username": "squig", "pw": "password", "role": "admin", "userId": 1},
+            {"username": "testUser", "pw": "password", "role": "admin", "userId": 1},
         ]
 
     monkeypatch.setattr(auth, "loadAll", fake_loadAll)
@@ -63,19 +63,19 @@ def test_decodeToken(monkeypatch):
 
     def fake_loadAll():
         return [
-            {"username": "squig", "pw": "password", "role": "admin", "userId": 1},
+            {"username": "testUser", "pw": "password", "role": "admin", "userId": 1},
         ]
 
     monkeypatch.setattr(auth, "loadAll", fake_loadAll)
 
     expected = {
-        "username": "squig",
+        "username": "testUser",
         "pw": "password",
         "role": "admin",
         "userId": 1,
     }
 
-    result = decodeToken("squig")
+    result = decodeToken("testUser")
     assert result == expected
 
 def test_login_valid(monkeypatch):
@@ -83,12 +83,10 @@ def test_login_valid(monkeypatch):
     from app.routers import auth as loginRoute
     from app.utilities import security
 
-    # fake db lookup
     def fake_get_user(username):
         # simulate stored *hashed* password
         return {"username": "testuser", "pw": "$2b$12$FakeHashString1234567890"}
 
-    # fake password verification always succeeds
     def fake_verify_password(plain, hashed):
         return True
 
@@ -132,7 +130,6 @@ def test_logout_success(monkeypatch):
 def test_getAdminDashboard(monkeypatch):
     from app.routers import auth
 
-    # Fake the "database" response for the admin user
     def fake_loadAll():
         return [
             {"username": "tester", "pw": "password", "role": "admin", "userId": 1}
@@ -140,7 +137,6 @@ def test_getAdminDashboard(monkeypatch):
 
     monkeypatch.setattr(auth, "loadAll", fake_loadAll)
 
-    # Send request with a token corresponding to "squig"
     response = client.get("/adminDashboard", headers={"Authorization": "Bearer tester"})
     assert response.status_code == 200
     data = response.json()

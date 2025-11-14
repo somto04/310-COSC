@@ -35,12 +35,7 @@ def login(username: str = Form(...), password: str = Form(...)):
         Logs in user and blocks banned users before their password is validated
     """
     user = getUsernameFromJsonDB(username)
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid username or password",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+    validateUser(user)
 
     if user.get("isBanned"):
         raise HTTPException(
@@ -48,13 +43,7 @@ def login(username: str = Form(...), password: str = Form(...)):
             detail="Account banned due to repeated violations",
         )
 
-    hashedPw = user.get("pw")
-    if not verifyPassword(password, hashedPw):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid username or password",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+    validatePassword(password, user)
 
     return {"message": "Login successful",
             "access_token": username,
@@ -73,14 +62,7 @@ def logout(currentUser=Depends(getCurrentUser)):
 def getAdminDashboard(admin=Depends(requireAdmin)):
     return {"message": "Welcome to the admin dashboard"}
 
-def validateUsernameAndPw(username, password, user):
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid username or password",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-
+def validatePassword(password, user):
     hashedPw = user.get("pw")
     if not verifyPassword(password, hashedPw):
         raise HTTPException(
@@ -88,12 +70,6 @@ def validateUsernameAndPw(username, password, user):
             detail="Invalid username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-
-    return {
-        "access_token": username,
-        "token_type": "bearer",
-        "role": user.get("role"),
-    }
 
 def validateUser(user):
     if not user:

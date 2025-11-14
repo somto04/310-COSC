@@ -39,7 +39,6 @@ def filterMovies(
     Raises:
       HTTPException: If no movies were found with the given filters.
       """
-
     results = getMovieByFilter(genre, year, director, star)
     if not results:
         raise HTTPException(status_code=404, detail="No movies found with the given filters")

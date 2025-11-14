@@ -62,6 +62,8 @@ def removeReview(reviewId: int, currentUser: dict = Depends(getCurrentUser)):
     validateReview(review)
     if currentUser["role"] != "admin":
         validateReviewOwner(currentUser, review)
+    else:
+        validateAdmin(currentUser)
     deleteReview(reviewId)
     return None
 

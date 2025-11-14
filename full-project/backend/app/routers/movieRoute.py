@@ -44,12 +44,10 @@ def getMovies():
 def getMovie(movieId: int):
     return getMovieById(movieId)
 
-
-
 # ---------- #
 # ADMIN ONLY #
 # ---------- #
-# admin: dict = Depends(requireAdmin) - require admin function has to return true
+"""admin: dict = Depends(requireAdmin) - require admin function has to return true"""
 
 @router.post("", response_model=Movie, status_code=status.HTTP_201_CREATED)
 def postMovie(payload: MovieCreate, admin: dict = Depends(requireAdmin)):

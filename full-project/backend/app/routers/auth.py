@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Form
 from fastapi.security import OAuth2PasswordBearer
-from ..repos.userRepo import loadAll, saveAll
+from ..repos.userRepo import loadAll
 from app.utilities.security import verifyPassword
 
 router = APIRouter()

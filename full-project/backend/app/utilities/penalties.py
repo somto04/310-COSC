@@ -12,7 +12,15 @@ def findUserByUsername(username: str) -> Optional[dict]:
     return None
 
 def incrementPenaltyForUser(userId: int) -> dict:
-    """Increase penaltyCount for a user and ban if max reached."""
+    """
+    Increase penaltyCount for a user and ban if max reached.
+    
+    Returns:
+        The updated user with penalties applied if needed.
+        
+    Raises: 
+        ValueError: if the user isnt found.
+    """
     users = loadUsers()
     updatedUser = None
     for u in users:

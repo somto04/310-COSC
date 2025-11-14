@@ -82,6 +82,6 @@ def validateUser(user):
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid authentication credentials",
+            detail="This user does not exist",
             headers={"WWW-Authenticate": "Bearer"},
         )

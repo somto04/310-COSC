@@ -109,7 +109,7 @@ def test_login_invalid(monkeypatch):
 
     response = client.post("/token", data={"username": "testuser", "password": "12345"})
     assert response.status_code == 401
-    assert "Invalid username or password" in response.json()["detail"]
+    assert "This user does not exist" in response.json()["detail"]
 
 
 def test_logout_success(monkeypatch):

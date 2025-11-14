@@ -1,0 +1,22 @@
+ ## Meeting 16
+
+# WHEN? 
+11/12/2025 10:00 - 11:00
+
+# WHO ATTENDED?
+Somto
+Zander
+Camilla
+Gamu 
+
+# TOPIC OF DISCUSSION
+M3: How much do we actually include in the pdf
+
+# ACTION ITEMS
+Need the project to be containerised
+Refactoring code to make sure that it matches our M1 and M2
+Make sure fast api is implemented
+Show proof of pull requests with tests in them
+Make sure that each test file has unit and intergration tests at minimum
+Add proof to test proof folder on github
+Do we have the different types of tests?

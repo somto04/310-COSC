@@ -22,6 +22,13 @@ def getCurrentUser(token: str = Depends(oauth2_scheme)):
     return decodeToken(token)
 
 def requireAdmin(user: dict = Depends(getCurrentUser)):
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid username",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
     if user.get("role") != "admin":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -59,7 +66,7 @@ def logout(currentUser=Depends(getCurrentUser)):
     }
 
 @router.get("/adminDashboard")
-def getAdminDashboard(admin=Depends(requireAdmin)):
+def getAdminDashboard(admin = Depends(requireAdmin)):
     return {"message": "Welcome to the admin dashboard"}
 
 def validatePassword(password, user):
@@ -70,7 +77,7 @@ def validatePassword(password, user):
             detail="Invalid username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-
+        
 def validateUser(user):
     if not user:
         raise HTTPException(

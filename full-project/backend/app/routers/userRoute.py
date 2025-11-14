@@ -1,5 +1,6 @@
 from typing import List
-from fastapi import APIRouter, status, HTTPException, Form  
+from fastapi import APIRouter, status, HTTPException, Form, Depends
+from app.routers.auth import getCurrentUser
 from ..schemas.user import User, UserCreate, UserUpdate
 from ..services.userService import listUsers, createUser, deleteUser, updateUser, getUserById, emailExists, generateResetToken, resetPassword
 
@@ -25,6 +26,21 @@ def putUser(userId: str, payload: UserUpdate):
 def removeUser(userId: str):
     deleteUser(userId)
     return None
+
+@router.get("/userProfile/{userId}")
+def getUserProfile(userId: str, currentUser = Depends(getCurrentUser)):
+    """
+    Gets the user profile of either the owner or another reviewer
+
+    Returns:
+        User profile.
+    
+    Raises:
+        HTTPException: If the user doesnt exist.
+    """
+    user = getUserById(userId)
+    isOwner = currentUser.id == userId
+    return {"user": user, "isOwner": isOwner}
 
 @router.post("/forgot-password")
 def forgotPassword(email: str = Form(...)):

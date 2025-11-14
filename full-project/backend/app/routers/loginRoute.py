@@ -1,6 +1,7 @@
 from fastapi import APIRouter, status, Depends, HTTPException, Form
-from .auth import getCurrentUser, getUsernameFromJsonDB  # adjust if auth.py is in same folder
-from ..utilities.security import verifyPassword
+from app.routers.auth import getCurrentUser, getUsernameFromJsonDB
+from app.utilities.security import verifyPassword
+
 
 router = APIRouter()
 
@@ -13,7 +14,7 @@ def getAdminDashboard(currentUser = Depends(getCurrentUser)):
         detail="Admin privileges required"
     )
 
-@router.post("/token")
+@router.post("/login")
 def login(username: str = Form(...), password: str = Form(...)):
     user = getUsernameFromJsonDB(username)
     if not user:

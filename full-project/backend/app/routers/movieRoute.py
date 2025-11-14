@@ -23,7 +23,6 @@ def searchMovies(q: Optional[str] = None, query: Optional[str] = None):
         raise HTTPException(status_code=404, detail="Movie not found")
     return results
 
-# this function filters movies based on genre, year, director, and star
 @router.get("/filter", response_model=List[Movie])
 def filterMovies(
     genre: Optional[str] = None,
@@ -31,6 +30,16 @@ def filterMovies(
     director: Optional[str] = None,
     star: Optional[str] = None,
 ):
+    """
+    Filters movies based on genre, year, director, and star
+
+    Returns:
+      Movies that match the filters.
+
+    Raises:
+      HTTPException: If no movies were found with the given filters.
+      """
+
     results = getMovieByFilter(genre, year, director, star)
     if not results:
         raise HTTPException(status_code=404, detail="No movies found with the given filters")
@@ -54,11 +63,11 @@ def postMovie(payload: MovieCreate, admin: dict = Depends(requireAdmin)):
     return createMovie(payload)
 
 @router.put("/{movieId}", response_model=Movie)
-def putMovie(movieId: int, payload: MovieUpdate):
+def putMovie(movieId: int, payload: MovieUpdate, admin: dict = Depends(requireAdmin)):
     return updateMovie(movieId, payload)
 
 @router.delete("/{movieId}", status_code=status.HTTP_204_NO_CONTENT)
-def removeMovie(movieId: int):
+def removeMovie(movieId: int, admin: dict = Depends(requireAdmin)):
     deleteMovie(movieId)
     return None
 

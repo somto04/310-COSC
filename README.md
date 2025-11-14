@@ -1,5 +1,14 @@
 # 310-COSC
 
+# to delete old coverage report and add a new one run the commands: 
+rm -r htmlcov
+coverage run -m pytest
+coverage html
+
+# to delete the old report folder and create a new one run the commands: 
+rm -r report
+pytest --junitxml=report/report.xml
+
 #api website: http://127.0.0.1:8000/docs#/
 
 To activate our virtual environment go to the fullproject then backend folder then enter: backendvenv\Scripts\Activate

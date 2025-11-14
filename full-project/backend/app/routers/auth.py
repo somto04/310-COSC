@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Form
 from fastapi.security import OAuth2PasswordBearer
 from ..repos.userRepo import loadAll, saveAll
-#from ..utilities.security import verifyPassword
+from app.utilities.security import verifyPassword
 
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -39,40 +39,49 @@ def requireAdmin(user: dict = Depends(getCurrentUser)):
 @router.post("/token")
 def login(username: str = Form(...), password: str = Form(...)):
     """
-    Login endpoint that validates username and password and returns a token.
-    The token is simply the username in this implementation.
+        Logs in user and blocks banned users before their password is validated
     """
     user = getUsernameFromJsonDB(username)
-    result = validateUsernameAndPw(username, password, user)
-    return result
+    validateUser(user)
+
+    if user.get("isBanned"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Account banned due to repeated violations",
+        )
+
+    validatePassword(password, user)
+
+    return {"message": "Login successful",
+            "access_token": username,
+            "token_type": "bearer"}
+
+@router.post("/logout")
+def logout(currentUser=Depends(getCurrentUser)):
+    """
+        Logs the current user out by clearing or invalidating their token/session.
+    """
+    return {
+        "message": f"User '{currentUser['username']}' has been logged out successfully."
+    }
 
 @router.get("/adminDashboard")
 def getAdminDashboard(admin = Depends(requireAdmin)):
     return {"message": "Welcome to the admin dashboard"}
 
-def validateUsernameAndPw(username, password, user):
-    user = getUsernameFromJsonDB(username)
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid username",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    # hashed pw not yet implemented on this branch
-    #hashedPw = user.get("pw")
-    if user.get("pw") != password:
+def validatePassword(password, user):
+    hashedPw = user.get("pw")
+    if not verifyPassword(password, hashedPw):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-
-    return {"access_token": username, "token_type": "bearer", "role": user.get("role"),}
-
+        
 def validateUser(user):
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid authentication credentials",
+            detail="This user does not exist",
             headers={"WWW-Authenticate": "Bearer"},
         )

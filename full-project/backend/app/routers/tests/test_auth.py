@@ -1,32 +1,79 @@
 import pytest
+import json
 import fastapi
 from fastapi.testclient import TestClient
 from app.app import app
+from ...repos import userRepo
 from ...schemas.user import User, UserCreate, UserUpdate
+import app.routers.auth as auth
 from ..auth import(
-     getAdminDashboard, 
-     getCurrentUser, 
      getUsernameFromJsonDB,
      decodeToken,
-     requireAdmin,
-     login
 )
 
 client = TestClient(app)
 
-testUser = User(
-    id = 10000,
-    firstName = "somto",
-    lastName = "azubuike",
-    age = 20,
-    email = "somto@gmail.com",
-    username = "squig",
-    pw = "password",
-    role = "admin")
+# Test data
+testUsers = [
+    {
+        "username": "squig",
+        "pw": "password",
+        "role": "admin",
+        "userId": 1
+    },
+    {
+        "username": "somto",
+        "pw": "password",
+        "role": "user",
+        "userId": 2
+    }
+]
 
-#def test_getUsernameFromJsonDB():
+# unit tests
+def test_getUsernameFromJsonDB(monkeypatch):   
+    monkeypatch.setattr(auth, "loadAll", lambda: testUsers)
+
+    user = getUsernameFromJsonDB("squig")
+    assert user is not None
+    assert user["username"] == "squig"
+
+def test_getInvalidUsernameFromJsonDB(monkeypatch):   
+    monkeypatch.setattr(auth, "loadAll", lambda: testUsers)
+
+    user = getUsernameFromJsonDB("No user")
+    assert user is None
+
+def test_decodeToken(monkeypatch):
+    monkeypatch.setattr(auth, "loadAll", lambda: testUsers)
+
+    expected = {
+        "username": "squig",
+        "pw": "password",
+        "role": "admin",
+        "userId": 1
+    }
+    assert decodeToken("squig") == expected
+
+# intergration tests
+def test_validUserLogin(monkeypatch):
+    monkeypatch.setattr(auth, "loadAll", lambda: testUsers)
+
+    response = client.post("/token", data={"username": "squig", "password": "password"})
+    assert response.status_code == 200
+    data = response.json()
+    assert data["access_token"] == "squig"
+    assert data["role"] == "admin"
+
+def test_invalidUserLoginWrongPw(monkeypatch):
+    monkeypatch.setattr(auth, "loadAll", lambda: testUsers)
+
+    response = client.post("/token", data={"username": "squig", "password": "pw"})
+    assert response.status_code == 401
+
+def test_getAdminDashboard(monkeypatch):
+    monkeypatch.setattr(auth, "loadAll", lambda: testUsers)
     
-
-def test_getAdminDashboard():
-    ans = getAdminDashboard()
-    assert ans == {"message": "Welcome to the admin dashboard"}
+    response = client.get("/adminDashboard", headers={"Authorization": "Bearer squig"})
+    assert response.status_code == 200
+    data = response.json()
+    assert data["message"] == "Welcome to the admin dashboard"

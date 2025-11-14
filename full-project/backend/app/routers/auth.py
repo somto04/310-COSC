@@ -31,6 +31,9 @@ def requireAdmin(user: dict = Depends(getCurrentUser)):
 
 @router.post("/token")
 def login(username: str = Form(...), password: str = Form(...)):
+    """
+        Logs in user and blocks banned users before their password is validated
+    """
     user = getUsernameFromJsonDB(username)
     if not user:
         raise HTTPException(
@@ -39,7 +42,6 @@ def login(username: str = Form(...), password: str = Form(...)):
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    # Block banned users before verifying password
     if user.get("isBanned"):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -61,9 +63,8 @@ def login(username: str = Form(...), password: str = Form(...)):
 @router.post("/logout")
 def logout(currentUser=Depends(getCurrentUser)):
     """
-    Logs the current user out by clearing or invalidating their token/session.
+        Logs the current user out by clearing or invalidating their token/session.
     """
-    # In a real app, you might remove or blacklist the token here
     return {
         "message": f"User '{currentUser['username']}' has been logged out successfully."
     }

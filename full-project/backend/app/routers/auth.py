@@ -1,7 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Form
 from fastapi.security import OAuth2PasswordBearer
-from ..repos.userRepo import loadAll, saveAll
+from ..repos.userRepo import loadAll
 from app.utilities.security import verifyPassword
+from ..services.userService import emailExists, generateResetToken, resetPassword
+
 
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -22,12 +24,7 @@ def getCurrentUser(token: str = Depends(oauth2_scheme)):
     return decodeToken(token)
 
 def requireAdmin(user: dict = Depends(getCurrentUser)):
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid username",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+    validateUser(user)
     
     if user.get("role") != "admin":
         raise HTTPException(
@@ -68,6 +65,41 @@ def logout(currentUser=Depends(getCurrentUser)):
 @router.get("/adminDashboard")
 def getAdminDashboard(admin = Depends(requireAdmin)):
     return {"message": "Welcome to the admin dashboard"}
+
+@router.post("/forgot-password")
+def forgotPassword(email: str = Form(...)):
+    """
+    Simulate sending a password reset link to the user's email.
+
+    Returns:
+        Message saying link was sent.
+
+    Raises: 
+        HTTPException: invalid email.
+    """
+    if not emailExists(email):
+        raise HTTPException(status_code=404, detail="Email not found")
+
+    token = generateResetToken(email)
+    return {"message": "Password reset link sent", "token": token}
+
+
+@router.post("/reset-password")
+def resettingPassword(token: str = Form(...), new_password: str = Form(...)):
+    """
+    Reset a user's password using the provided token.
+
+    Returns:
+        Message saying reset was successful.
+
+    Raises: 
+        HTTPException: invalid token.
+    """
+    success = resetPassword(token, new_password)
+    if not success:
+        raise HTTPException(status_code=400, detail="Invalid or expired token")
+
+    return {"message": "Password reset successful"}
 
 def validatePassword(password, user):
     hashedPw = user.get("pw")

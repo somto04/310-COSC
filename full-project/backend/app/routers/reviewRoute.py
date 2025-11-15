@@ -2,7 +2,7 @@ from typing import List
 from fastapi import APIRouter, status, Depends, HTTPException
 from ..schemas.review import Review, ReviewCreate, ReviewUpdate
 from ..services.reviewService import listReviews, createReview, deleteReview, updateReview, getReviewById, searchReviews
-from .auth import getCurrentUser
+from .auth import getCurrentUser, requireAdmin
 
 router = APIRouter(prefix="/reviews", tags=["reviews"])
 
@@ -62,16 +62,14 @@ def removeReview(reviewId: int, currentUser: dict = Depends(getCurrentUser)):
     validateReview(review)
     if currentUser["role"] != "admin":
         validateReviewOwner(currentUser, review)
+    else:
+        requireAdmin(currentUser)
     deleteReview(reviewId)
     return None
 
 def validateReview(review):
     if not review:
         raise HTTPException(status_code=404, detail="Review not found")
-    
-def validateAdmin(currentUser):
-    if currentUser["role"] != "admin":
-        raise HTTPException(status_code=403, detail="not authorised")
     
 def validateReviewOwner(currentUser, review):
     if review["username"] != currentUser["username"]:

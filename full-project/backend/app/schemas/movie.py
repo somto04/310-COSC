@@ -29,12 +29,11 @@ class Movie(BaseModel):
     @model_validator(mode = "before")
     @classmethod
     def extract_year(cls, values):
+        pub_date = values.get("datePublished")
+
         # extract year from datePublished if yearReleased not provided
-        if "yearReleased" not in values and "datePublished" in values and values["datePublished"]:
-            try:
-                values["yearReleased"] = int(str(values["datePublished"])[:4])
-            except (ValueError, TypeError):
-                pass
+        if "yearReleased" not in values and isinstance(pub_date, date):
+            values["yearReleased"] = pub_date.year
 
         return values
 

@@ -10,10 +10,13 @@ class Movie(BaseModel):
         ge = 1.0, 
         le = 10.0,
         max_digits = 3,
-        decimal_places = 1)
-    movieGenres: List[str]
+        decimal_places = 1,
+        validation_alias = AliasChoices("movieIMDb", "movieIMDbRating"))
+    movieGenres: List[str] = Field(validation_alias = AliasChoices("movieGenre", "movieGenres"))
     directors: List[str] = Field(default_factory = list)
-    mainStars: List[str] = Field(default_factory = list)
+    mainStars: List[str] = Field(
+        default_factory = list,
+        validation_alias = AliasChoices("mainstars", "mainStars"))
     description: Optional[str] = None
     datePublished: Optional[date] = None
     duration: int = Field(

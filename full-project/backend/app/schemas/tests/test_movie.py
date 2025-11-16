@@ -59,6 +59,7 @@ def test_extract_year_from_date_pipeline():
     movie = Movie(**payload_dict)
     assert movie.yearReleased == 2021
 
+
 def test_dump():
     movie = Movie(id=1, title="Ponyo", movieGenres=["Animation"], duration=103)
     dumped = movie.model_dump()
@@ -66,9 +67,11 @@ def test_dump():
     assert dumped["title"] == "Ponyo"
     assert dumped["movieGenres"] == ["Animation"]
 
+
 def test_update_movie_imdb_rating():
-    update_data = MovieUpdate(movieIMDbRating=8.5) # type: ignore
+    update_data = MovieUpdate(movieIMDbRating=8.5)  # type: ignore
     assert update_data.movieIMDbRating == 8.5
+
 
 def test_update_existing_movie():
     movie = Movie(
@@ -92,6 +95,7 @@ def test_update_existing_movie():
     assert updated_movie.datePublished is None  # default value
     assert updated_movie.yearReleased is None  # default value
 
+
 def test_invalid_imdb_rating():
     with pytest.raises(ValidationError):
         Movie(
@@ -99,5 +103,5 @@ def test_invalid_imdb_rating():
             title="Bad Movie",
             movieGenres=["Drama"],
             duration=90,
-            movieIMDbRating=15.0  # Invalid rating # type: ignore
+            movieIMDbRating=15.0,  # Invalid rating # type: ignore
         )

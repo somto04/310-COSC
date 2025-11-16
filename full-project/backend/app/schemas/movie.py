@@ -3,6 +3,13 @@ from typing import List, Optional
 from decimal import Decimal
 from datetime import date
 
+EARLIEST_FILM_YEAR = 1888  # first known motion picture release year
+LATEST_REASONABLE_YEAR = 2100
+IMDB_MIN = 1.0  # IMDb never goes below 1.0
+IMDB_MAX = 10.0  # IMDb max rating
+IMDB_MAX_DIGITS = 3  # e.g., "10.0" has 3 digits
+IMDB_DECIMALS = 1  # One decimal place like IMDb uses
+
 
 class Movie(BaseModel):
     """
@@ -15,10 +22,10 @@ class Movie(BaseModel):
     title: str = Field(validation_alias=AliasChoices("title", "movieName"))
     movieIMDbRating: Optional[Decimal] = Field(
         default=None,
-        ge=1.0,
-        le=10.0,
-        max_digits=3,
-        decimal_places=1,
+        ge=IMDB_MIN,
+        le=IMDB_MAX,
+        max_digits=IMDB_MAX_DIGITS,
+        decimal_places=IMDB_DECIMALS,
         validation_alias=AliasChoices("movieIMDb", "movieIMDbRating"),
     )
     movieGenres: List[str] = Field(
@@ -35,8 +42,8 @@ class Movie(BaseModel):
     )  # minutes
     yearReleased: Optional[int] = Field(
         default=None,
-        ge=1888,  # The year the first film was made
-        le=2100,
+        ge=EARLIEST_FILM_YEAR,
+        le=LATEST_REASONABLE_YEAR,
         validation_alias=AliasChoices("yearReleased", "year"),
     )
 
@@ -75,8 +82,8 @@ class MovieCreate(BaseModel):
     )  # minutes
     yearReleased: Optional[int] = Field(
         default=None,
-        ge=1888,  # The year the first film was made
-        le=2100,
+        ge=EARLIEST_FILM_YEAR,
+        le=LATEST_REASONABLE_YEAR,
         validation_alias=AliasChoices("yearReleased", "year"),
     )
 
@@ -93,10 +100,10 @@ class MovieUpdate(BaseModel):
     )
     movieIMDbRating: Optional[Decimal] = Field(
         default=None,
-        ge=1.0,
-        le=10.0,
-        max_digits=3,
-        decimal_places=1,
+        ge=IMDB_MIN,
+        le=IMDB_MAX,
+        max_digits=IMDB_MAX_DIGITS,
+        decimal_places=IMDB_DECIMALS,
         validation_alias=AliasChoices("movieIMDb", "movieIMDbRating"),
     )
     movieGenres: Optional[List[str]] = Field(
@@ -113,7 +120,7 @@ class MovieUpdate(BaseModel):
     )  # minutes
     yearReleased: Optional[int] = Field(
         default=None,
-        ge=1888,  # The year the first film was made
-        le=2100,
+        ge=EARLIEST_FILM_YEAR,
+        le=LATEST_REASONABLE_YEAR,
         validation_alias=AliasChoices("yearReleased", "year"),
     )

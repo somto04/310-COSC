@@ -48,7 +48,7 @@ class MovieCreate(BaseModel):
         default_factory = list,
         validation_alias = AliasChoices("mainstars", "mainStars"))
     description: Optional[str] = None
-    datePublished: Optional[str] = None  # ISO date string
+    datePublished: Optional[date] = None  # ISO date string
     duration: int = Field(
         gt = 0,
         validation_alias = AliasChoices("duration", "length"))  # minutes

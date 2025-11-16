@@ -33,9 +33,10 @@ class Movie(BaseModel):
     @classmethod
     def extract_year(cls, values):
         pub_date = values.get("datePublished")
+        year = values.get("yearReleased")
 
         # extract year from datePublished if yearReleased not provided
-        if "yearReleased" not in values and isinstance(pub_date, date):
+        if year is None and isinstance(pub_date, date):
             values["yearReleased"] = pub_date.year
 
         return values

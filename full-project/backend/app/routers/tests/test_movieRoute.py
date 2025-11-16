@@ -6,6 +6,7 @@ This file contains:
 2. Integration tests - Test the API endpoints with FastAPI TestClient
 """
 
+from decimal import Decimal
 import pytest #for test framework
 from fastapi.testclient import TestClient #to simulate http requests
 from fastapi import FastAPI #to create a test app
@@ -185,7 +186,7 @@ class TestMovieServiceUnit:
         
         # Assert
         assert result.title == "Inception (Director's Cut)"
-        assert result.movieIMDbRating == 9.0
+        assert result.movieIMDbRating == Decimal("9.0")
         assert result.duration == 148  # Unchanged field
         mock_save.assert_called_once()
     
@@ -269,7 +270,7 @@ class TestMovieRouterIntegration:
         data = response.json()
         assert data["id"] == 1
         assert data["title"] == "Inception"
-        assert data["movieIMDbRating"] == 8.8
+        assert Decimal(data["movieIMDbRating"]) == Decimal("8.8")
         mock_get.assert_called_once_with(1)
     
     
@@ -364,7 +365,7 @@ class TestMovieEdgeCases:
         result = updateMovie(1, update_data)
         
         # Assert
-        assert result.movieIMDbRating == 9.0
+        assert result.movieIMDbRating == Decimal("9.0")
         assert result.title == "Inception"  # Unchanged
         assert result.duration == 148  # Unchanged
 

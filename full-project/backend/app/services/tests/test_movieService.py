@@ -2,6 +2,7 @@ import pytest
 from fastapi import HTTPException
 from app.services import movieService
 from app.schemas.movie import MovieCreate, MovieUpdate
+from datetime import date
 
 # Mock data for testing movie service
 sample_movies = [
@@ -103,7 +104,7 @@ def test_create_movie():
 
     # assertions
     assert new_movie.title == "Testing Movie"
-    assert new_movie.datePublished == "2024-01-01"
+    assert new_movie.datePublished == date(2024, 1, 1)
     assert len(saved_movies) == 3
     assert any(m["title"] == "Testing Movie" for m in saved_movies)
 

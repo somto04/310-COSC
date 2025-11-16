@@ -1,39 +1,34 @@
-
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, model_validator, Field, AliasChoices
 from typing import List, Optional
+from decimal import Decimal
+from datetime import date
 
 class Movie(BaseModel):
-    id: int
-    title: str
-    movieIMDbRating: float
+    id: int = Field(validation_alias = AliasChoices("id", "movieId"))
+    title: str = Field(validation_alias = AliasChoices("title", "movieName"))
+    movieIMDbRating: Decimal = Field(
+        ge = 1.0, 
+        le = 10.0,
+        max_digits = 3,
+        decimal_places = 1)
     movieGenres: List[str]
-    directors: List[str] = Field(default_factory=list)
-    mainStars: List[str] = Field(default_factory=list)
+    directors: List[str] = Field(default_factory = list)
+    mainStars: List[str] = Field(default_factory = list)
     description: Optional[str] = None
-    datePublished: Optional[str] = None
-    duration: int  # minutes
-    yearReleased: Optional[int] = None
+    datePublished: Optional[date] = None
+    duration: int = Field(
+        gt = 0,
+        validation_alias = AliasChoices("duration", "length"))  # minutes
+    yearReleased: Optional[int] = Field(
+        default = None,
+        ge = 1888,  # The year the first film was made
+        le = 2100,
+        validation_alias = AliasChoices("yearReleased", "year")
+    )
 
-    @model_validator(mode="before")
-    def accept_legacy_keys(cls, values):
-        # id aliases
-        if "movieId" in values and "id" not in values:
-            values["id"] = int(values.pop("movieId"))
-        if "id" in values:
-            values["id"] = int(values["id"])
-
-        # title alias
-        if "movieName" in values and "title" not in values:
-            values["title"] = values.pop("movieName")
-
-        # alias for length
-        if "length" in values and "duration" not in values:
-            values["duration"] = values.pop("length")
-
-        # handle year alias
-        if "year" in values and "yearReleased" not in values:
-            values["yearReleased"] = int(values.pop("year"))
-
+    @model_validator(mode = "before")
+    @classmethod
+    def extract_year(cls, values):
         # extract year from datePublished if yearReleased not provided
         if "yearReleased" not in values and "datePublished" in values and values["datePublished"]:
             try:
@@ -44,33 +39,23 @@ class Movie(BaseModel):
         return values
 
 class MovieCreate(BaseModel):
-    
-    title: str
+    title: str = Field(validation_alias = AliasChoices("title", "movieName"))
     movieIMDbRating: float
     movieGenres: List[str]
-    directors: List[str] = Field(default_factory=list)
-    mainStars: List[str] = Field(default_factory=list)
+    directors: List[str] = Field(default_factory = list)
+    mainStars: List[str] = Field(default_factory = list)
     description: Optional[str] = None
     datePublished: Optional[str] = None  # ISO date string
-    duration: int  # minutes
+    duration: int = Field(validation_alias = AliasChoices("duration", "length")) # minutes
     yearReleased: Optional[int] = None
 
-    @model_validator(mode="before")
-    def accept_legacy_create_keys(cls, values):
-        if "movieName" in values and "title" not in values:
-            values["title"] = values.pop("movieName")
-        if "length" in values and "duration" not in values:
-            values["duration"] = values.pop("length")
-        return values
-
 class MovieUpdate(BaseModel):
-    
-    title: Optional [str] = None
+    title: Optional[str] = Field(default = None, validation_alias = AliasChoices("title", "movieName"))
     movieIMDbRating: Optional[float] = None
     movieGenres: Optional[List[str]] = None
-    directors: Optional[List[str]] = Field(default_factory=list)
-    mainStars: Optional[List[str]] = Field(default_factory=list)
+    directors: Optional[List[str]] = Field(default_factory = list)
+    mainStars: Optional[List[str]] = Field(default_factory = list)
     description: Optional[str] = None
     datePublished: Optional[str] = None  # ISO date string
-    duration: Optional[int] = None # minutes
+    duration: Optional[int] = Field(default = None, validation_alias = AliasChoices("duration", "length"))  # minutes
     yearReleased: Optional[int] = None

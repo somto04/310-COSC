@@ -5,6 +5,12 @@ from datetime import date
 
 
 class Movie(BaseModel):
+    """
+    Represents a movie in the database with various attributes, such as title, genres, release date, and ratings.
+
+    Handles legacy field names using validation aliases and extracts the release year from the publication date if not explicitly provided.
+    """
+
     id: int = Field(validation_alias=AliasChoices("id", "movieId"))
     title: str = Field(validation_alias=AliasChoices("title", "movieName"))
     movieIMDbRating: Optional[Decimal] = Field(
@@ -48,6 +54,12 @@ class Movie(BaseModel):
 
 
 class MovieCreate(BaseModel):
+    """
+    Request schema for creating a new movie entry.
+
+    Only description, datePublished, and yearReleased are optional.
+    """
+
     title: str = Field(validation_alias=AliasChoices("title", "movieName"))
     movieGenres: List[str] = Field(
         validation_alias=AliasChoices("movieGenre", "movieGenres")
@@ -70,6 +82,12 @@ class MovieCreate(BaseModel):
 
 
 class MovieUpdate(BaseModel):
+    """
+    Request schema for updating an existing movie entry.
+
+    All fields are optional to allow partial updates.
+    """
+
     title: Optional[str] = Field(
         default=None, validation_alias=AliasChoices("title", "movieName")
     )

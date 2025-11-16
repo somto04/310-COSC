@@ -23,8 +23,7 @@ class Movie(BaseModel):
         default = None,
         ge = 1888,  # The year the first film was made
         le = 2100,
-        validation_alias = AliasChoices("yearReleased", "year")
-    )
+        validation_alias = AliasChoices("yearReleased", "year"))
 
     @model_validator(mode = "before")
     @classmethod
@@ -39,14 +38,19 @@ class Movie(BaseModel):
 
 class MovieCreate(BaseModel):
     title: str = Field(validation_alias = AliasChoices("title", "movieName"))
-    movieIMDbRating: float
     movieGenres: List[str]
     directors: List[str] = Field(default_factory = list)
     mainStars: List[str] = Field(default_factory = list)
     description: Optional[str] = None
-    datePublished: Optional[str] = None  # ISO date string
-    duration: int = Field(validation_alias = AliasChoices("duration", "length")) # minutes
-    yearReleased: Optional[int] = None
+    datePublished: Optional[date] = None  # ISO date string
+    duration: int = Field(
+        gt = 0,
+        validation_alias = AliasChoices("duration", "length"))  # minutes
+    yearReleased: Optional[int] = Field(
+        default = None,
+        ge = 1888,  # The year the first film was made
+        le = 2100,
+        validation_alias = AliasChoices("yearReleased", "year"))
 
 class MovieUpdate(BaseModel):
     title: Optional[str] = Field(default = None, validation_alias = AliasChoices("title", "movieName"))

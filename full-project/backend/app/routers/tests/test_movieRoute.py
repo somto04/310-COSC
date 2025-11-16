@@ -6,6 +6,7 @@ This file contains:
 2. Integration tests - Test the API endpoints with FastAPI TestClient
 """
 
+from decimal import Decimal
 import pytest #for test framework
 from fastapi.testclient import TestClient #to simulate http requests
 from fastapi import FastAPI #to create a test app
@@ -269,7 +270,7 @@ class TestMovieRouterIntegration:
         data = response.json()
         assert data["id"] == 1
         assert data["title"] == "Inception"
-        assert data["movieIMDbRating"] == 8.8
+        assert Decimal(data["movieIMDbRating"]) == Decimal(8.8)
         mock_get.assert_called_once_with(1)
     
     

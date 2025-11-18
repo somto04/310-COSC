@@ -2,7 +2,7 @@ from typing import List
 from fastapi import APIRouter, status, Depends, HTTPException
 from ..schemas.review import Review, ReviewCreate, ReviewUpdate
 from ..services.reviewService import listReviews, createReview, deleteReview, updateReview, getReviewById, searchReviews
-from .auth import getCurrentUser, requireAdmin
+from .auth import getCurrentUser, requireAdmin, getUsernameFromJsonDB, validateUser
 
 router = APIRouter(prefix="/reviews", tags=["reviews"])
 
@@ -23,6 +23,12 @@ def postReview(payload: ReviewCreate, currentUser: dict = Depends(getCurrentUser
     Returns:
       The new review.
     """
+    if currentUser.get("isBanned"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Account banned due to repeated violations",
+        )
+    
     payload.userId = currentUser["userId"]  
     return createReview(payload)
 

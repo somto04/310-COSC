@@ -5,7 +5,6 @@ from app.utilities.security import verifyPassword
 from ..schemas.user import CurrentUser
 from ..services.userService import emailExists, generateResetToken, resetPassword
 
-
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
@@ -17,15 +16,19 @@ def getUsernameFromJsonDB(username: str):
             return user
     return None
 
-def getCurrentUser(token: str = Depends(oauth2_scheme)):
+def getCurrentUser(token: str = Depends(oauth2_scheme)) -> CurrentUser:
     user = getUsernameFromJsonDB(token)
     validateUser(user)
-    return user
+    return CurrentUser(
+        id=user["id"],
+        username=user["username"],
+        role=user["role"]
+    )
 
-def requireAdmin(user: dict = Depends(getCurrentUser)):
+def requireAdmin(user: CurrentUser = Depends(getCurrentUser)):
     validateUser(user)
     
-    if user.get("role") != "admin":
+    if user.role != "admin":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Admin privileges required"

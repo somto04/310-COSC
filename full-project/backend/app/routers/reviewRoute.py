@@ -8,8 +8,8 @@ from .auth import getCurrentUser, requireAdmin
 router = APIRouter(prefix="/reviews", tags=["reviews"])
 
 @router.get("/search", response_model=List[Review])
-def searchReview(q: str = "", limit: int = 50, offset: int = 0):
-    results = searchReviews(q)
+def searchReview(query: str = "", limit: int = 50, offset: int = 0):
+    results = searchReviews(query)
     return results[offset : offset + limit]
 
 @router.get("", response_model=List[Review])

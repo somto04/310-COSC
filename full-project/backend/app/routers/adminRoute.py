@@ -12,7 +12,7 @@ def markReviewInappropriate(reviewId: int, currentUser: dict = Depends(getCurren
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin only")
 
     reviews = loadReviews()
-    review = next((r for r in reviews if int(r.get("id")) == int(reviewId)), None)
+    review = next((review for review in reviews if int(review.get("id")) == int(reviewId)), None)
     if not review:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Review not found")
 
@@ -28,3 +28,24 @@ def markReviewInappropriate(reviewId: int, currentUser: dict = Depends(getCurren
         "penaltyCount": updatedUser.get("penaltyCount", 0),
         "isBanned": updatedUser.get("isBanned", False),
     }
+
+#only logged in users can flag a review
+def getFlaggedReviews():
+    """ Internal helper to get all flagged reviews
+    
+         reviews a list of all flagged reviews.  """
+    reviews = loadReviews()
+    return [flagged for flagged in reviews if flagged.get("flagged") is True]
+  
+
+@router.get("/reports/reviews")
+def getReportNotifications(currentUser: dict = Depends(getCurrentUser)):
+    """
+    Admin endpoint - return flagged review reports.
+    Requires admin role.
+    """
+    if not currentUser or currentUser.get("role") != "admin":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin only")
+
+    flagged = getFlaggedReviews()
+    return {"count": len(flagged), "flagged": flagged}

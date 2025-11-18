@@ -56,7 +56,14 @@ class User(BaseModel):
     username: str
     firstName: str = ""
     lastName: str = ""
+    username: str
+    firstName: str = ""
+    lastName: str = ""
     age: Optional[int] = None
+    email: EmailStr = ""
+    pw: str
+    role: Role
+    penalties: int = Field(0, alias="penaltyCount")
     email: Email = ""
     pw: str
     role: Role

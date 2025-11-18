@@ -2,12 +2,14 @@ from fastapi import APIRouter, Depends, HTTPException, status, Form
 from fastapi.security import OAuth2PasswordBearer
 from ..repos.userRepo import loadAll
 from app.utilities.security import verifyPassword
+from ..schemas.user import CurrentUser
 from ..services.userService import emailExists, generateResetToken, resetPassword
 
 
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
+## REMEMBER TO CHANGE TO ACTUAL TOKEN
 def getUsernameFromJsonDB(username: str):
     users = loadAll()
     for user in users:
@@ -15,13 +17,10 @@ def getUsernameFromJsonDB(username: str):
             return user
     return None
 
-def decodeToken(token: str):
+def getCurrentUser(token: str = Depends(oauth2_scheme)):
     user = getUsernameFromJsonDB(token)
     validateUser(user)
     return user
-
-def getCurrentUser(token: str = Depends(oauth2_scheme)):
-    return decodeToken(token)
 
 def requireAdmin(user: dict = Depends(getCurrentUser)):
     validateUser(user)

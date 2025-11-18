@@ -6,10 +6,7 @@ from app.app import app
 from ...repos import userRepo
 from ...schemas.user import User, UserCreate, UserUpdate
 import app.routers.auth as auth
-from ..auth import(
-     getUsernameFromJsonDB,
-     decodeToken,
-)
+from ..auth import getUsernameFromJsonDB
 
 client = TestClient(app)
 
@@ -55,28 +52,6 @@ def test_getInvalidUsernameFromJsonDB(monkeypatch):
 
     user = getUsernameFromJsonDB("nouser")
     assert user is None
-
-
-def test_decodeToken(monkeypatch):
-    """Should decode a token to the corresponding user dict"""
-    from app.routers import auth
-
-    def fake_loadAll():
-        return [
-            {"username": "testUser", "pw": "password", "role": "admin", "userId": 1},
-        ]
-
-    monkeypatch.setattr(auth, "loadAll", fake_loadAll)
-
-    expected = {
-        "username": "testUser",
-        "pw": "password",
-        "role": "admin",
-        "userId": 1,
-    }
-
-    result = decodeToken("testUser")
-    assert result == expected
 
 def test_login_valid(monkeypatch):
     """Should return success message when username and password are valid"""

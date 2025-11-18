@@ -2,6 +2,7 @@ from typing import List
 from fastapi import APIRouter, status, Depends, HTTPException
 from ..schemas.review import Review, ReviewCreate, ReviewUpdate
 from ..schemas.user import CurrentUser
+from ..schemas.review import Review
 from ..services.reviewService import listReviews, createReview, deleteReview, updateReview, getReviewById, searchReviews
 from .auth import getCurrentUser, requireAdmin
 
@@ -95,6 +96,6 @@ def validateReview(review):
         raise HTTPException(status_code=404, detail="Review not found")
     
 def validateReviewOwner(currentUser, review):
-    if review["username"] != currentUser["username"]:
+    if review.userId != currentUser.id:
         raise HTTPException(status_code=403, detail="not authorised")
     

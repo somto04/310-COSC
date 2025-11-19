@@ -158,10 +158,17 @@ def deleteUser(userId: int):
     raise HTTPException(status_code=404, detail=f"User '{userId}' not found")
 
 
-# Password Reset
-def emailExists(email: str) -> bool:
-    """Check if email exists"""
+def get_user_by_email(email: str) -> User | None:
+    """
+    Check if email exists
+    
+    Args:
+        email (str): email to check
+    """
     users = loadUsers()
+
+    
+
     return any(u["email"].lower() == email.lower() for u in users)
 
 

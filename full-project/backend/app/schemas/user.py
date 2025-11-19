@@ -29,7 +29,6 @@ Username = Annotated[
         pattern=r"^[A-Za-z0-9_.-]+$",
     ),
 ]
-
 Password = Annotated[
     str,
     StringConstraints(

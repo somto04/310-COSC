@@ -164,7 +164,6 @@ class CurrentUser(BaseModel):
 
     Only exposes non-sensitive information.
     """
-
     id: int
     username: str
     role: Role

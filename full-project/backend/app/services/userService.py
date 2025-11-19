@@ -9,21 +9,27 @@ from ..utilities.security import hashPassword, verifyPassword
 reset_tokens = {}  # token -> {"email": str, "expires": int}
 
 
-def is_username_taken(users: List[User], username: str) -> bool:
+def is_username_taken(
+    users: List[User], username: str, *, exclude_user_id: int | None = None
+) -> bool:
     """
     Check if a username already exists in the user list, case-insensitive.
     Assumes `username` is already Pydantic-validated and stripped.
+    Optionally excludes a user ID from the check (useful when updating a user).
 
     Args:
         users (List[User]): List of existing users.
         username (str): Username to check.
-
+        exclude_user_id (int | None): User ID to exclude from the check (default: None).
     Example:
         "Ichigo76" and "ichigo76" are considered the same.
     """
     normalized_new_username = username.lower()
 
     for user in users:
+        if exclude_user_id is not None and user.id == exclude_user_id:
+            continue
+
         normalized_existing_username = user.username.lower()
         if normalized_existing_username == normalized_new_username:
             return True

@@ -90,7 +90,7 @@ def getReviewById(reviewId: int) -> Review:
     reviews = loadAll()
 
     for review in reviews:
-        if review.get("id") == reviewId:
+        if review.id == reviewId:
             return Review(**review)
     raise HTTPException(status_code=404, detail=f"Review '{reviewId}' not found")
 
@@ -134,7 +134,7 @@ def deleteReview(reviewId: int) -> None:
         HTTPException: review not found
     """  
     reviews = loadAll()
-    newReviews = [review for review in reviews if review.get("id") != reviewId]
+    newReviews = [review for review in reviews if review.id != reviewId]
 
     if len(newReviews) == len(reviews):
         raise HTTPException(status_code=404, detail=f"Review '{reviewId}' not found")

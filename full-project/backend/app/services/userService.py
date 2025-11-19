@@ -62,8 +62,8 @@ def createUser(payload: UserCreate) -> User:
     new_user = User(
         id=get_next_user_id(),
         username=payload.username,
-        firstName=payload.firstName.strip(),
-        lastName=payload.lastName.strip(),
+        firstName=payload.firstName,
+        lastName=payload.lastName,
         age=payload.age,
         email=payload.email,
         pw=hashed_pw,
@@ -96,7 +96,12 @@ def getUserById(userId: int) -> User:
 
 def updateUser(userId: int, payload: UserUpdate) -> User:
     """
-    Update user info while keeping ID type as int
+    Update user info by ID
+
+    Hash password if being updated. Also ensures username uniqueness.
+    Args:
+        userId (int): ID of the user to update
+        payload (UserUpdate): update data is already validated
 
     Returns:
         Updated user
@@ -105,23 +110,15 @@ def updateUser(userId: int, payload: UserUpdate) -> User:
         HTTPException: user not found
     """
     users = loadUsers()
-    for idx, u in enumerate(users):
-        if int(u.get("id")) == int(userId):
-            current_user = User(**u)
-            update_data = payload.model_dump(exclude_unset=True)
+    update_data = payload.model_dump(exclude_unset=True)
 
-            updated_dict = current_user.model_dump()
-            updated_dict.update(update_data)
+    if "pw" in update_data and update_data["pw"] is not None:
+        update_data["pw"] = hashPassword(update_data["pw"])
 
-            for field in ["firstName", "lastName", "email", "username", "pw"]:
-                if field in update_data and updated_dict.get(field):
-                    updated_dict[field] = updated_dict[field].strip()
-
-            if "pw" in update_data and update_data["pw"]:
-                updated_dict["pw"] = hashPassword(update_data["pw"])
-
-            updated_user = User(**updated_dict)
-            users[idx] = updated_user.model_dump()
+    for index, current_user in enumerate(users):
+        if current_user.id == userId:
+            updated_user = current_user.model_copy(update=update_data)
+            users[index] = updated_user
             saveAll(users)
             return updated_user
 

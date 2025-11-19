@@ -3,7 +3,7 @@ from auth import requireAdmin, getCurrentUser
 from ..repos.reviewRepo import loadAll as loadReviews, saveAll as saveReviews
 from ..utilities.penalties import incrementPenaltyForUser
 from .reviewRoute import validateReview, getFlaggedReviews
-from ..schemas.user import User 
+from ..schemas.user import currentUser 
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 

@@ -8,13 +8,17 @@ MAX_EMAIL_LENGTH = 254
 MIN_AGE = 16
 MAX_AGE = 120
 PASSWORD_RE = re.compile(r"^(?=.*[A-Z])(?=.*[a-z])(?=.*\d).+$")
+MIN_USERNAME_LENGTH = 3
+MAX_USERNAME_LENGTH = 30
+MIN_PASSWORD_LENGTH = 8
+MAX_PASSWORD_LENGTH = 128
 
 Username = Annotated[
     str,
     StringConstraints(
         strip_whitespace=True,
-        min_length=3,
-        max_length=30,
+        min_length=MIN_USERNAME_LENGTH,
+        max_length=MAX_USERNAME_LENGTH,
         pattern=r"^[A-Za-z0-9_.-]+$"
     ),
 ]
@@ -22,8 +26,8 @@ Username = Annotated[
 Password = Annotated[
     str,
     StringConstraints(
-        min_length=8,
-        max_length=128,
+        min_length=MIN_PASSWORD_LENGTH,
+        max_length=MAX_PASSWORD_LENGTH,
     ),
 ]
 
@@ -59,7 +63,7 @@ class UserCreate(BaseModel):
         ..., min_length=1, max_length=MAX_NAME_LENGTH, description="User's last name"
     )
     age: int = Field(
-        ..., ge=MIN_AGE, le=MAX_AGE, description="User must be 16 years or older"
+        ..., ge=MIN_AGE, le=MAX_AGE, description=f"User must be {MIN_AGE} years or older"
     )
     email: EmailStr = Field(
         ..., max_length=MAX_EMAIL_LENGTH, description="User's email address"
@@ -70,8 +74,8 @@ class UserCreate(BaseModel):
     @field_validator("age")
     @classmethod
     def check_age(cls, user_age):
-        if user_age < 16:
-            raise ValueError("User must be 16 years or older to create an account")
+        if user_age < MIN_AGE:
+            raise ValueError(f"User must be {MIN_AGE} years or older to create an account")
         return user_age
     
     @field_validator("pw")
@@ -99,8 +103,8 @@ class UserUpdate(BaseModel):
     @field_validator("age")
     @classmethod
     def check_age(cls, user_age):
-        if user_age is not None and user_age < 16:
-            raise ValueError("User must be 16 years or older to update an account")
+        if user_age is not None and user_age < MIN_AGE:
+            raise ValueError(f"User must be {MIN_AGE} years or older to update an account")
         return user_age
     
     @field_validator("pw")

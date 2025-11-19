@@ -43,7 +43,7 @@ def getReportNotifications(currentUser: CurrentUser = Depends(getCurrentUser)):
     """
 
     # Typed Pydantic model, no dict access
-    if currentUser.role != "admin":
+    if currentUser.role != Role.ADMIN:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Admin only"

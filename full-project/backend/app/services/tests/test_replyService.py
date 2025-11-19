@@ -5,8 +5,8 @@ from app.schemas.reply import ReplyCreate, Reply
 
 # sample fake replies list
 fake_replies = [
-    Reply(id=1, reviewId=10, userId=1001, replyBody="I agree", datePosted= "1 Jan 2024"),
-    Reply(id=2, reviewId=11, userId=1002, replyBody="Nice point!", datePosted="2 Jan 2024")
+    Reply(id=1, reviewId=1, userId=1001, replyBody="I agree", datePosted= "1 Jan 2024"),
+    Reply(id=2, reviewId=2, userId=1002, replyBody="Nice point!", datePosted="2 Jan 2024")
 ]
 
 @patch("app.services.replyService.loadReplies")
@@ -17,7 +17,7 @@ def test_list_replies_for_review(mock_load):
 
     assert len(results) == 1
     assert isinstance(results[0], Reply)
-    assert results[0].reviewId == 10
+    assert results[0].reviewId == 1
     assert results[0].replyBody == "I agree"
 
 

@@ -19,8 +19,8 @@ app.dependency_overrides[replyRoute.getCurrentUser] = lambda: {
 def mock_repos(monkeypatch):
     """Prevent touching the real replies.json."""
     fakeData = [
-        Reply(id=1, reviewId=10, userId=1001, replyBody="I agree", datePosted= "1 Jan 2024"),
-        Reply(id=2, reviewId=11, userId=1002, replyBody="Nice point!", datePosted="2 Jan 2024")
+        Reply(id=1, reviewId=1, userId=1001, replyBody="I agree", datePosted= "1 Jan 2024"),
+        Reply(id=2, reviewId=2, userId=1002, replyBody="Nice point!", datePosted="2 Jan 2024")
     ]
     def fakeLoadReplies():
         return fakeData

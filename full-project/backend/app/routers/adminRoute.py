@@ -4,7 +4,7 @@ from ..repos.reviewRepo import loadReviews, saveReviews
 from ..utilities.penalties import incrementPenaltyForUser
 from .reviewRoute import validateReview, getFlaggedReviews
 from ..schemas.user import CurrentUser
-import role.py 
+from ..schemas.role import Role
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 

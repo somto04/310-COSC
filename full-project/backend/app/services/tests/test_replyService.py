@@ -5,11 +5,10 @@ from app.schemas.reply import ReplyCreate, Reply
 
 # sample fake replies list
 fake_replies = [
-    {"id": 1, "reviewId": 10, "userId": 1001, "replyBody": "I agree", "datePosted": "1 Jan 2024"},
-    {"id": 2, "reviewId": 11, "userId": 1002, "replyBody": "Nice point!", "datePosted": "2 Jan 2024"},
+    Reply(id=1, reviewId=10, userId=1001, replyBody="I agree", datePosted= "1 Jan 2024"),
+    Reply(id=2, reviewId=11, userId=1002, replyBody="Nice point!", datePosted="2 Jan 2024")
 ]
 
-# testing listing replies for a review
 @patch("app.services.replyService.loadReplies")
 def test_list_replies_for_review(mock_load):
     mock_load.return_value = fake_replies
@@ -46,4 +45,4 @@ def test_create_reply(mock_load, mock_save):
     # verify saveAll called with updated data
     mock_save.assert_called_once()
     saved_data = mock_save.call_args[0][0]
-    assert any(r["replyBody"] == "This is a test reply" for r in saved_data)
+    assert any(reply.replyBody == "This is a test reply" for reply in saved_data)

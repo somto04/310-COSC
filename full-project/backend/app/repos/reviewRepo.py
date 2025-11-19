@@ -15,7 +15,7 @@ def _load_review_cache() -> List[Review]:
     """
     global _REVIEW_CACHE
     if _REVIEW_CACHE is None:
-        review_dicts = _base_load_all(_REVIEW_CACHE)
+        review_dicts = _base_load_all(REVIEW_DATA_PATH)
         _REVIEW_CACHE = [Review(**review) for review in review_dicts]
     return _REVIEW_CACHE
 
@@ -26,7 +26,7 @@ def loadReviews() -> List[Review]:
     Returns:
         List[Review]: A list of review items.
     """
-    return _load_review_cache
+    return _load_review_cache()
     
 def saveReviews(reviews: List[Review]) -> None:
     """
@@ -40,4 +40,4 @@ def saveReviews(reviews: List[Review]) -> None:
     review_dict = [review.model_dump() for review in reviews]
     _base_save_all(REVIEW_DATA_PATH, review_dict)
 
-__all__ = ["loadAll", "saveAll"]
+__all__ = ["loadReviews", "saveReviews"]

@@ -52,7 +52,7 @@ def test_search_by_movie_id(mockMovieLoad, mockReviewLoad, fakeReviews, fakeMovi
     assert len(result) == 1
     assert result[0].reviewTitle == "Good movie"
 
-@patch("app.services.reviewService.loadAll")
+@patch("app.services.reviewService.loadReviews")
 @patch("app.services.reviewService.movieRepo.loadAll")
 def test_search_by_movie_title(mockMovieLoad, mockReviewLoad, fakeReviews, fakeMovies):
     """this test checks searching reviews by movie title """

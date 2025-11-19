@@ -1,5 +1,5 @@
 from typing import Optional
-from ..repos.userRepo import loadAll as loadUsers, saveAll as saveUsers
+from ..repos.userRepo import loadUsers , saveUsers
 from ..schemas.user import User
 
 MAX_PENALTIES = 3  # how many strikes before ban

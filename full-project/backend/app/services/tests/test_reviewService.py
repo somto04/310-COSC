@@ -2,7 +2,7 @@ import pytest
 from fastapi import HTTPException
 from unittest.mock import patch, MagicMock
 from app.services import reviewService
-from...schemas.movie import Movie
+from ...schemas.movie import Movie
 from app.schemas.review import Review, ReviewCreate, ReviewUpdate
 
 @pytest.fixture
@@ -92,14 +92,14 @@ def test_create_review(mockLoad, mockSave, fakeReviews):
     assert new_review.reviewTitle == "New Review"
     mockSave.assert_called_once()
 
-@patch("app.services.reviewService.loadRviews")
+@patch("app.services.reviewService.loadReviews")
 def test_get_review_by_id_found(mockLoad, fakeReviews):
     """this test checks getting a review by its ID"""
     mockLoad.return_value = fakeReviews
     review = reviewService.getReviewById(1)
     assert review.reviewTitle == "Good movie"
 
-@patch("app.services.reviewService.loadRviews")
+@patch("app.services.reviewService.loadReviews")
 def test_get_review_by_id_not_found(mockLoad):
     """this test checks handling when a review ID is not found and throws a 404 error"""
     mockLoad.return_value = []
@@ -107,8 +107,8 @@ def test_get_review_by_id_not_found(mockLoad):
         reviewService.getReviewById(999)
     assert exc.value.status_code == 404
 
-@patch("app.services.reviewService.saveRviews")
-@patch("app.services.reviewService.loadRviews")
+@patch("app.services.reviewService.saveReviews")
+@patch("app.services.reviewService.loadReviews")
 def test_update_review(mockLoad, mockSave, fakeReviews):
     """this test checks updating an existing review"""
     mockLoad.return_value = fakeReviews
@@ -125,8 +125,8 @@ def test_update_review(mockLoad, mockSave, fakeReviews):
     mockSave.assert_called_once()
 
 # this test checks handling when trying to update a non-existent review and throws a 404 error
-@patch("app.services.reviewService.saveRviews")
-@patch("app.services.reviewService.loadRviews")
+@patch("app.services.reviewService.saveReviews")
+@patch("app.services.reviewService.loadReviews")
 def test_update_review_not_found(mockLoad, mockSave):
     mockLoad.return_value = []
     payload = ReviewUpdate(
@@ -141,16 +141,16 @@ def test_update_review_not_found(mockLoad, mockSave):
         reviewService.updateReview(999, payload)
 
 # this test checks deleting a review successfully
-@patch("app.services.reviewService.saveRviews")
-@patch("app.services.reviewService.loadRviews")
+@patch("app.services.reviewService.saveReviews")
+@patch("app.services.reviewService.loadReviews")
 def test_delete_review_success(mockLoad, mockSave, fakeReviews):
     mockLoad.return_value = fakeReviews
     reviewService.deleteReview(1)
     mockSave.assert_called_once()
 
 # this test checks handling when trying to delete a non-existent review and throws a 404 error
-@patch("app.services.reviewService.saveRviews")
-@patch("app.services.reviewService.loadRviews")
+@patch("app.services.reviewService.saveReviews")
+@patch("app.services.reviewService.loadReviews")
 def test_delete_review_not_found(mockLoad, mockSave, fakeReviews):
     mockLoad.return_value = fakeReviews
     with pytest.raises(HTTPException) as exc:

@@ -42,6 +42,11 @@ class UserCreate(BaseModel):
 
 
 class UserUpdate(BaseModel):
+    """
+    Schema for updating user information.
+
+    All fields are optional to allow partial updates.
+    """
     firstName: Optional[str] = None
     lastName: Optional[str] = None
     age: Optional[int] = None
@@ -54,6 +59,11 @@ class UserUpdate(BaseModel):
 
 
 class CurrentUser(BaseModel):
+    """
+    Schema representing the currently authenticated user.
+
+    Only exposes non-sensitive information.
+    """
     id: int
     username: str
     role: Role

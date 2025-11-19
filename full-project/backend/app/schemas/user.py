@@ -8,6 +8,7 @@ from pydantic import (
 from typing import Annotated, Optional
 from .role import Role
 import re
+import re
 
 MAX_NAME_LENGTH = 50
 MIN_EMAIL_LENGTH = 5

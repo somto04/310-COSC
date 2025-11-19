@@ -118,6 +118,13 @@ def updateUser(userId: int, payload: UserUpdate) -> User:
     users = loadUsers()
     update_data = payload.model_dump(exclude_unset=True)
 
+    if "username" in update_data and update_data["username"] is not None:
+        new_username = update_data["username"]
+        if is_username_taken(users, new_username, exclude_user_id=userId):
+            raise HTTPException(
+                status_code=409, detail="Username already taken; retry."
+            )
+
     if "pw" in update_data and update_data["pw"] is not None:
         update_data["pw"] = hashPassword(update_data["pw"])
 

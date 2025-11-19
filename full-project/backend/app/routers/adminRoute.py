@@ -3,12 +3,12 @@ from auth import requireAdmin, getCurrentUser
 from ..repos.reviewRepo import loadAll as loadReviews, saveAll as saveReviews
 from ..utilities.penalties import incrementPenaltyForUser
 from .reviewRoute import validateReview, getFlaggedReviews
-from ..schemas.user import currentUser 
+from ..schemas.user import CurrentUser 
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
 @router.post("/reviews/{reviewId}/markInappropriate")
-def markReviewInappropriate(reviewId: int, admin: User = Depends(requireAdmin)):
+def markReviewInappropriate(reviewId: int, admin: CurrentUser = Depends(requireAdmin)):
     reviews = loadReviews()
     review = next((review for review in reviews if int(review.get("id")) == int(reviewId)), None)
     validateReview(review)
@@ -36,7 +36,7 @@ def getFlaggedReviews():
   
 
 @router.get("/reports/reviews")
-def getReportNotifications(currentUser: User = Depends(getCurrentUser)):
+def getReportNotifications(currentUser: CurrentUser = Depends(getCurrentUser)):
     """
     Admin endpoint - return flagged review reports.
     Requires admin role.

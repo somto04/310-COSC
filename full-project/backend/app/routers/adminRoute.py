@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from auth import requireAdmin, getCurrentUser
-from ..repos.reviewRepo import loadAll as loadReviews, saveAll as saveReviews
+from ..repos.reviewRepo import loadReviews, saveReviews
 from ..utilities.penalties import incrementPenaltyForUser
 from .reviewRoute import validateReview, getFlaggedReviews
 from ..schemas.user import CurrentUser 

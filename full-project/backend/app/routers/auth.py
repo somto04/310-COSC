@@ -8,7 +8,7 @@ from ..services.userService import emailExists, generateResetToken, resetPasswor
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
-## REMEMBER TO CHANGE TO ACTUAL TOKEN
+## REMEMBER TO CHANGE TO ACTUAL TOKEN: currently using username so method seems a but redundant
 def getUsernameFromJsonDB(username: str):
     users = loadAll()
     for user in users:

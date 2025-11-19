@@ -118,7 +118,8 @@ class TestReviewRouterIntegration:
     def test_search_reviews_with_query(self, mock_search, client, sample_review_data):
         mock_search.return_value = [sample_review_data]
 
-        response = client.get("/reviews/search?q=great")
+        response = client.get("/reviews/search", params={"query": "great"})
+        mock_search.assert_called_once_with("great")
 
         assert response.status_code == 200
         data = response.json()
@@ -130,7 +131,7 @@ class TestReviewRouterIntegration:
     def test_search_reviews_with_limit_and_offset(self, mock_search, client, sample_reviews_list):
         mock_search.return_value = sample_reviews_list
 
-        response = client.get("/reviews/search?q=movie&limit=2&offset=1")
+        response = client.get("/reviews/search?query=movie&limit=2&offset=1")
 
         assert response.status_code == 200
         data = response.json()

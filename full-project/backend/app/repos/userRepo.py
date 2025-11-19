@@ -1,24 +1,45 @@
 from typing import List, Dict, Any
 from .repo import _base_load_all, _base_save_all, DATA_DIR
+from ..schemas.user import User
 
-USER_DATA_FILE = DATA_DIR / "users.json"
+_USER_DATA_PATH = DATA_DIR / "users.json"
+_USER_CACHE: List[User] | None = None
 
-def loadAll() -> List[Dict[str, Any]]:
+def _load_cache() -> List[User]:
+    """
+    Load users from the data file into a cache.
+
+    Loads the users only once and caches them for future calls.
+    Returns:
+        List[User]: A list of users.
+    """
+    global _USER_CACHE
+    if _USER_CACHE is None:
+        user_dicts = _base_load_all(_USER_DATA_PATH)
+        _USER_CACHE = [User(**user) for user in user_dicts]
+    return _USER_CACHE
+
+def loadUsers() -> List[User]:
     """
     Load all users from the users data file.
 
     Returns:
-        List[Dict[str, Any]]: A list of user items.
+        List[User]: A list of users.
     """
-    return _base_load_all(USER_DATA_FILE)
+    return _load_cache()
 
-def saveAll(items: List[Dict[str, Any]]) -> None:
+
+def saveAll(users: List[User]):
     """
     Save all users to the users data file.
 
     Args:
-        items (List[Dict[str, Any]]): A list of user items to save.
+        users (List[User]): A list of users to save.
     """
-    _base_save_all(USER_DATA_FILE, items)
+    global _USER_CACHE
+    _USER_CACHE = users
+    user_dicts = [user.model_dump() for user in users]
+    _base_save_all(_USER_DATA_PATH, user_dicts)
 
-__all__ = ["loadAll", "saveAll"]
+
+__all__ = ["loadUsers", "saveAll"]

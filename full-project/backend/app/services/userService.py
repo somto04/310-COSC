@@ -2,14 +2,14 @@ import secrets, time
 from typing import List
 from fastapi import HTTPException
 from ..schemas.user import User, UserCreate, UserUpdate
-from ..repos.userRepo import loadAll, saveAll
+from ..repos.userRepo import loadUsers, saveAll
 from ..utilities.security import hashPassword, verifyPassword
 
 reset_tokens = {}  # token -> {"email": str, "expires": int}
 
 def listUsers() -> List[User]:
     """Return all users as User objects"""
-    return [User(**it) for it in loadAll()]
+    return [User(**it) for it in loadUsers()]
 
 def createUser(payload: UserCreate) -> User:
     """
@@ -21,7 +21,7 @@ def createUser(payload: UserCreate) -> User:
     Raises:
         HTTPException: username already taken
     """
-    users = loadAll()
+    users = loadUsers()
     unique_username = payload.username.strip()
     new_id = max([int(u.get("id", 0)) for u in users], default=0) + 1
 
@@ -54,7 +54,7 @@ def getUserById(userId: int) -> User:
     Raises:         
         HTTPException: user not found
     """
-    users = loadAll()
+    users = loadUsers()
     for u in users:
         if int(u.get("id")) == int(userId):
             return User(**u)
@@ -70,7 +70,7 @@ def updateUser(userId: int, payload: UserUpdate) -> User:
     Raises:         
         HTTPException: user not found
     """
-    users = loadAll()
+    users = loadUsers()
     for idx, u in enumerate(users):
         if int(u.get("id")) == int(userId):
             current_user = User(**u)
@@ -96,7 +96,7 @@ def updateUser(userId: int, payload: UserUpdate) -> User:
 
 def deleteUser(userId: int) -> None:
     """Delete a user by ID"""
-    users = loadAll()
+    users = loadUsers()
     new_users = [u for u in users if int(u.get("id")) != int(userId)]
     if len(new_users) == len(users):
         raise HTTPException(status_code=404, detail=f"User '{userId}' not found")
@@ -105,7 +105,7 @@ def deleteUser(userId: int) -> None:
 # Password Reset
 def emailExists(email: str) -> bool:
     """Check if email exists"""
-    users = loadAll()
+    users = loadUsers()
     return any(u["email"].lower() == email.lower() for u in users)
 
 def generateResetToken(email: str) -> str:
@@ -121,7 +121,7 @@ def resetPassword(token: str, new_password: str) -> bool:
     if not data or data["expires"] < time.time():
         return False
 
-    users = loadAll()
+    users = loadUsers()
     for u in users:
         if u["email"].lower() == data["email"]:
             u["pw"] = hashPassword(new_password.strip())

@@ -1,5 +1,4 @@
 import json
-
 import app.repos.reviewRepo as reviewRepo
 
 def test_review_load_uses_tmp(tmp_path, monkeypatch):
@@ -32,7 +31,7 @@ def test_review_load_uses_tmp(tmp_path, monkeypatch):
     # Patch the constant the functions read
     monkeypatch.setattr(reviewRepo, "REVIEW_DATA_FILE", test_file, raising=False)
 
-    reviews = reviewRepo.loadAll()
+    reviews = reviewRepo.loadReviews()
     assert len(reviews) == 2
     assert reviews[0]["id"] == 1
     assert reviews[0]["reviewTitle"] == "A Tale Worth a Thousand Berries"
@@ -87,7 +86,7 @@ def test_review_save_and_verify_contents(tmp_path, monkeypatch):
 ]
 
 
-    reviewRepo.saveAll(data)
+    reviewRepo.saveReviews(data)
 
     assert test_file.exists(), "users.json should have been created"
     contents = json.loads(test_file.read_text(encoding="utf-8"))

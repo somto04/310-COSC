@@ -80,7 +80,7 @@ def test_review_save_and_verify_contents(tmp_path, monkeypatch):
         userId= 2,
         reviewTitle= "A Devil Fruit Disaster",
         reviewBody= "Plot twist hit harder than Luffy’s Gatling, but the ending sank faster than a Marine ship in a storm.",
-        rating= "5.7",
+        rating= 5.7,
         datePosted= "2025-07-16",
         flagged= False
     )

@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from typing import Optional
+from decimal import Decimal
 
 class Review(BaseModel):
     id: int
@@ -7,7 +8,7 @@ class Review(BaseModel):
     userId: int
     reviewTitle: str
     reviewBody: str
-    rating: int
+    rating: Decimal
     datePosted: Optional[str] = None
     flagged: Optional[bool] = False
 
@@ -16,7 +17,7 @@ class ReviewCreate(BaseModel):
     userId: Optional[int] = None 
     reviewTitle: str
     reviewBody: str
-    rating: int
+    rating: Decimal
     datePosted: Optional[str] = None
     flagged: Optional[bool] = False
 
@@ -25,6 +26,6 @@ class ReviewUpdate(BaseModel):
     userId: Optional[int] = None
     reviewTitle: Optional[str] = None
     reviewBody: Optional[str] = None
-    rating: Optional[int] = None
+    rating: Optional[Decimal] = None
     datePosted: Optional[str] = None
     flagged: Optional[bool] = None

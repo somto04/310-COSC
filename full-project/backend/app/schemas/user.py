@@ -31,7 +31,7 @@ Username = Annotated[
         strip_whitespace=True,
         min_length=MIN_USERNAME_LENGTH,
         max_length=MAX_USERNAME_LENGTH,
-        pattern=r"^[A-Za-z0-9_.-]+$"
+        pattern=r"^[A-Za-z0-9_.-]+$",
     ),
 ]
 Password = Annotated[
@@ -65,7 +65,7 @@ class User(BaseModel):
     firstName: str = ""
     lastName: str = ""
     age: Optional[int] = None
-    email: EmailStr = ""
+    email: Email = ""
     pw: str
     role: Role
     penalties: int = Field(0, alias="penaltyCount")
@@ -92,11 +92,12 @@ class UserCreate(BaseModel):
         ..., min_length=1, max_length=MAX_NAME_LENGTH, description="User's last name"
     )
     age: int = Field(
-        ..., ge=MIN_AGE, le=MAX_AGE, description=f"User must be {MIN_AGE} years or older"
+        ...,
+        ge=MIN_AGE,
+        le=MAX_AGE,
+        description=f"User must be {MIN_AGE} years or older",
     )
-    email: EmailStr = Field(
-        ..., max_length=MAX_EMAIL_LENGTH, description="User's email address"
-    )
+    email: Email = Field(..., description="User's email address")
     username: Username = Field(..., description="Unique username for the user")
     pw: Password = Field(..., description="Password for the user account")
 

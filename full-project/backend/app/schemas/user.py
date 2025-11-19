@@ -14,7 +14,7 @@ MIN_EMAIL_LENGTH = 5
 MAX_EMAIL_LENGTH = 254
 MIN_AGE = 16
 MAX_AGE = 120
-PASSWORD_RE = re.compile(r"^(?=.*[A-Z])(?=.*[a-z])(?=.*\d).+$")
+PASSWORD_RE = re.compile(r"^(?=\S*[A-Z])(?=\S*[a-z])(?=\S*\d)\S+$")
 MIN_USERNAME_LENGTH = 3
 MAX_USERNAME_LENGTH = 30
 MIN_PASSWORD_LENGTH = 8
@@ -32,6 +32,7 @@ Username = Annotated[
 Password = Annotated[
     str,
     StringConstraints(
+        strip_whitespace=True,
         min_length=MIN_PASSWORD_LENGTH,
         max_length=MAX_PASSWORD_LENGTH,
     ),

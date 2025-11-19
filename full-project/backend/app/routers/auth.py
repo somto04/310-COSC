@@ -4,7 +4,7 @@ from ..schemas.user import User
 from ..repos.userRepo import loadUsers
 from app.utilities.security import verifyPassword
 from ..schemas.user import CurrentUser
-from ..services.userService import emailExists, generateResetToken, resetPassword
+from ..services.userService import get_user_by_email, generateResetToken, resetPassword
 
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -82,7 +82,7 @@ def forgotPassword(email: str = Form(...)):
     Raises: 
         HTTPException: invalid email.
     """
-    if not emailExists(email):
+    if not get_user_by_email(email):
         raise HTTPException(status_code=404, detail="Email not found")
 
     token = generateResetToken(email)

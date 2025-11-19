@@ -14,7 +14,7 @@ def loadAllReviews() -> List[Review]:
     items = _base_load_all(REVIEW_DATA_FILE)
     return [Review(**item) for item in items]
     
-def saveAll(items: List[Review]) -> None:
+def saveAllReviews(items: List[Review]) -> None:
     """
     Save all reviews to the reviews data file.
 

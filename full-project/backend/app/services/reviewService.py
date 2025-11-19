@@ -1,7 +1,7 @@
 from typing import List
 from fastapi import HTTPException
 from ..schemas.review import Review, ReviewUpdate, ReviewCreate
-from ..repos.reviewRepo import loadAll, saveAll
+from ..repos.reviewRepo import loadAllReviews, saveAllReviews
 from ..repos import movieRepo
 
 def searchReviews(query: str) -> List[Review]:

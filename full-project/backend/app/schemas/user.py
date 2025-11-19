@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, field_validator, EmailStr, StringConstraints
+from pydantic import BaseModel, Field, field_validator, EmailStr, StringConstraints, AliasChoices
 from typing import Annotated, Optional
 from .role import Role
 
@@ -40,7 +40,7 @@ class User(BaseModel):
     email: EmailStr = ""
     pw: str
     role: Role
-    penalties: int = Field(0, alias="penaltyCount")
+    penalties: int = Field(0, validation_alias=AliasChoices("penaltyCount", "penalties"))
     isBanned: bool = False
 
 
@@ -104,7 +104,7 @@ class AdminUserUpdate(UserUpdate):
     """
 
     role: Optional[Role] = None
-    penalties: Optional[int] = None
+    penalties: Optional[int] = Field(None, validation_alias=AliasChoices("penaltyCount", "penalties"))
     isBanned: Optional[bool] = None
 
 

@@ -35,8 +35,8 @@ def fakeReviews():
 def fakeMovies():
     """this fixture provides mock movies data for testing"""
     return [
-        Movie(id=10, title="Avengers", movieGenre=["Action"], duration=143),
-        Movie(id=11, title="Batman", movieGenre=["Action"], duration=126),
+        {"id":10, "title":"Avengers", "movieGenre" :["Action"], "duration": 143},
+        {"id":11, "title":"Batman", "movieGenre" :["Action"], "duration":126},
     ]
 
 # patching the loadReviews and saveReviews methods to avoid actual file I/O during tests

@@ -14,6 +14,10 @@ def is_username_taken(users: List[User], username: str) -> bool:
     Check if a username already exists in the user list, case-insensitive.
     Assumes `username` is already Pydantic-validated and stripped.
 
+    Args:
+        users (List[User]): List of existing users.
+        username (str): Username to check.
+
     Example:
         "Ichigo76" and "ichigo76" are considered the same.
     """
@@ -35,6 +39,9 @@ def listUsers() -> List[User]:
 def createUser(payload: UserCreate) -> User:
     """
     Create a new user with a unique ID and username and hashed password.
+
+    Args:
+        payload (UserCreate): user creation data is already validated, such as username abiding by constraints
 
     Returns:
         New user (User)
@@ -68,18 +75,22 @@ def createUser(payload: UserCreate) -> User:
 
 
 def getUserById(userId: int) -> User:
-    """Get a user by ID
+    """
+    Get a user by ID
+
+    Args:
+        userId (int): ID of the user to retrieve
 
     Returns:
-        New user
+        User
 
     Raises:
         HTTPException: user not found
     """
     users = loadUsers()
-    for u in users:
-        if int(u.get("id")) == int(userId):
-            return User(**u)
+    for user in users:
+        if user.id == userId:
+            return user
     raise HTTPException(status_code=404, detail=f"User '{userId}' not found")
 
 

@@ -18,7 +18,7 @@ def getReviews():
 @router.get("/flagged", response_model=List[Review])
 def getFlaggedReviews():
     reviews = listReviews()
-    return [review for review in reviews if review.get("flagged") is True]
+    return [review for review in reviews if review.flagged is True]
 
 @router.post("", response_model=Review, status_code=201)
 def postReview(payload: ReviewCreate, currentUser: dict = Depends(getCurrentUser)):

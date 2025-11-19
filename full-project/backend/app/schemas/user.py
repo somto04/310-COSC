@@ -1,9 +1,16 @@
-from pydantic import BaseModel, Field, field_validator, EmailStr, StringConstraints, AliasChoices
+from pydantic import (
+    BaseModel,
+    Field,
+    field_validator,
+    StringConstraints,
+    AliasChoices,
+)
 from typing import Annotated, Optional
 from .role import Role
 import re
 
 MAX_NAME_LENGTH = 50
+MIN_EMAIL_LENGTH = 5
 MAX_EMAIL_LENGTH = 254
 MIN_AGE = 16
 MAX_AGE = 120
@@ -19,7 +26,7 @@ Username = Annotated[
         strip_whitespace=True,
         min_length=MIN_USERNAME_LENGTH,
         max_length=MAX_USERNAME_LENGTH,
-        pattern=r"^[A-Za-z0-9_.-]+$"
+        pattern=r"^[A-Za-z0-9_.-]+$",
     ),
 ]
 
@@ -28,6 +35,15 @@ Password = Annotated[
     StringConstraints(
         min_length=MIN_PASSWORD_LENGTH,
         max_length=MAX_PASSWORD_LENGTH,
+    ),
+]
+Email = Annotated[
+    str,
+    StringConstraints(
+        strip_whitespace=True,
+        min_length=MIN_EMAIL_LENGTH,
+        max_length=MAX_EMAIL_LENGTH,
+        pattern=r"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$",
     ),
 ]
 
@@ -42,10 +58,12 @@ class User(BaseModel):
     firstName: str = ""
     lastName: str = ""
     age: Optional[int] = None
-    email: EmailStr = ""
+    email: Email = ""
     pw: str
     role: Role
-    penalties: int = Field(0, validation_alias=AliasChoices("penaltyCount", "penalties"))
+    penalties: int = Field(
+        0, validation_alias=AliasChoices("penaltyCount", "penalties")
+    )
     isBanned: bool = False
 
 
@@ -63,11 +81,12 @@ class UserCreate(BaseModel):
         ..., min_length=1, max_length=MAX_NAME_LENGTH, description="User's last name"
     )
     age: int = Field(
-        ..., ge=MIN_AGE, le=MAX_AGE, description=f"User must be {MIN_AGE} years or older"
+        ...,
+        ge=MIN_AGE,
+        le=MAX_AGE,
+        description=f"User must be {MIN_AGE} years or older",
     )
-    email: EmailStr = Field(
-        ..., max_length=MAX_EMAIL_LENGTH, description="User's email address"
-    )
+    email: Email = Field(..., description="User's email address")
     username: Username = Field(..., description="Unique username for the user")
     pw: Password = Field(..., description="Password for the user account")
 
@@ -75,9 +94,11 @@ class UserCreate(BaseModel):
     @classmethod
     def check_age(cls, user_age):
         if user_age < MIN_AGE:
-            raise ValueError(f"User must be {MIN_AGE} years or older to create an account")
+            raise ValueError(
+                f"User must be {MIN_AGE} years or older to create an account"
+            )
         return user_age
-    
+
     @field_validator("pw")
     @classmethod
     def password_complexity(cls, pw: str):
@@ -96,7 +117,7 @@ class UserUpdate(BaseModel):
     firstName: Optional[str] = Field(None, min_length=1, max_length=MAX_NAME_LENGTH)
     lastName: Optional[str] = Field(None, min_length=1, max_length=MAX_NAME_LENGTH)
     age: Optional[int] = Field(None, ge=MIN_AGE, le=MAX_AGE)
-    email: Optional[EmailStr] = Field(None, max_length=MAX_EMAIL_LENGTH)
+    email: Optional[Email] = None
     username: Optional[Username] = None
     pw: Optional[Password] = None
 
@@ -104,9 +125,11 @@ class UserUpdate(BaseModel):
     @classmethod
     def check_age(cls, user_age):
         if user_age is not None and user_age < MIN_AGE:
-            raise ValueError(f"User must be {MIN_AGE} years or older to update an account")
+            raise ValueError(
+                f"User must be {MIN_AGE} years or older to update an account"
+            )
         return user_age
-    
+
     @field_validator("pw")
     @classmethod
     def password_complexity(cls, pw: str):
@@ -123,7 +146,9 @@ class AdminUserUpdate(UserUpdate):
     """
 
     role: Optional[Role] = None
-    penalties: Optional[int] = Field(None, validation_alias=AliasChoices("penaltyCount", "penalties"))
+    penalties: Optional[int] = Field(
+        None, validation_alias=AliasChoices("penaltyCount", "penalties")
+    )
     isBanned: Optional[bool] = None
 
 

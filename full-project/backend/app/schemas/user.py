@@ -1,11 +1,13 @@
 from pydantic import BaseModel, Field, field_validator, EmailStr, StringConstraints, AliasChoices
 from typing import Annotated, Optional
 from .role import Role
+import re
 
 MAX_NAME_LENGTH = 50
 MAX_EMAIL_LENGTH = 254
 MIN_AGE = 16
 MAX_AGE = 120
+PASSWORD_RE = re.compile(r"^(?=.*[A-Z])(?=.*[a-z])(?=.*\d).+$")
 
 Username = Annotated[
     str,
@@ -13,7 +15,7 @@ Username = Annotated[
         strip_whitespace=True,
         min_length=3,
         max_length=30,
-        pattern=r"^[A-Za-z0-9_.-]+$",
+        pattern=r"^[A-Za-z0-9_.-]+$"
     ),
 ]
 
@@ -22,7 +24,6 @@ Password = Annotated[
     StringConstraints(
         min_length=8,
         max_length=128,
-        pattern=r"^(?=.*[A-Z])(?=.*[a-z])(?=.*\d).+$"
     ),
 ]
 
@@ -72,6 +73,13 @@ class UserCreate(BaseModel):
         if user_age < 16:
             raise ValueError("User must be 16 years or older to create an account")
         return user_age
+    
+    @field_validator("pw")
+    @classmethod
+    def password_complexity(cls, pw: str):
+        if not PASSWORD_RE.match(pw):
+            raise ValueError("Password must contain uppercase, lowercase, and a digit")
+        return pw
 
 
 class UserUpdate(BaseModel):
@@ -94,6 +102,13 @@ class UserUpdate(BaseModel):
         if user_age is not None and user_age < 16:
             raise ValueError("User must be 16 years or older to update an account")
         return user_age
+    
+    @field_validator("pw")
+    @classmethod
+    def password_complexity(cls, pw: str):
+        if not PASSWORD_RE.match(pw):
+            raise ValueError("Password must contain uppercase, lowercase, and a digit")
+        return pw
 
 
 class AdminUserUpdate(UserUpdate):

@@ -13,7 +13,7 @@ fake_replies = [
 def test_list_replies_for_review(mock_load):
     mock_load.return_value = fake_replies
 
-    results = replyService.listReplies(10)
+    results = replyService.listReplies(1)
 
     assert len(results) == 1
     assert isinstance(results[0], Reply)

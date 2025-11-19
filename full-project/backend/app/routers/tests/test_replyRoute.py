@@ -32,6 +32,8 @@ def mock_repos(monkeypatch):
 
     monkeypatch.setattr(replyRepo, "loadReplies", fakeLoadReplies)
     monkeypatch.setattr(replyRepo, "saveReplies", fakeSaveReplies)
+    monkeypatch.setattr("app.services.replyService.loadReplies", fakeLoadReplies)
+    monkeypatch.setattr("app.services.replyService.saveReplies", fakeSaveReplies)
 
 
 def test_get_replies():

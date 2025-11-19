@@ -32,7 +32,7 @@ def getFlaggedReviews():
     
          reviews a list of all flagged reviews.  """
     reviews = loadReviews()
-    return [flagged for flagged in reviews if flagged.get("flagged") is True]
+    return [flagged for flagged in reviews if flagged.flagged is True]
   
 
 @router.get("/reports/reviews")

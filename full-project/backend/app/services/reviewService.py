@@ -10,8 +10,8 @@ def searchReviews(query: str) -> List[Review]:
     Returns:
         Reviews that match the search
     """
-    q = (query or "").strip().lower()
-    if not q:
+    strippedQuery = (query or "").strip().lower()
+    if not strippedQuery:
         return []
 
     reviews = loadAll()
@@ -19,21 +19,21 @@ def searchReviews(query: str) -> List[Review]:
     matched_reviews = []
 
     # If query is a number, treat as movie ID
-    if q.isdigit():
-        movie_id = int(q)
-        for r in reviews:
-            if r.get("movieId") == movie_id:
-                matched_reviews.append(Review(**r))
+    if strippedQuery.isdigit():
+        movie_id = int(strippedQuery)
+        for review in reviews:
+            if review.movieId == movie_id:
+                matched_reviews.append(Review(**review))
         return matched_reviews
 
     matching_movie_ids = [
-        m["id"] for m in movies
-        if q in str(m.get("title", "")).lower()
+        movie["id"] for movie in movies
+        if strippedQuery in str(movie.get("title", "")).lower()
     ]
 
-    for r in reviews:
-        if r.get("movieId") in matching_movie_ids:
-            matched_reviews.append(Review(**r))
+    for review in reviews:
+        if review.moveiId in matching_movie_ids:
+            matched_reviews.append(Review(**review))
 
     return matched_reviews
 
@@ -54,7 +54,7 @@ def createReview(payload: ReviewCreate) -> Review:
     reviews = loadAll()
 
     if reviews:
-        newId = max([int(r.get("id", 0)) for r in reviews]) + 1
+        newId = max([int(r.get("id", 0)) for review in reviews]) + 1
     else:
         newId = 1
 

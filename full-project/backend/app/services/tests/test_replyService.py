@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import patch
 from app.services import replyService
-from app.schemas.review import ReplyCreate, Reply
+from app.schemas.reply import ReplyCreate, Reply
 
 # sample fake replies list
 fake_replies = [

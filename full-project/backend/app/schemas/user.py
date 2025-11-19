@@ -50,6 +50,18 @@ Email = Annotated[
 class User(BaseModel):
     """
     Schema representing a user in the system.
+
+    Attributes:
+        id (int): Unique identifier for the user.
+        username (Username): Unique username following defined constraints.
+        firstName (str): User's first name.
+        lastName (str): User's last name.
+        age (Optional[int]): User's age.
+        email (Email): User's validated email address.
+        pw (Password): Hashed password.
+        role (Role): Role of the user in the system.
+        penalties (int): Number of penalties assigned to the user.
+        isBanned (bool): Indicates if the user is banned.
     """
 
     id: int
@@ -59,9 +71,9 @@ class User(BaseModel):
     age: Optional[int] = None
     email: Email = ""
     pw: str
-    role: Role
+    role: Role = Role.USER
     penalties: int = Field(
-        0, validation_alias=AliasChoices("penaltyCount", "penalties")
+        default=0, validation_alias=AliasChoices("penaltyCount", "penalties")
     )
     isBanned: bool = False
 
@@ -71,8 +83,17 @@ class UserCreate(BaseModel):
     Schema for creating a new user.
 
     Only exposes necessary fields for user creation.
+
+    Attributes:
+        username (Username): Unique username following defined constraints.
+        firstName (str): User's first name.
+        lastName (str): User's last name.
+        age (int): User's age.
+        email (Email): User's validated email address.
+        pw (Password): Password following defined constraints.
     """
 
+    username: Username = Field(..., description="Unique username for the user")
     firstName: str = Field(
         ..., min_length=1, max_length=MAX_NAME_LENGTH, description="User's first name"
     )
@@ -86,7 +107,6 @@ class UserCreate(BaseModel):
         description=f"User must be {MIN_AGE} years or older",
     )
     email: Email = Field(..., description="User's email address")
-    username: Username = Field(..., description="Unique username for the user")
     pw: Password = Field(..., description="Password for the user account")
 
     @field_validator("age")
@@ -111,13 +131,21 @@ class UserUpdate(BaseModel):
     Schema for updating user information.
 
     All fields are optional to allow partial updates.
+
+    Attributes:
+        username (Optional[Username]): Unique username for the user.
+        firstName (Optional[str]): User's first name.
+        lastName (Optional[str]): User's last name.
+        age (Optional[int]): User's age.
+        email (Optional[Email]): User's email address.
+        pw (Optional[Password]): Password for the user account.
     """
 
+    username: Optional[Username] = None
     firstName: Optional[str] = Field(None, min_length=1, max_length=MAX_NAME_LENGTH)
     lastName: Optional[str] = Field(None, min_length=1, max_length=MAX_NAME_LENGTH)
     age: Optional[int] = Field(None, ge=MIN_AGE, le=MAX_AGE)
     email: Optional[Email] = None
-    username: Optional[Username] = None
     pw: Optional[Password] = None
 
     @field_validator("age")
@@ -142,6 +170,13 @@ class AdminUserUpdate(UserUpdate):
     Schema for updating user information by an admin.
 
     Inherits from UserUpdate and allows modification of all fields, including role, penalties, and ban status.
+    Only exposes fields that an admin can update.
+
+    Attributes:
+        ... from UserUpdate
+        role (Optional[Role]): Role of the user in the system.
+        penalties (Optional[int]): Number of penalties assigned to the user.
+        isBanned (Optional[bool]): Indicates if the user is banned.
     """
 
     role: Optional[Role] = None
@@ -156,8 +191,13 @@ class CurrentUser(BaseModel):
     Schema representing the currently authenticated user.
 
     Only exposes non-sensitive information.
+
+    Attributes:
+        id (int): Unique identifier for the user.
+        username (Username): Unique username following defined constraints.
+        role (Role): Role of the user in the system.
     """
 
     id: int
-    username: str
+    username: Username
     role: Role

@@ -14,32 +14,25 @@ def searchReviews(query: str) -> List[Review]:
     if not strippedQuery:
         return []
 
-    reviews = loadAll()
+    reviews = loadAllReviews()
     movies = movieRepo.loadAll()
-    matched_reviews = []
 
     # If query is a number, treat as movie ID
     if strippedQuery.isdigit():
         movie_id = int(strippedQuery)
-        for review in reviews:
-            if review.movieId == movie_id:
-                matched_reviews.append(Review(**review))
-        return matched_reviews
+        return [review for review in reviews if review.movieId == movie_id]
 
     matching_movie_ids = [
         movie["id"] for movie in movies
         if strippedQuery in str(movie.get("title", "")).lower()
     ]
 
-    for review in reviews:
-        if review.moveiId in matching_movie_ids:
-            matched_reviews.append(Review(**review))
+    return [review for review in reviews if review.movieId in matching_movie_ids]
 
-    return matched_reviews
 
 def listReviews() -> List[Review]:
     """ Lists all reviews currently stored """
-    return [Review(**it) for it in loadAll()]
+    return loadAllReviews()
 
 def createReview(payload: ReviewCreate) -> Review:
     """ 
@@ -51,14 +44,11 @@ def createReview(payload: ReviewCreate) -> Review:
     Raises: 
         HTTPException: id collision error if theres a duplicate
     """
-    reviews = loadAll()
+    reviews = loadAllReviews()
 
-    if reviews:
-        newId = max([int(r.get("id", 0)) for review in reviews]) + 1
-    else:
-        newId = 1
+    newId = max((review.id for review in reviews), default = 0) + 1
 
-    if any(it.get("id") == newId for it in reviews):
+    if any(review.id == newId for review in reviews):
         raise HTTPException(status_code=409, detail="ID collision; retry.")
     
     newReview = Review(
@@ -71,10 +61,8 @@ def createReview(payload: ReviewCreate) -> Review:
         flagged=payload.flagged or False,
     )
     
-    newData = newReview.model_dump()
-    newData["flagged"] = payload.flagged or False
-    reviews.append(newReview.model_dump())
-    saveAll(reviews)
+    reviews.append(newReview)
+    saveAllReviews(reviews)
     return newReview
 
 def getReviewById(reviewId: int) -> Review:
@@ -87,11 +75,11 @@ def getReviewById(reviewId: int) -> Review:
     Raises: 
         HTTPException: review not found
     """
-    reviews = loadAll()
+    reviews = loadAllReviews()
 
     for review in reviews:
         if review.id == reviewId:
-            return Review(**review)
+            return review
     raise HTTPException(status_code=404, detail=f"Review '{reviewId}' not found")
 
 def updateReview(reviewId: int, payload: ReviewUpdate) -> Review:
@@ -104,26 +92,28 @@ def updateReview(reviewId: int, payload: ReviewUpdate) -> Review:
     Raises: 
         HTTPException: review not found
     """  
-    reviews = loadAll()
+    reviews = loadAllReviews()
     for idx, it in enumerate(reviews):
-        if it.get("id") == reviewId:
-            current_review = Review(**it)
-            update_data = payload.model_dump(exclude_unset=True)
+        if it.id == reviewId:
+            updateData = payload.model_dump(exclude_unset=True)
             
-            updated_dict = current_review.model_dump()
-            updated_dict.update(update_data)
+            updatedDict = it.model_dump()
+            updatedDict.update(updateData)
             
-            if 'reviewTitle' in update_data and updated_dict['reviewTitle']:
-                updated_dict['reviewTitle'] = updated_dict['reviewTitle'].strip()
-            if 'reviewBody' in update_data and updated_dict['reviewBody']:
-                updated_dict['reviewBody'] = updated_dict['reviewBody'].strip()
-            if 'rating' in update_data and updated_dict['rating']:
-                updated_dict['rating'] = int(updated_dict['rating'])
+            if 'reviewTitle' in updateData and updatedDict['reviewTitle']:
+                updatedDict['reviewTitle'] = updatedDict['reviewTitle'].strip()
+
+            if 'reviewBody' in updateData and updatedDict['reviewBody']:
+                updatedDict['reviewBody'] = updatedDict['reviewBody'].strip()
+
+            if 'rating' in updateData and updatedDict['rating']:
+                updatedDict['rating'] = int(updatedDict['rating'])
             
-            updated = Review(**updated_dict)
-            reviews[idx] = updated.model_dump()
-            saveAll(reviews)
+            updated = Review(**updatedDict)
+            reviews[idx] = updated
+            saveAllReviews(reviews)
             return updated
+        
     raise HTTPException(status_code=404, detail=f"Review '{reviewId}' not found")
 
 def deleteReview(reviewId: int) -> None:
@@ -133,10 +123,10 @@ def deleteReview(reviewId: int) -> None:
     Raises: 
         HTTPException: review not found
     """  
-    reviews = loadAll()
+    reviews = loadAllReviews()
     newReviews = [review for review in reviews if review.id != reviewId]
 
     if len(newReviews) == len(reviews):
         raise HTTPException(status_code=404, detail=f"Review '{reviewId}' not found")
     
-    saveAll(newReviews)
+    saveAllReviews(newReviews)

@@ -2,11 +2,11 @@ from datetime import datetime
 from ..schemas.reply import Reply, ReplyCreate
 from ..repos.replyRepo import loadReplies, saveReplies
 
-def list_replies(reviewId: int):
+def listReplies(reviewId: int):
     replies = loadReplies()
-    return [reply for reply in replies if reply.id == reviewId]
+    return [reply for reply in replies if reply.reviewId == reviewId]
 
-def create_reply(payload: ReplyCreate) -> Reply:
+def createReply(payload: ReplyCreate) -> Reply:
     """ Creates a new reply and adds to json """
     replies = loadReplies()
 

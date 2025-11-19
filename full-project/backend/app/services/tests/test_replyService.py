@@ -10,11 +10,11 @@ fake_replies = [
 ]
 
 # testing listing replies for a review
-@patch("app.services.replyService.loadAll")
+@patch("app.services.replyService.loadReplies")
 def test_list_replies_for_review(mock_load):
     mock_load.return_value = fake_replies
 
-    results = replyService.list_replies(10)
+    results = replyService.listReplies(10)
 
     assert len(results) == 1
     assert isinstance(results[0], Reply)
@@ -22,22 +22,21 @@ def test_list_replies_for_review(mock_load):
     assert results[0].replyBody == "I agree"
 
 
-# testing creating a new reply (date is required)
-@patch("app.services.replyService.saveAll")
-@patch("app.services.replyService.loadAll")
+@patch("app.services.replyService.saveReplies")
+@patch("app.services.replyService.loadReplies")
 def test_create_reply(mock_load, mock_save):
+    """ testing creating a new reply (date is required) """
     mock_load.return_value = fake_replies
 
     payload = ReplyCreate(
         reviewId=12,
         userId=999,
         replyBody="This is a test reply",
-        datePosted="3 Jan 2024"   # now provided
+        datePosted="3 Jan 2024" 
     )
 
-    new_reply = replyService.create_reply(payload)
+    new_reply = replyService.createReply(payload)
 
-    # returned object type and fields
     assert isinstance(new_reply, Reply)
     assert new_reply.reviewId == 12
     assert new_reply.userId == 999

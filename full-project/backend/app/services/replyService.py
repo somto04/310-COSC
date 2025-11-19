@@ -1,21 +1,18 @@
 from datetime import datetime
-from ..schemas.review import Reply, ReplyCreate
+from ..schemas.reply import Reply, ReplyCreate
 from ..repos.replyRepo import loadReplies, saveReplies
 
 def list_replies(reviewId: int):
     replies = loadReplies()
-    return [Reply(**reply) for reply in replies if reply["reviewId"] == reviewId]
+    return [reply for reply in replies if reply.id == reviewId]
 
 def create_reply(payload: ReplyCreate) -> Reply:
     """ Creates a new reply and adds to json """
     replies = loadReplies()
 
-    if replies:
-        newId = max([int(r.get("id", 0)) for r in replies]) + 1
-    else:
-        newId = 1
+    newId = max((reply.id for reply in replies), default = 0) + 1
 
-    new_reply = Reply(
+    newReply = Reply(
         id=newId,
         reviewId=payload.reviewId,
         userId=payload.userId,
@@ -23,6 +20,6 @@ def create_reply(payload: ReplyCreate) -> Reply:
         datePosted=payload.datePosted or datetime.now().strftime("%d %B %Y")
     )
 
-    replies.append(new_reply.model_dump())
+    replies.append(newReply)
     saveReplies(replies)
-    return new_reply
+    return newReply

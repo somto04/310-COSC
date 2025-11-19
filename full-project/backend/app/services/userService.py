@@ -8,6 +8,7 @@ from ..utilities.security import hashPassword, verifyPassword
 
 reset_tokens = {}  # token -> {"email": str, "expires": int}
 
+
 def is_username_taken(users: List[User], username: str) -> bool:
     """
     Check if a username already exists in the user list, case-insensitive.
@@ -24,6 +25,7 @@ def is_username_taken(users: List[User], username: str) -> bool:
             return True
 
     return False
+
 
 def listUsers() -> List[User]:
     """Return all users as User objects"""

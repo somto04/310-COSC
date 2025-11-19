@@ -1,6 +1,7 @@
 import json
 import app.repos.userRepo as userRepo
 from app.schemas.user import User
+from app.schemas.role import Role
 
 
 def test_user_load_uses_tmp(tmp_path, monkeypatch):
@@ -15,7 +16,9 @@ def test_user_load_uses_tmp(tmp_path, monkeypatch):
             "email": "ichigo@karakura.jp",
             "username": "shinigami17",
             "pw": "getsugatenshou",
-            "role": "substitute_shinigami",
+            "role": Role.USER,
+            "penalties": 0,
+            "isBanned": False,
         },
         {
             "id": 2,
@@ -25,7 +28,9 @@ def test_user_load_uses_tmp(tmp_path, monkeypatch):
             "email": "rukia@soul-society.gov",
             "username": "senpai_rukia",
             "pw": "chappy4life",
-            "role": "soul_reaper",
+            "role": Role.ADMIN,
+            "penalties": 1,
+            "isBanned": False,
         },
     ]
 
@@ -39,7 +44,10 @@ def test_user_load_uses_tmp(tmp_path, monkeypatch):
     assert users[0].id == 1
     assert users[0].firstName == "Ichigo"
     assert users[1].username == "senpai_rukia"
-    assert users[1].role == "soul_reaper"
+    assert users[1].role == Role.ADMIN
+    assert users[1].age == 150
+    assert users[1].penalties == 1
+    assert users[1].isBanned is False
 
 
 def test_user_save_and_verify_contents(tmp_path, monkeypatch):
@@ -55,7 +63,9 @@ def test_user_save_and_verify_contents(tmp_path, monkeypatch):
             email="ichigo@karakura.jp",
             username="shinigami17",
             pw="getsugatenshou",
-            role="substitute_shinigami",
+            role=Role.USER,
+            penalties=0,
+            isBanned=False,
         ),
         User(
             id=2,
@@ -65,7 +75,9 @@ def test_user_save_and_verify_contents(tmp_path, monkeypatch):
             email="rukia@soul-society.gov",
             username="senpai_rukia",
             pw="chappy4life",
-            role="soul_reaper",
+            role=Role.ADMIN,
+            penalties=1,
+            isBanned=False,
         ),
     ]
 
@@ -76,8 +88,10 @@ def test_user_save_and_verify_contents(tmp_path, monkeypatch):
     assert len(saved_data) == 2
     assert saved_data[0]["firstName"] == "Ichigo"
     assert saved_data[1]["username"] == "senpai_rukia"
-    assert saved_data[1]["role"] == "soul_reaper"
+    assert saved_data[1]["role"] == "admin"
     assert saved_data[1]["age"] == 150
+    assert saved_data[1]["penalties"] == 1
+    assert saved_data[1]["isBanned"] is False
 
 
 def test_load_users_uses_cache(monkeypatch):

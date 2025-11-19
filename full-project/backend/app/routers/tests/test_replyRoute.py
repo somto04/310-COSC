@@ -27,15 +27,14 @@ def mock_repos(monkeypatch):
         fake_data.extend(data)
         return True
 
-    monkeypatch.setattr(replyRepo, "loadAll", fake_load_all)
-    monkeypatch.setattr(replyRepo, "saveAll", fake_save_all)
+    monkeypatch.setattr(replyRepo, "loadReplies", fake_load_all)
+    monkeypatch.setattr(replyRepo, "saveReplies", fake_save_all)
 
 
 def test_get_replies():
     """Checks that /replies/{reviewId} returns a valid response (even if empty)."""
     response = client.get("/replies/1")
 
-    # route should exist
     assert response.status_code in [200, 404]
 
     if response.status_code == 200:

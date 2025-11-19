@@ -1,20 +1,16 @@
-# app/routers/adminReview.py
 from fastapi import APIRouter, Depends, HTTPException, status
-from auth import getCurrentUser
+from auth import requireAdmin
 from ..repos.reviewRepo import loadAll as loadReviews, saveAll as saveReviews
 from ..utilities.penalties import incrementPenaltyForUser
+from .reviewRoute import validateReview
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
 @router.post("/reviews/{reviewId}/markInappropriate")
-def markReviewInappropriate(reviewId: int, currentUser: dict = Depends(getCurrentUser)):
-    if not currentUser or currentUser.get("role") != "admin":
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin only")
-
+def markReviewInappropriate(reviewId: int, admin: dict = Depends(requireAdmin)):
     reviews = loadReviews()
-    review = next((review for review in reviews if int(review.get("id")) == int(reviewId)), None)
-    if not review:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Review not found")
+    review = next((r for r in reviews if int(r.get("id")) == int(reviewId)), None)
+    validateReview(review)
 
     review["flagged"] = True
     saveReviews(reviews)

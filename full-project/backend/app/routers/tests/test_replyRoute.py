@@ -2,22 +2,42 @@ import pytest
 from fastapi.testclient import TestClient
 from app.app import app
 from app.routers import replyRoute
-
-# Fake login so you’re always authenticated
-app.dependency_overrides[replyRoute.getCurrentUser] = lambda: {"id": 1, "username": "tester", "role": "admin"}
+from app.repos import replyRepo
 
 client = TestClient(app)
 
+# Fake login dependency
+app.dependency_overrides[replyRoute.getCurrentUser] = lambda: {
+    "id": 1,
+    "username": "tester",
+    "role": "admin"
+}
 
-# Test GET /replies/{reviewId}
+
+@pytest.fixture(autouse=True)
+def mock_repos(monkeypatch):
+    """Prevent touching the real replies.json."""
+    fake_data = []
+
+    def fake_load_all():
+        return fake_data
+
+    def fake_save_all(data):
+        fake_data.clear()
+        fake_data.extend(data)
+        return True
+
+    monkeypatch.setattr(replyRepo, "loadAll", fake_load_all)
+    monkeypatch.setattr(replyRepo, "saveAll", fake_save_all)
+
+
 def test_get_replies():
     """Checks that /replies/{reviewId} returns a valid response (even if empty)."""
     response = client.get("/replies/1")
 
-    # The route should exist
-    assert response.status_code in [200, 404, 500]
+    # route should exist
+    assert response.status_code in [200, 404]
 
-    # If 200, verify response structure
     if response.status_code == 200:
         data = response.json()
         assert isinstance(data, list)
@@ -26,7 +46,6 @@ def test_get_replies():
             assert "userId" in data[0]
 
 
-# Test POST /replies
 def test_post_reply():
     """Checks that /replies accepts new replies correctly."""
     payload = {
@@ -37,8 +56,6 @@ def test_post_reply():
     }
 
     response = client.post("/replies", json=payload)
-
-    # should succeed (either 200 or 201 depending on your route)
     assert response.status_code in [200, 201]
 
     data = response.json()

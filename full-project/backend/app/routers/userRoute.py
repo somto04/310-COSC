@@ -1,7 +1,8 @@
 from typing import List
-from fastapi import APIRouter, status, HTTPException, Form  
+from fastapi import APIRouter, status, HTTPException, Form, Depends
+from app.routers.auth import getCurrentUser
 from ..schemas.user import User, UserCreate, UserUpdate
-from ..services.userService import listUsers, createUser, deleteUser, updateUser, getUserById, emailExists, generateResetToken, resetPassword
+from ..services.userService import listUsers, createUser, deleteUser, updateUser, getUserById
 
 router = APIRouter(prefix = "/users", tags = ["users"])
 
@@ -26,27 +27,17 @@ def removeUser(userId: str):
     deleteUser(userId)
     return None
 
-@router.post("/forgot-password")
-def forgotPassword(email: str = Form(...)):
+@router.get("/userProfile/{userId}")
+def getUserProfile(userId: str, currentUser = Depends(getCurrentUser)):
     """
-    Simulate sending a password reset link to the user's email.
-    In real projects, this would email a token.
+    Gets the user profile of either the owner or another reviewer
+
+    Returns:
+        User profile.
+    
+    Raises:
+        HTTPException: If the user doesnt exist.
     """
-    if not emailExists(email):
-        raise HTTPException(status_code=404, detail="Email not found")
-
-    # for now, just return a fake reset token
-    token = generateResetToken(email)
-    return {"message": "Password reset link sent", "token": token}
-
-
-@router.post("/reset-password")
-def resettingPassword(token: str = Form(...), new_password: str = Form(...)):
-    """
-    Reset a user's password using the provided token.
-    """
-    success = resetPassword(token, new_password)
-    if not success:
-        raise HTTPException(status_code=400, detail="Invalid or expired token")
-
-    return {"message": "Password reset successful"}
+    user = getUserById(userId)
+    isOwner = currentUser.id == userId
+    return {"user": user, "isOwner": isOwner}

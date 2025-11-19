@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from auth import requireAdmin
-from ..repos.reviewRepo import loadAll as loadReviews, saveAll as saveReviews
+from ..repos.reviewRepo import loadAllReviews as loadReviews, saveAllReviews as saveReviews
 from ..utilities.penalties import incrementPenaltyForUser
 from .reviewRoute import validateReview
 
@@ -9,13 +9,13 @@ router = APIRouter(prefix="/admin", tags=["admin"])
 @router.post("/reviews/{reviewId}/markInappropriate")
 def markReviewInappropriate(reviewId: int, admin: dict = Depends(requireAdmin)):
     reviews = loadReviews()
-    review = next((r for r in reviews if int(r.get("id")) == int(reviewId)), None)
+    review = next((review for review in reviews if int(review.id) == int(reviewId)), None)
     validateReview(review)
 
-    review["flagged"] = True
+    review.flagged = True
     saveReviews(reviews)
 
-    authorId = int(review.get("userId"))
+    authorId = int(review.userId)
     updatedUser = incrementPenaltyForUser(authorId)
 
     return {

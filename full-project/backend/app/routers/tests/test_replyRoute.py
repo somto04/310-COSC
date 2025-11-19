@@ -3,6 +3,7 @@ from fastapi.testclient import TestClient
 from app.app import app
 from app.routers import replyRoute
 from app.repos import replyRepo
+from ...schemas.reply import Reply
 
 client = TestClient(app)
 
@@ -17,18 +18,20 @@ app.dependency_overrides[replyRoute.getCurrentUser] = lambda: {
 @pytest.fixture(autouse=True)
 def mock_repos(monkeypatch):
     """Prevent touching the real replies.json."""
-    fake_data = []
+    fakeData = [
+        Reply(id=1, reviewId=10, userId=1001, replyBody="I agree", datePosted= "1 Jan 2024"),
+        Reply(id=2, reviewId=11, userId=1002, replyBody="Nice point!", datePosted="2 Jan 2024")
+    ]
+    def fakeLoadReplies():
+        return fakeData
 
-    def fake_load_all():
-        return fake_data
-
-    def fake_save_all(data):
-        fake_data.clear()
-        fake_data.extend(data)
+    def fakeSaveReplies(data):
+        fakeData.clear()
+        fakeData.extend(data)
         return True
 
-    monkeypatch.setattr(replyRepo, "loadReplies", fake_load_all)
-    monkeypatch.setattr(replyRepo, "saveReplies", fake_save_all)
+    monkeypatch.setattr(replyRepo, "loadReplies", fakeLoadReplies)
+    monkeypatch.setattr(replyRepo, "saveReplies", fakeSaveReplies)
 
 
 def test_get_replies():

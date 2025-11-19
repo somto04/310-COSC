@@ -2,50 +2,65 @@ import secrets, time
 from typing import List
 from fastapi import HTTPException
 from ..schemas.user import User, UserCreate, UserUpdate
-from ..repos.userRepo import loadUsers, saveAll
+from ..schemas.role import Role
+from ..repos.userRepo import get_next_user_id, loadUsers, saveAll
 from ..utilities.security import hashPassword, verifyPassword
 
 reset_tokens = {}  # token -> {"email": str, "expires": int}
 
+def is_username_taken(users: List[User], username: str) -> bool:
+    """
+    Check if a username already exists in the user list, case-insensitive.
+    Assumes `username` is already Pydantic-validated and stripped.
+
+    Example:
+        "Ichigo76" and "ichigo76" are considered the same.
+    """
+    normalized_new_username = username.lower()
+
+    for user in users:
+        normalized_existing_username = user.username.lower()
+        if normalized_existing_username == normalized_new_username:
+            return True
+
+    return False
 
 def listUsers() -> List[User]:
     """Return all users as User objects"""
-    return [User(**it) for it in loadUsers()]
+    return loadUsers()
 
 
 def createUser(payload: UserCreate) -> User:
     """
-    Create a new user with a unique ID and username
+    Create a new user with a unique ID and username and hashed password.
 
     Returns:
-        New user
+        New user (User)
 
     Raises:
         HTTPException: username already taken
+
+    Expects:
+        payload (UserCreate): user creation data is already validated, such as username abiding by constraints
     """
     users = loadUsers()
-    unique_username = payload.username.strip()
-    new_id = max([int(u.get("id", 0)) for u in users], default=0) + 1
 
-    if any(
-        u.get("username", "").strip().lower() == unique_username.lower() for u in users
-    ):
+    if is_username_taken(users, payload.username):
         raise HTTPException(status_code=409, detail="Username already taken; retry.")
 
-    hashed_pw = hashPassword(payload.pw.strip())
+    hashed_pw = hashPassword(payload.pw)
 
     new_user = User(
-        id=new_id,
+        id=get_next_user_id(),
+        username=payload.username,
         firstName=payload.firstName.strip(),
         lastName=payload.lastName.strip(),
         age=payload.age,
-        email=payload.email.strip(),
-        username=unique_username,
+        email=payload.email,
         pw=hashed_pw,
-        role=payload.role,
     )
 
-    users.append(new_user.model_dump())
+    users.append(new_user)
     saveAll(users)
     return new_user
 

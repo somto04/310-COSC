@@ -9,7 +9,7 @@ def _load_cache() -> List[User]:
     """
     Load users from the data file into a cache.
 
-    Helper to load users efficiently.
+    Loads the users only once and caches them for future calls.
     Returns:
         List[User]: A list of users.
     """
@@ -36,6 +36,8 @@ def saveAll(users: List[User]):
     Args:
         users (List[User]): A list of users to save.
     """
+    global _USER_CACHE
+    _USER_CACHE = users
     user_dicts = [user.model_dump() for user in users]
     _base_save_all(_USER_DATA_PATH, user_dicts)
 

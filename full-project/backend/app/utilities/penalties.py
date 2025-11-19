@@ -1,5 +1,5 @@
 from typing import Optional
-from ..repos.userRepo import loadAll as loadUsers, saveAll as saveUsers  # adjust path
+from ..repos.userRepo import loadUsers as loadUsers, saveAll as saveUsers  # adjust path
 
 MAX_PENALTIES = 3  # how many strikes before ban
 

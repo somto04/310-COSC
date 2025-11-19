@@ -151,12 +151,13 @@ class TestReviewRouterIntegration:
             "rating": 5
         }
         
-        # Set up auth
-        app.dependency_overrides[getCurrentUser] = lambda: {
-            "username": "testuser", 
-            "userId": 1,
-            "role": "user"
-        }
+        class FakeUser:
+            def __init__(self, id, username, role):
+                self.id = id
+                self.username = username
+                self.role = role
+
+        app.dependency_overrides[getCurrentUser] = lambda: FakeUser(id=1, username="testuser", role="user")
         
         # Send request with auth header
         response = client.post("/reviews", 

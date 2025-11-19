@@ -87,12 +87,11 @@ class UserCreate(BaseModel):
         ..., min_length=1, max_length=MAX_NAME_LENGTH, description="User's last name"
     )
     age: int = Field(
-        ...,
-        ge=MIN_AGE,
-        le=MAX_AGE,
-        description=f"User must be {MIN_AGE} years or older",
+        ..., ge=MIN_AGE, le=MAX_AGE, description="User must be 16 years or older"
     )
-    email: Email = Field(..., description="User's email address")
+    email: EmailStr = Field(
+        ..., max_length=MAX_EMAIL_LENGTH, description="User's email address"
+    )
     username: Username = Field(..., description="Unique username for the user")
     pw: Password = Field(..., description="Password for the user account")
 
@@ -164,6 +163,7 @@ class CurrentUser(BaseModel):
 
     Only exposes non-sensitive information.
     """
+
     id: int
     username: str
     role: Role

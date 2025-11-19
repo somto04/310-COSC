@@ -20,6 +20,10 @@ MIN_USERNAME_LENGTH = 3
 MAX_USERNAME_LENGTH = 30
 MIN_PASSWORD_LENGTH = 8
 MAX_PASSWORD_LENGTH = 128
+MIN_USERNAME_LENGTH = 3
+MAX_USERNAME_LENGTH = 30
+MIN_PASSWORD_LENGTH = 8
+MAX_PASSWORD_LENGTH = 128
 
 Username = Annotated[
     str,
@@ -27,7 +31,7 @@ Username = Annotated[
         strip_whitespace=True,
         min_length=MIN_USERNAME_LENGTH,
         max_length=MAX_USERNAME_LENGTH,
-        pattern=r"^[A-Za-z0-9_.-]+$",
+        pattern=r"^[A-Za-z0-9_.-]+$"
     ),
 ]
 Password = Annotated[
@@ -88,7 +92,7 @@ class UserCreate(BaseModel):
         ..., min_length=1, max_length=MAX_NAME_LENGTH, description="User's last name"
     )
     age: int = Field(
-        ..., ge=MIN_AGE, le=MAX_AGE, description="User must be 16 years or older"
+        ..., ge=MIN_AGE, le=MAX_AGE, description=f"User must be {MIN_AGE} years or older"
     )
     email: EmailStr = Field(
         ..., max_length=MAX_EMAIL_LENGTH, description="User's email address"

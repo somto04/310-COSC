@@ -7,9 +7,11 @@ from ..utilities.security import hashPassword, verifyPassword
 
 reset_tokens = {}  # token -> {"email": str, "expires": int}
 
+
 def listUsers() -> List[User]:
     """Return all users as User objects"""
     return [User(**it) for it in loadUsers()]
+
 
 def createUser(payload: UserCreate) -> User:
     """
@@ -17,7 +19,7 @@ def createUser(payload: UserCreate) -> User:
 
     Returns:
         New user
-        
+
     Raises:
         HTTPException: username already taken
     """
@@ -25,7 +27,9 @@ def createUser(payload: UserCreate) -> User:
     unique_username = payload.username.strip()
     new_id = max([int(u.get("id", 0)) for u in users], default=0) + 1
 
-    if any(u.get("username", "").strip().lower() == unique_username.lower() for u in users):
+    if any(
+        u.get("username", "").strip().lower() == unique_username.lower() for u in users
+    ):
         raise HTTPException(status_code=409, detail="Username already taken; retry.")
 
     hashed_pw = hashPassword(payload.pw.strip())
@@ -45,13 +49,14 @@ def createUser(payload: UserCreate) -> User:
     saveAll(users)
     return new_user
 
+
 def getUserById(userId: int) -> User:
     """Get a user by ID
-    
-    Returns: 
+
+    Returns:
         New user
-        
-    Raises:         
+
+    Raises:
         HTTPException: user not found
     """
     users = loadUsers()
@@ -60,14 +65,15 @@ def getUserById(userId: int) -> User:
             return User(**u)
     raise HTTPException(status_code=404, detail=f"User '{userId}' not found")
 
+
 def updateUser(userId: int, payload: UserUpdate) -> User:
     """
     Update user info while keeping ID type as int
-    
-    Returns: 
+
+    Returns:
         Updated user
-        
-    Raises:         
+
+    Raises:
         HTTPException: user not found
     """
     users = loadUsers()
@@ -102,11 +108,13 @@ def deleteUser(userId: int) -> None:
         raise HTTPException(status_code=404, detail=f"User '{userId}' not found")
     saveAll(new_users)
 
+
 # Password Reset
 def emailExists(email: str) -> bool:
     """Check if email exists"""
     users = loadUsers()
     return any(u["email"].lower() == email.lower() for u in users)
+
 
 def generateResetToken(email: str) -> str:
     """Generate a temporary reset token"""
@@ -114,6 +122,7 @@ def generateResetToken(email: str) -> str:
     expires = int(time.time()) + 900  # expires in 15 min
     reset_tokens[token] = {"email": email.lower(), "expires": expires}
     return token
+
 
 def resetPassword(token: str, new_password: str) -> bool:
     """Reset password if token valid"""

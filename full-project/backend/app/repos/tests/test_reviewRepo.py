@@ -12,7 +12,7 @@ def test_review_load_uses_tmp(tmp_path, monkeypatch):
             userId= 7,
             reviewTitle= "A Tale Worth a Thousand Berries",
             reviewBody= "By the seas! This film had more heart than a feast at Baratie. Zoro nearly cried—well, almost.",
-            rating= "9.5",
+            rating= 9,
             datePosted= "2025-01-12",
             flagged= False
         ),
@@ -50,7 +50,7 @@ def test_review_save_and_verify_contents(tmp_path, monkeypatch):
         userId= 7,
         reviewTitle= "A Tale Worth a Thousand Berries",
         reviewBody= "By the seas! This film had more heart than a feast at Baratie. Zoro nearly cried—well, almost.",
-        rating= "9.5",
+        rating= 9,
         datePosted= "2025-01-12",
         flagged= False
     ),

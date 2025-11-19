@@ -138,13 +138,24 @@ def updateUser(userId: int, payload: UserUpdate) -> User:
     raise HTTPException(status_code=404, detail=f"User '{userId}' not found")
 
 
-def deleteUser(userId: int) -> None:
-    """Delete a user by ID"""
+def deleteUser(userId: int):
+    """
+    Delete a user by ID
+
+    Args:
+        userId (int): ID of the user to delete
+    Raises:
+        HTTPException: user not found
+    """
     users = loadUsers()
-    new_users = [u for u in users if int(u.get("id")) != int(userId)]
-    if len(new_users) == len(users):
-        raise HTTPException(status_code=404, detail=f"User '{userId}' not found")
-    saveAll(new_users)
+
+    for index, user in enumerate(users):
+        if user.id == userId:
+            del users[index]
+            saveAll(users)
+            return
+
+    raise HTTPException(status_code=404, detail=f"User '{userId}' not found")
 
 
 # Password Reset

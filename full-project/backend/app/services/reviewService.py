@@ -1,7 +1,7 @@
 from typing import List
 from fastapi import HTTPException
 from ..schemas.review import Review, ReviewUpdate, ReviewCreate
-from ..repos.reviewRepo import loadAllReviews, saveAllReviews
+from ..repos.reviewRepo import loadReviews, saveReviews
 from ..repos import movieRepo
 
 def searchReviews(query: str) -> List[Review]:
@@ -14,7 +14,7 @@ def searchReviews(query: str) -> List[Review]:
     if not strippedQuery:
         return []
 
-    reviews = loadAllReviews()
+    reviews = loadReviews()
     movies = movieRepo.loadAll()
 
     # If query is a number, treat as movie ID
@@ -32,7 +32,7 @@ def searchReviews(query: str) -> List[Review]:
 
 def listReviews() -> List[Review]:
     """ Lists all reviews currently stored """
-    return loadAllReviews()
+    return loadReviews()
 
 def createReview(payload: ReviewCreate) -> Review:
     """ 
@@ -44,7 +44,7 @@ def createReview(payload: ReviewCreate) -> Review:
     Raises: 
         HTTPException: id collision error if theres a duplicate
     """
-    reviews = loadAllReviews()
+    reviews = loadReviews()
 
     newId = max((review.id for review in reviews), default = 0) + 1
 
@@ -62,7 +62,7 @@ def createReview(payload: ReviewCreate) -> Review:
     )
     
     reviews.append(newReview)
-    saveAllReviews(reviews)
+    saveReviews(reviews)
     return newReview
 
 def getReviewById(reviewId: int) -> Review:
@@ -75,7 +75,7 @@ def getReviewById(reviewId: int) -> Review:
     Raises: 
         HTTPException: review not found
     """
-    reviews = loadAllReviews()
+    reviews = loadReviews()
 
     for review in reviews:
         if review.id == reviewId:
@@ -92,7 +92,7 @@ def updateReview(reviewId: int, payload: ReviewUpdate) -> Review:
     Raises: 
         HTTPException: review not found
     """  
-    reviews = loadAllReviews()
+    reviews = loadReviews()
     for idx, it in enumerate(reviews):
         if it.id == reviewId:
             updateData = payload.model_dump(exclude_unset=True)
@@ -111,7 +111,7 @@ def updateReview(reviewId: int, payload: ReviewUpdate) -> Review:
             
             updated = Review(**updatedDict)
             reviews[idx] = updated
-            saveAllReviews(reviews)
+            saveReviews(reviews)
             return updated
         
     raise HTTPException(status_code=404, detail=f"Review '{reviewId}' not found")
@@ -123,10 +123,10 @@ def deleteReview(reviewId: int) -> None:
     Raises: 
         HTTPException: review not found
     """  
-    reviews = loadAllReviews()
+    reviews = loadReviews()
     newReviews = [review for review in reviews if review.id != reviewId]
 
     if len(newReviews) == len(reviews):
         raise HTTPException(status_code=404, detail=f"Review '{reviewId}' not found")
     
-    saveAllReviews(newReviews)
+    saveReviews(newReviews)

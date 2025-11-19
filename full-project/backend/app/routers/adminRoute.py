@@ -10,13 +10,13 @@ router = APIRouter(prefix="/admin", tags=["admin"])
 @router.post("/reviews/{reviewId}/markInappropriate")
 def markReviewInappropriate(reviewId: int, admin: CurrentUser = Depends(requireAdmin)):
     reviews = loadReviews()
-    review = next((review for review in reviews if int(review.get("id")) == int(reviewId)), None)
+    review = next((review for review in reviews if int(review.reviewId) == int(reviewId)), None)
     validateReview(review)
 
     review["flagged"] = True
     saveReviews(reviews)
 
-    authorId = int(review.get("userId"))
+    authorId = int(review.userId)
     updatedUser = incrementPenaltyForUser(authorId)
 
     return {

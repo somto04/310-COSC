@@ -45,20 +45,30 @@ Email = Annotated[
         pattern=r"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$",
     ),
 ]
+NameStr = Annotated[
+    str,
+    StringConstraints(
+        strip_whitespace=True,
+        min_length=1,
+        max_length=MAX_NAME_LENGTH,
+    ),
+]
 
 
 class User(BaseModel):
     """
     Schema representing a user in the system.
 
+    Loose validation to accommodate legacy data.
+
     Attributes:
         id (int): Unique identifier for the user.
-        username (Username): Unique username following defined constraints.
-        firstName (str): User's first name.
-        lastName (str): User's last name.
+        username (str): Username as stored; may not follow current validation rules.
+        firstName (str): First name; may be empty for legacy users.
+        lastName (str): Last name; may be empty for legacy users.
         age (Optional[int]): User's age.
-        email (Email): User's validated email address.
-        pw (Password): Hashed password.
+        email (str): User's validated email address; legacy users may have empty email.
+        pw (str): Hashed password; legacy users may have empty password.
         role (Role): Role of the user in the system.
         penalties (int): Number of penalties assigned to the user.
         isBanned (bool): Indicates if the user is banned.
@@ -66,10 +76,10 @@ class User(BaseModel):
 
     id: int
     username: str
-    firstName: str = ""
-    lastName: str = ""
-    age: Optional[int] = None
-    email: Email = ""
+    firstName: str
+    lastName: str
+    age: Optional[int]
+    email: str
     pw: str
     role: Role = Role.USER
     penalties: int = Field(
@@ -86,19 +96,24 @@ class UserCreate(BaseModel):
 
     Attributes:
         username (Username): Unique username following defined constraints.
-        firstName (str): User's first name.
-        lastName (str): User's last name.
+        firstName (NameStr): User's first name.
+        lastName (NameStr): User's last name.
         age (int): User's age.
         email (Email): User's validated email address.
         pw (Password): Password following defined constraints.
     """
 
-    username: Username = Field(..., description="Unique username for the user")
-    firstName: str = Field(
-        ..., min_length=1, max_length=MAX_NAME_LENGTH, description="User's first name"
+    username: Username = Field(
+        ...,
+        description=f"Username containing only letters, numbers, and _.-, and {MIN_USERNAME_LENGTH}-{MAX_USERNAME_LENGTH} characters",
     )
-    lastName: str = Field(
-        ..., min_length=1, max_length=MAX_NAME_LENGTH, description="User's last name"
+    firstName: NameStr = Field(
+        ...,
+        description=f"First name having non-whitespace characters and 1-{MAX_NAME_LENGTH} characters",
+    )
+    lastName: NameStr = Field(
+        ...,
+        description=f"Last name having non-whitespace characters and 1-{MAX_NAME_LENGTH} characters",
     )
     age: int = Field(
         ...,
@@ -107,7 +122,10 @@ class UserCreate(BaseModel):
         description=f"User must be {MIN_AGE} years or older",
     )
     email: Email = Field(..., description="User's email address")
-    pw: Password = Field(..., description="Password for the user account")
+    pw: Password = Field(
+        ...,
+        description=f"Password with at least one uppercase letter, one lowercase letter, one digit, and {MIN_PASSWORD_LENGTH}-{MAX_PASSWORD_LENGTH} characters",
+    )
 
     @field_validator("age")
     @classmethod
@@ -134,19 +152,36 @@ class UserUpdate(BaseModel):
 
     Attributes:
         username (Optional[Username]): Unique username for the user.
-        firstName (Optional[str]): User's first name.
-        lastName (Optional[str]): User's last name.
+        firstName (Optional[NameStr]): User's first name.
+        lastName (Optional[NameStr]): User's last name.
         age (Optional[int]): User's age.
         email (Optional[Email]): User's email address.
         pw (Optional[Password]): Password for the user account.
     """
 
-    username: Optional[Username] = None
-    firstName: Optional[str] = Field(None, min_length=1, max_length=MAX_NAME_LENGTH)
-    lastName: Optional[str] = Field(None, min_length=1, max_length=MAX_NAME_LENGTH)
-    age: Optional[int] = Field(None, ge=MIN_AGE, le=MAX_AGE)
-    email: Optional[Email] = None
-    pw: Optional[Password] = None
+    username: Optional[Username] = Field(
+        default=None,
+        description=f"Username containing only letters, numbers, and _.-, and {MIN_USERNAME_LENGTH}-{MAX_USERNAME_LENGTH} characters",
+    )
+    firstName: Optional[NameStr] = Field(
+        default=None,
+        description=f"First name having non-whitespace characters and 1-{MAX_NAME_LENGTH} characters",
+    )
+    lastName: Optional[NameStr] = Field(
+        default=None,
+        description=f"Last name having non-whitespace characters and 1-{MAX_NAME_LENGTH} characters",
+    )
+    age: Optional[int] = Field(
+        default=None,
+        ge=MIN_AGE,
+        le=MAX_AGE,
+        description=f"User must be {MIN_AGE} years or older",
+    )
+    email: Optional[Email] = Field(default=None, description="User's email address")
+    pw: Optional[Password] = Field(
+        default=None,
+        description=f"Password with at least one uppercase letter, one lowercase letter, one digit, and {MIN_PASSWORD_LENGTH}-{MAX_PASSWORD_LENGTH} characters",
+    )
 
     @field_validator("age")
     @classmethod
@@ -179,9 +214,13 @@ class AdminUserUpdate(UserUpdate):
         isBanned (Optional[bool]): Indicates if the user is banned.
     """
 
-    role: Optional[Role] = None
+    role: Optional[Role] = Field(
+        default=None, description="Role of the user in the system, e.g., USER or ADMIN"
+    )
     penalties: Optional[int] = Field(
-        None, validation_alias=AliasChoices("penaltyCount", "penalties")
+        None,
+        validation_alias=AliasChoices("penaltyCount", "penalties"),
+        description="Number of penalties assigned to the user, 3 is the max.",
     )
     isBanned: Optional[bool] = None
 

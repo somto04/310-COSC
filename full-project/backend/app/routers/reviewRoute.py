@@ -15,7 +15,10 @@ def searchReview(q: str = "", limit: int = 50, offset: int = 0):
 def getReviews():
     return listReviews()
 
-
+@router.get("/flagged", response_model=List[Review])
+def getFlaggedReviews():
+    reviews = listReviews()
+    return [review for review in reviews if review.get("flagged") is True]
 
 @router.post("", response_model=Review, status_code=201)
 def postReview(payload: ReviewCreate, currentUser: dict = Depends(getCurrentUser)):

@@ -3,6 +3,8 @@ from fastapi import APIRouter, status, Depends, HTTPException
 from ..schemas.review import Review, ReviewCreate, ReviewUpdate
 from ..services.reviewService import listReviews, createReview, deleteReview, updateReview, getReviewById, searchReviews
 from .auth import getCurrentUser, requireAdmin
+from ..schemas.role import Role
+
 
 router = APIRouter(prefix="/reviews", tags=["reviews"])
 
@@ -15,8 +17,13 @@ def searchReview(q: str = "", limit: int = 50, offset: int = 0):
 def getReviews():
     return listReviews()
 
-@router.get("/flagged", response_model=List[Review])
+@router.get("/flagged", response_model=List[Review],)
 def getFlaggedReviews():
+    if CurrentUser.role != Role.ADMIN:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin only"
+        )
     reviews = listReviews()
     return [review for review in reviews if review.flagged is True]
 

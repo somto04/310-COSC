@@ -9,26 +9,26 @@ from app.schemas.review import Review, ReviewCreate, ReviewUpdate
 def fakeReviews():
     """ provides mock reviews data for testing that follows our review schema"""
     return [
-        {
-            "id": 1,
-            "movieId": 10,
-            "userId": 40846,
-            "reviewTitle": "Good movie",
-            "reviewBody": "Excellent really made me love Thor, answered a bunch of questions and tied things together. A must see.",
-            "rating": 10,
-            "datePosted": "8 April 2018",
-            "flagged": False,
-        },
-        {
-            "id": 2,
-            "movieId": 11,
-            "userId": 40847,
-            "reviewTitle": "Fun, entertaining and more than worth a watch",
-            "reviewBody": "Sometimes you watch a film and you remember why you love the movies so much.",
-            "rating": 8,
-            "datePosted": "10 April 2018",
-            "flagged": False,
-        },
+        Review(
+            id= 1,
+            movieId= 10,
+            userId= 40846,
+            reviewTitle= "Good movie",
+            reviewBody= "Excellent really made me love Thor, answered a bunch of questions and tied things together. A must see.",
+            rating= 10,
+            datePosted= "8 April 2018",
+            flagged= False
+        ),
+        Review(
+            id= 2,
+            movieId= 11,
+            userId= 40847,
+            reviewTitle= "Fun, entertaining and more than worth a watch",
+            reviewBody= "Sometimes you watch a film and you remember why you love the movies so much.",
+            rating= 8,
+            datePosted= "10 April 2018",
+            flagged= False
+        )
     ]
 
 @pytest.fixture

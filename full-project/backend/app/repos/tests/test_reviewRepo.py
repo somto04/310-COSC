@@ -90,7 +90,7 @@ def test_review_save_and_verify_contents(tmp_path, monkeypatch):
     reviewRepo.saveAll(data)
 
     assert test_file.exists(), "users.json should have been created"
-    contents = json.loads(test_file.read_text())
+    contents = json.loads(test_file.read_text(encoding="utf-8"))
     assert contents == data
     assert len(contents) == 4
     assert contents[2]["reviewTitle"] == "Sanji’s Culinary Masterpiece"

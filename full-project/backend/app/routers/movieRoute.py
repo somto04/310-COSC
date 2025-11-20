@@ -16,8 +16,8 @@ router = APIRouter(prefix="/movies", tags=["movies"])
 
 
 @router.get("/search", response_model=List[Movie])
-def searchMovies(q: Optional[str] = None, query: Optional[str] = None):
-    keyword = (q or query or "").lower().strip()
+def searchMovies(query: Optional[str] = None):
+    keyword = (query or "").lower().strip()
 
     results = searchMovie(keyword)   # returns List[Movie]
 

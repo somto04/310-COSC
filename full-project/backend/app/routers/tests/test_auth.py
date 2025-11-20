@@ -12,6 +12,13 @@ from ...schemas.role import Role
 
 client = TestClient(app)
 
+def fakeGetCurrentAdmin(token=None):
+        return CurrentUser(
+            id=1,
+            username="testUser",
+            role=Role.ADMIN
+        )
+
 def fakeLoadUsers():
     return [
         User(
@@ -138,7 +145,7 @@ def test_logout_success(monkeypatch):
 def test_getAdminDashboard(monkeypatch):
     from app.routers import auth
 
-    monkeypatch.setattr(auth, "loadUsers", fakeLoadUsers)
+    monkeypatch.setattr(auth, "loadUsers", fakeGetCurrentAdmin)
 
     client.headers.update({"Authorization": "Bearer tester"})
     response = client.get("/adminDashboard", headers={"Authorization": "Bearer testUser"})

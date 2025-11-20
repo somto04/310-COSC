@@ -6,6 +6,7 @@ from app.app import app
 from ...repos import userRepo
 from ...schemas.user import CurrentUser
 import app.routers.auth as auth
+from app.schemas.role import Role
 from ..auth import getUsernameFromJsonDB
 
 client = TestClient(app)
@@ -18,7 +19,7 @@ def mock_user(monkeypatch):
     monkeypatch.setattr(
         auth, 
         "getCurrentUser", 
-        lambda token=None: CurrentUser(id=1, usernmae="testuser", role="admin")
+        lambda token=None: CurrentUser(id=1, username="testuser", role=Role.ADMIN)
         )
 
 # unit tests

@@ -78,7 +78,7 @@ def test_create_review(mockLoad, mockSave, fakeReviews):
 
     payload = ReviewCreate(
         reviewTitle="New Review",
-        reviewBody="Loved it",
+        reviewBody="Loved it!!!!!!!!!!!",
         rating=9,
     )
 
@@ -87,6 +87,7 @@ def test_create_review(mockLoad, mockSave, fakeReviews):
     assert new_review.movieId == 12
     assert new_review.reviewTitle == "New Review"
     mockSave.assert_called_once()
+
 
 
 @patch("app.services.reviewService.loadReviews")
@@ -111,7 +112,7 @@ def test_update_review(mockLoad, mockSave, fakeReviews):
 
     payload = ReviewUpdate(
         reviewTitle="Updated title",
-        reviewBody="Amazing",
+        reviewBody="Amazing!!!!!!!!!!!",
         rating=10,
     )
 
@@ -120,6 +121,7 @@ def test_update_review(mockLoad, mockSave, fakeReviews):
     assert updated.reviewTitle == "Updated title"
     mockSave.assert_called_once()
 
+
 # this test checks handling when trying to update a non-existent review and throws a 404 error
 @patch("app.services.reviewService.saveReviews")
 @patch("app.services.reviewService.loadReviews")
@@ -127,8 +129,8 @@ def test_update_review_not_found(mockLoad, mockSave):
     mockLoad.return_value = []
 
     payload = ReviewUpdate(
-        reviewTitle="Hi",
-        reviewBody="Test",
+        reviewTitle="Hi everyone",
+        reviewBody="Testing review update!!!!!!!!!!!",
         rating=10,
     )
 

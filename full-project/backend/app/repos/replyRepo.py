@@ -4,6 +4,14 @@ from ..schemas.reply import Reply
 
 REPLY_DATA_PATH = "app/data/replies.json"
 _REPLY_CACHE: List[Reply] | None = None
+_NEXT_REPLY_ID: int | None = None
+
+def getMaxReplyId(replies: List[Reply]) -> int:
+    """
+    Return the maximum reply ID in a list of replies, or 0 if empty.
+    """
+    return max((reply.id for reply in replies), default=0)
+
 
 def _load_reply_cache() -> List[Reply]: 
     """
@@ -18,6 +26,23 @@ def _load_reply_cache() -> List[Reply]:
         reply_dicts = _base_load_all(_REPLY_CACHE)
         _REPLY_CACHE = [Reply(**reply) for reply in reply_dicts]
     return _REPLY_CACHE
+
+def getNextReplyId() -> int:
+    """
+    Get the next available reply ID.
+
+    Returns:
+        int: The next reply ID.
+    """
+    global _NEXT_REPLY_ID
+    if _NEXT_REPLY_ID is None:
+        _load_reply_cache()
+
+    assert _NEXT_REPLY_ID is not None
+
+    next_id = _NEXT_REPLY_ID
+    _NEXT_REPLY_ID += 1
+    return next_id
 
 def loadReplies() -> List[Reply]: 
     """

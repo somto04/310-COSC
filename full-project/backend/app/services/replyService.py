@@ -1,6 +1,6 @@
 from datetime import datetime
 from ..schemas.reply import Reply, ReplyCreate
-from ..repos.replyRepo import loadReplies, saveReplies
+from ..repos.replyRepo import loadReplies, saveReplies, getNextReplyId
 
 def listReplies(reviewId: int):
     replies = loadReplies()
@@ -10,10 +10,8 @@ def createReply(payload: ReplyCreate) -> Reply:
     """ Creates a new reply and adds to json """
     replies = loadReplies()
 
-    newId = max((reply.id for reply in replies), default = 0) + 1
-
     newReply = Reply(
-        id=newId,
+        id=getNextReplyId(),
         reviewId=payload.reviewId,
         userId=payload.userId,
         replyBody=payload.replyBody.strip() if payload.replyBody else "",

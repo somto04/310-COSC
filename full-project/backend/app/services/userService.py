@@ -70,8 +70,6 @@ def createUser(payload: UserCreate) -> User:
         username=payload.username,
         firstName=payload.firstName,
         lastName=payload.lastName,
-        firstName=payload.firstName,
-        lastName=payload.lastName,
         age=payload.age,
         email=payload.email,
         pw=hashed_pw,

@@ -1,8 +1,8 @@
 from typing import List
-from.repo import _base_save_all, _base_load_all
+from.repo import _base_save_all, _base_load_all, DATA_DIR
 from ..schemas.reply import Reply
 
-REPLY_DATA_PATH = "app/data/replies.json"
+_REPLY_DATA_PATH = DATA_DIR / "replies.json"
 _REPLY_CACHE: List[Reply] | None = None
 _NEXT_REPLY_ID: int | None = None
 
@@ -23,7 +23,7 @@ def _load_reply_cache() -> List[Reply]:
     """
     global _REPLY_CACHE, _NEXT_REPLY_ID
     if _REPLY_CACHE is None:
-        reply_dicts = _base_load_all(REPLY_DATA_PATH)
+        reply_dicts = _base_load_all(_REPLY_DATA_PATH)
         _REPLY_CACHE = [Reply(**reply) for reply in reply_dicts]
         _NEXT_REPLY_ID = getMaxReplyId(_REPLY_CACHE) + 1
     return _REPLY_CACHE

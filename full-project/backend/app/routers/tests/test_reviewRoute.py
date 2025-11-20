@@ -9,6 +9,7 @@ from fastapi.testclient import TestClient
 from fastapi import FastAPI, status, HTTPException
 from unittest.mock import patch
 from app.app import app
+from ...schemas.role import Role
 from app.routers.reviewRoute import router, getCurrentUser
 from app.schemas.review import Review, ReviewCreate, ReviewUpdate
 
@@ -211,7 +212,11 @@ class TestReviewRouterIntegration:
     @patch('app.routers.reviewRoute.deleteReview')
     @patch('app.routers.reviewRoute.getReviewById')
     def test_delete_review_as_admin(self, mock_get_review, mock_delete, client, sample_review_data, app):
-        app.dependency_overrides[getCurrentUser] = lambda: {"username": "admin", "role": "admin"}
+        app.dependency_overrides[getCurrentUser] = lambda: CurrentUser(
+        id=1,
+        username="admin",
+        role=Role.ADMIN
+)
 
         mock_get_review.return_value = sample_review_data
         mock_delete.return_value = None

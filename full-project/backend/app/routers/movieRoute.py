@@ -20,7 +20,7 @@ router = APIRouter(prefix="/movies", tags=["movies"])
 def searchMovies(query: Optional[str] = None):
     keyword = (query or "").lower().strip()
 
-    results = searchMovie(keyword)   # returns List[Movie]
+    results = searchMovie(keyword)
 
     if not results:
         raise HTTPException(status_code=404, detail="Movie not found")

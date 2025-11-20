@@ -3,6 +3,7 @@ from fastapi import HTTPException
 from ..schemas.review import Review, ReviewUpdate, ReviewCreate
 from ..repos.reviewRepo import loadReviews, saveReviews, getNextReviewId
 from ..repos import movieRepo
+from datetime import date
 
 def searchReviews(query: str) -> List[Review]:
     """ Searches reviews by movie title (case-insensitive) or by movie ID 
@@ -53,7 +54,8 @@ def createReview(payload: ReviewCreate) -> Review:
         reviewTitle=payload.reviewTitle.strip(), 
         rating=payload.rating if isinstance(payload.rating, int) else int(payload.rating),
         reviewBody=payload.reviewBody.strip(),
-        flagged=payload.flagged or False,
+        datePosted=date.today().isoformat(),
+        flagged=False
     )
     
     reviews.append(newReview)

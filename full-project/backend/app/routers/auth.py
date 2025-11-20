@@ -4,6 +4,7 @@ from ..schemas.user import User
 from ..repos.userRepo import loadUsers
 from app.utilities.security import verifyPassword
 from ..schemas.user import CurrentUser
+from ..schemas.role import Role
 from ..services.userService import getUserByEmail, generateResetToken, resetPassword
 
 
@@ -30,7 +31,7 @@ def getCurrentUser(token: str = Depends(oauth2_scheme)) -> CurrentUser:
 def requireAdmin(user: CurrentUser = Depends(getCurrentUser)):
     validateUser(user)
     
-    if user.role != "admin":
+    if user.role != Role.ADMIN:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Admin privileges required"
@@ -45,7 +46,7 @@ def login(username: str = Form(...), password: str = Form(...)):
     user = getUsernameFromJsonDB(username)
     validateUser(user)
 
-    if user.get("isBanned"):
+    if user.isBanned:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Account banned due to repeated violations",
@@ -105,16 +106,15 @@ def resettingPassword(token: str = Form(...), new_password: str = Form(...)):
 
     return {"message": "Password reset successful"}
 
-def validatePassword(password, user):
-    hashedPw = user.get("pw")
-    if not verifyPassword(password, hashedPw):
+def validatePassword(password, user: User):
+    if not verifyPassword(password, user.pw):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
         
-def validateUser(user):
+def validateUser(user: User):
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

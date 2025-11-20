@@ -102,14 +102,10 @@ def test_login_valid(monkeypatch):
     from app.routers import auth as loginRoute
     from app.utilities import security
 
-    def fake_get_user(username):
-        # simulate stored *hashed* password
-        return {"username": "testuser", "pw": "$2b$12$FakeHashString1234567890"}
-
     def fake_verify_password(plain, hashed):
         return True
 
-    monkeypatch.setattr(loginRoute, "getUsernameFromJsonDB", fake_get_user)
+    monkeypatch.setattr(loginRoute, "getUsernameFromJsonDB", fake_get_current_user)
     monkeypatch.setattr(loginRoute, "verifyPassword", fake_verify_password)
 
     response = client.post("/token", data={"username": "testuser", "password": "12345"})
@@ -123,14 +119,10 @@ def test_login_invalid(monkeypatch):
     from app.routers import auth as loginRoute
     from app.utilities import security
 
-    def fake_get_user(username):
-        # simulate stored *hashed* password
-        return {"username": "testuser", "pw": "$2b$12$FakeHashString1234567890"}
-
     def fake_verify_password(plain, hashed):
         return False
 
-    monkeypatch.setattr(loginRoute, "getUsernameFromJsonDB", fake_get_user)
+    monkeypatch.setattr(loginRoute, "getUsernameFromJsonDB", fake_get_current_user)
     monkeypatch.setattr(loginRoute, "verifyPassword", fake_verify_password)
 
     response = client.post("/token", data={"username": "testuser", "password": "12345"})
@@ -158,8 +150,7 @@ def test_logout_success(monkeypatch):
 def test_getAdminDashboard(monkeypatch):
     from app.routers import auth
 
-    monkeypatch.setattr(auth, "getCurrentUser", fakeGetCurrentAdmin)
-    monkeypatch.setattr(auth, "getUsernameFromJsonDB", fakeGetAdmin)
+    app.dependency_overrides[auth.getCurrentUser] = lambda token=None: fakeGetCurrentAdmin()
 
     client.headers.update({"Authorization": "Bearer tester"})
     response = client.get("/adminDashboard", headers={"Authorization": "Bearer testUser"})

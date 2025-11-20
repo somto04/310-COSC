@@ -3,13 +3,13 @@ from typing import List
 from fastapi import HTTPException
 from ..schemas.user import User, UserCreate, UserUpdate
 from ..schemas.role import Role
-from ..repos.userRepo import get_next_user_id, loadUsers, saveUsers
+from ..repos.userRepo import getNextUserId, loadUsers, saveUsers
 from ..utilities.security import hashPassword, verifyPassword
 
 reset_tokens = {}  # token -> {"email": str, "expires": int}
 
 
-def is_username_taken(
+def isUsernameTaken(
     users: List[User], username: str, *, exclude_user_id: int | None = None
 ) -> bool:
     """
@@ -60,13 +60,13 @@ def createUser(payload: UserCreate) -> User:
     """
     users = loadUsers()
 
-    if is_username_taken(users, payload.username):
+    if isUsernameTaken(users, payload.username):
         raise HTTPException(status_code=409, detail="Username already taken; retry.")
 
     hashed_pw = hashPassword(payload.pw)
 
     new_user = User(
-        id=get_next_user_id(),
+        id=getNextUserId(),
         username=payload.username,
         firstName=payload.firstName,
         lastName=payload.lastName,
@@ -120,7 +120,7 @@ def updateUser(userId: int, payload: UserUpdate) -> User:
 
     if "username" in update_data and update_data["username"] is not None:
         new_username = update_data["username"]
-        if is_username_taken(users, new_username, exclude_user_id=userId):
+        if isUsernameTaken(users, new_username, exclude_user_id=userId):
             raise HTTPException(
                 status_code=409, detail="Username already taken; retry."
             )
@@ -158,7 +158,7 @@ def deleteUser(userId: int):
     raise HTTPException(status_code=404, detail=f"User '{userId}' not found")
 
 
-def get_user_by_email(email: str) -> User | None:
+def getUserByEmail(email: str) -> User | None:
     """
     Check if email exists
     

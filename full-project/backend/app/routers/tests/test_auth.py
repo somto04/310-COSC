@@ -59,20 +59,6 @@ def mock_user(monkeypatch):
     """Mock getCurrentUser to return a fake user dictionary."""
     from app.routers import auth
 
-    def fake_get_current_user(token=None):
-        return User(
-            id=1,
-            username="testuser",
-            pw="HashedPassword21",
-            role=Role.ADMIN,
-            email="testuser@example.com",
-            age=30,
-            firstName="Test",
-            lastName="User",
-            penalties=0,
-            isBanned=False,
-        )
-
     monkeypatch.setattr(auth, "getCurrentUser", fake_get_current_user)
 
 

@@ -5,6 +5,13 @@ from ..schemas.review import Review
 REVIEW_DATA_PATH = DATA_DIR / "reviews.json"
 _REVIEW_CACHE: List[Review] | None = None
 
+def getMaxReviewId(reviews: List[Review]) -> int:
+    """
+    Return the maximum Review ID in a list of reviews, or 0 if empty.
+    """
+    return max((review.id for review in reviews), default=0)
+
+
 def _load_review_cache() -> List[Review]:
     """
     Load reviews from the data file into a cache.

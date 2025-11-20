@@ -19,7 +19,7 @@ def getReviews():
 
 @router.get("/flagged", response_model=List[Review],)
 def getFlaggedReviews():
-    if CurrentUser.role != Role.ADMIN:
+    if getCurrentUser.role != Role.ADMIN:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Admin only"

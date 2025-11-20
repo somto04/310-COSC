@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional
 
 class Review(BaseModel):
@@ -7,16 +7,16 @@ class Review(BaseModel):
     userId: int
     reviewTitle: str
     reviewBody: str
-    rating: int
+    rating: int = Field(ge=1, le=10)
     datePosted: Optional[str] = None
     flagged: Optional[bool] = False
 
 class ReviewCreate(BaseModel):
     movieId: int
     userId: Optional[int] = None 
-    reviewTitle: str
+    reviewTitle: str #= Field(minLength=3, maxLength=50, description=f"title of your review, must be less than {maxlength} characters")
     reviewBody: str
-    rating: int
+    rating: int = Field(ge=1, le=10)    
     datePosted: Optional[str] = None
     flagged: Optional[bool] = False
 
@@ -25,13 +25,12 @@ class ReviewUpdate(BaseModel):
     userId: Optional[int] = None
     reviewTitle: Optional[str] = None
     reviewBody: Optional[str] = None
-    rating: Optional[int] = None
+    rating: int = Field(ge=1, le=10)    
     datePosted: Optional[str] = None
     flagged: Optional[bool] = None
 
 class Reply(BaseModel):
     id: int
-    # this refers to the review the reply is associated with
     reviewId: int
     userId: int
     replyBody: str

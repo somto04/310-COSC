@@ -4,6 +4,7 @@ from ..schemas.review import Review
 
 REVIEW_DATA_PATH = DATA_DIR / "reviews.json"
 _REVIEW_CACHE: List[Review] | None = None
+_NEXT_USER_ID: int | None = None
 
 def getMaxReviewId(reviews: List[Review]) -> int:
     """
@@ -20,10 +21,13 @@ def _load_review_cache() -> List[Review]:
     Returns:
         List[Review]: A list of reviews.
     """
-    global _REVIEW_CACHE
+    global _REVIEW_CACHE, _NEXT_USER_ID
     if _REVIEW_CACHE is None:
         review_dicts = _base_load_all(REVIEW_DATA_PATH)
         _REVIEW_CACHE = [Review(**review) for review in review_dicts]
+
+        maxId = getMaxReviewId(_REVIEW_CACHE)
+        _NEXT_USER_ID = maxId + 1
     return _REVIEW_CACHE
 
 def loadReviews() -> List[Review]:
@@ -42,8 +46,13 @@ def saveReviews(reviews: List[Review]) -> None:
     Args:
         reviews (List[Review]): A list of review items to save.
     """
-    global _REVIEW_CACHE
+    global _REVIEW_CACHE, _NEXT_USER_ID
     _REVIEW_CACHE = reviews
+
+    maxId = getMaxReviewId(reviews)
+    if _NEXT_USER_ID is None or _NEXT_USER_ID <= maxId:
+        _NEXT_USER_ID = maxId + 1
+        
     review_dict = [review.model_dump() for review in reviews]
     _base_save_all(REVIEW_DATA_PATH, review_dict)
 

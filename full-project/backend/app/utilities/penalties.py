@@ -17,8 +17,9 @@ def incrementPenaltyForUser(userId: int) -> User:
     Returns the updated User model.
     """
     users = loadUsers()
-    updatedUser = None
-   
+    updated_user = None
+
+    # loop with index so we can update the list
     for i, user in enumerate(users):
         if int(user.id) == int(userId):
             user.penalties += 1

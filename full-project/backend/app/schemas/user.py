@@ -8,7 +8,6 @@ from pydantic import (
 from typing import Annotated, Optional
 from .role import Role
 import re
-import re
 
 MAX_NAME_LENGTH = 50
 MIN_EMAIL_LENGTH = 5
@@ -16,10 +15,6 @@ MAX_EMAIL_LENGTH = 254
 MIN_AGE = 16
 MAX_AGE = 120
 PASSWORD_RE = re.compile(r"^(?=.*[A-Z])(?=.*[a-z])(?=.*\d).+$")
-MIN_USERNAME_LENGTH = 3
-MAX_USERNAME_LENGTH = 30
-MIN_PASSWORD_LENGTH = 8
-MAX_PASSWORD_LENGTH = 128
 MIN_USERNAME_LENGTH = 3
 MAX_USERNAME_LENGTH = 30
 MIN_PASSWORD_LENGTH = 8
@@ -61,14 +56,7 @@ class User(BaseModel):
     username: str
     firstName: str = ""
     lastName: str = ""
-    username: str
-    firstName: str = ""
-    lastName: str = ""
     age: Optional[int] = None
-    email: Email = ""
-    pw: str
-    role: Role
-    penalties: int = Field(0, alias="penaltyCount")
     email: Email = ""
     pw: str
     role: Role

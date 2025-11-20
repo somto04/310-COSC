@@ -44,18 +44,22 @@ def getReviews(page: int = 1, limit: int = 10):
     return reviews[start:end]
 
 
-@router.post("", response_model=Review, status_code=201)
+@router.post("/{movieId}", response_model=Review, status_code=201)
 def postReview(
-    payload: ReviewCreate, currentUser: CurrentUser = Depends(getCurrentUser)
+    movieId: int,
+    payload: ReviewCreate,
+    currentUser: CurrentUser = Depends(getCurrentUser),
 ):
     """
-    Create a new review. Requires authentication.
+    Create a new review for a movie. Requires authentication.
+
+    Path params:
+        movieId: ID of the movie the review is for
 
     Returns:
         The new review.
     """
-    payload.userId = currentUser.id
-    return createReview(payload)
+    return createReview(movieId=movieId, userId=currentUser.id, payload=payload)
 
 
 @router.get("/{reviewId}", response_model=Review)
@@ -81,7 +85,6 @@ def putReview(
     review = getReviewById(reviewId)
     validateReview(review)
     validateReviewOwner(currentUser, review)
-    payload.userId = currentUser.id
     return updateReview(reviewId, payload)
 
 

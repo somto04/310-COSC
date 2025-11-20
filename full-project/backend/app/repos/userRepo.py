@@ -7,7 +7,7 @@ _USER_CACHE: List[User] | None = None
 _NEXT_USER_ID: int | None = None
 
 
-def _load_cache() -> List[User]:
+def _loadCache() -> List[User]:
     """
     Load users from the data file into a cache.
 
@@ -26,7 +26,7 @@ def _load_cache() -> List[User]:
     return _USER_CACHE
 
 
-def get_next_user_id() -> int:
+def getNextUserId() -> int:
     """
     Get the next available user ID.
 
@@ -35,7 +35,7 @@ def get_next_user_id() -> int:
     """
     global _NEXT_USER_ID
     if _NEXT_USER_ID is None:
-        _load_cache()
+        _loadCache()
 
     assert _NEXT_USER_ID is not None
 
@@ -51,7 +51,7 @@ def loadUsers() -> List[User]:
     Returns:
         List[User]: A list of users.
     """
-    return _load_cache()
+    return _loadCache()
 
 
 def saveUsers(users: List[User]):

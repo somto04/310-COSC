@@ -1,12 +1,21 @@
 import requests
 import os
 from dotenv import load_dotenv
-from .tmdbSchema import TMDbMovie, TMDbRecommendation
+from app.schemas.tmdb import TMDbMovie, TMDbRecommendation
 
 load_dotenv()
 
 TMDB_API_KEY = os.getenv("TMDB_API_KEY")
 BASE_URL = "https://api.themoviedb.org/3"
+
+
+def getMovieDetails(movieName: str) -> TMDbMovie | None:
+    """Retrieve main movie details from TMDb"""
+    
+    response = requests.get(
+        f"{BASE_URL}/search/movie",
+        params={"api_key": TMDB_API_KEY, "query": movieName}
+    )
 
 
 def getMovieDetails(movieName: str) -> TMDbMovie | None:

@@ -32,7 +32,7 @@ def mock_repos(monkeypatch):
 def client(mock_repos):
     return TestClient(app)
 
-def test_get_replies():
+def test_get_replies(client):
     """Checks that /replies/{reviewId} returns a valid response (even if empty)."""
     response = client.get("/replies/1")
 
@@ -47,7 +47,7 @@ def test_get_replies():
             assert "userId" in data[0]
 
 
-def test_post_reply():
+def test_post_reply(client):
     """Checks that /replies accepts new replies correctly."""
     payload = {
         "reviewId": 1,

@@ -10,6 +10,7 @@ from fastapi import FastAPI, status, HTTPException
 from unittest.mock import patch
 from app.app import app
 from ...schemas.role import Role
+from ...schemas.user import CurrentUser
 from app.routers.reviewRoute import router, getCurrentUser
 from app.schemas.review import Review, ReviewCreate, ReviewUpdate
 

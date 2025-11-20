@@ -1,14 +1,17 @@
 from typing import List
 from fastapi import APIRouter, status, Depends, HTTPException
 from ..schemas.review import Review, ReviewCreate, ReviewUpdate
+from ..schemas.user import CurrentUser
+from ..schemas.review import Review
 from ..services.reviewService import listReviews, createReview, deleteReview, updateReview, getReviewById, searchReviews
 from .auth import getCurrentUser, requireAdmin
+from ..schemas.role import Role
 
 router = APIRouter(prefix="/reviews", tags=["reviews"])
 
 @router.get("/search", response_model=List[Review])
-def searchReview(q: str = "", limit: int = 50, offset: int = 0):
-    results = searchReviews(q)
+def searchReview(query: str = "", limit: int = 50, offset: int = 0):
+    results = searchReviews(query)
     return results[offset : offset + limit]
 
 @router.get("", response_model=List[Review])
@@ -32,20 +35,16 @@ def getReviews(page: int = 1, limit: int = 10):
     return reviews[start:end]
 
 
-@router.get("/flagged", response_model=List[Review])
-def getFlaggedReviews():
-    reviews = listReviews()
-    return [review for review in reviews if review.flagged is True]
 
 @router.post("", response_model=Review, status_code=201)
-def postReview(payload: ReviewCreate, currentUser: dict = Depends(getCurrentUser)):
+def postReview(payload: ReviewCreate, currentUser: CurrentUser = Depends(getCurrentUser)):
     """
     Create a new review. Requires authentication.
 
     Returns:
       The new review.
     """
-    payload.userId = currentUser["userId"]  
+    payload.userId = currentUser.id
     return createReview(payload)
 
 @router.get("/{reviewId}", response_model=Review)
@@ -53,7 +52,7 @@ def getReview(reviewId: int):
     return getReviewById(reviewId)
 
 @router.put("/{reviewId}", response_model = Review)
-def putReview(reviewId: int, payload: ReviewUpdate, currentUser: dict = Depends(getCurrentUser)):
+def putReview(reviewId: int, payload: ReviewUpdate, currentUser: CurrentUser = Depends(getCurrentUser)):
     """
     Update a review. Only the owner can update their review.
 
@@ -66,11 +65,11 @@ def putReview(reviewId: int, payload: ReviewUpdate, currentUser: dict = Depends(
     review = getReviewById(reviewId)
     validateReview(review)
     validateReviewOwner(currentUser, review)
-    payload.userId = currentUser["userId"]
+    payload.userId = currentUser.id
     return updateReview(reviewId, payload)
 
 @router.delete("/{reviewId}", status_code=status.HTTP_204_NO_CONTENT)
-def removeReview(reviewId: int, currentUser: dict = Depends(getCurrentUser)):
+def removeReview(reviewId: int, currentUser: CurrentUser = Depends(getCurrentUser)):
     """
     Makes sure that only review owners and admins can delete reviews.
 
@@ -82,7 +81,7 @@ def removeReview(reviewId: int, currentUser: dict = Depends(getCurrentUser)):
     """
     review = getReviewById(reviewId)
     validateReview(review)
-    if currentUser["role"] != "admin":
+    if currentUser.role == Role.USER:
         validateReviewOwner(currentUser, review)
     else:
         requireAdmin(currentUser)
@@ -94,6 +93,6 @@ def validateReview(review):
         raise HTTPException(status_code=404, detail="Review not found")
     
 def validateReviewOwner(currentUser, review):
-    if review["username"] != currentUser["username"]:
+    if review.userId != currentUser.id:
         raise HTTPException(status_code=403, detail="not authorised")
     

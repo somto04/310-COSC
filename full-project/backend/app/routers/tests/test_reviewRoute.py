@@ -35,16 +35,16 @@ def client(app):
 @pytest.fixture
 def sample_review_data():
     """Sample review data for testing"""
-    return {
-        "id": 1,
-        "movieId": 1,
-        "userId": 1,
-        "username": "testuser",
-        "reviewTitle": "Great Movie!",
-        "reviewBody": "This movie was amazing, highly recommend",
-        "rating": 5,
-        "flagged": False
-    }
+    return Review(
+        id= 1,
+        movieId= 1,
+        userId= 1,
+        username= "testuser",
+        reviewTitle= "Great Movie!",
+        reviewBody= "This movie was amazing, highly recommend",
+        rating= 5,
+        flagged= False
+    )
 
 
 @pytest.fixture
@@ -52,28 +52,33 @@ def sample_reviews_list(sample_review_data):
     """Sample list of reviews for testing"""
     return [
         sample_review_data,
-        {
-            "id": 2,
-            "movieId": 1,
-            "userId": 2,
-            "username": "anotheruser",
-            "reviewTitle": "Not bad",
-            "reviewBody": "It was okay, nothing special",
-            "rating": 3,
-            "flagged": False
-        },
-        {
-            "id": 3,
-            "movieId": 2,
-            "userId": 1,
-            "username": "testuser",
-            "reviewTitle": "Disappointed",
-            "reviewBody": "Expected better from this film",
-            "rating": 2,
-            "flagged": False
-        }
+        Review(
+            id= 2,
+            movieId= 1,
+            userId= 2,
+            username= "anotheruser",
+            reviewTitle= "Not bad",
+            reviewBody= "It was okay, nothing special",
+            rating= 3,
+            flagged= False
+        ),
+        Review(
+            id= 3,
+            movieId= 2,
+            userId= 1,
+            username= "testuser",
+            reviewTitle= "Disappointed",
+            reviewBody= "Expected better from this film",
+            rating= 2,
+            flagged= False
+        )
     ]
 
+class FakeUser:
+    def __init__(self, id, username, role):
+        self.id = id
+        self.username = username
+        self.role = role
 
 # ============================================================================ #
 # INTEGRATION TESTS
@@ -120,7 +125,8 @@ class TestReviewRouterIntegration:
     def test_search_reviews_with_query(self, mock_search, client, sample_review_data):
         mock_search.return_value = [sample_review_data]
 
-        response = client.get("/reviews/search?q=great")
+        response = client.get("/reviews/search", params={"query": "great"})
+        mock_search.assert_called_once_with("great")
 
         assert response.status_code == 200
         data = response.json()
@@ -132,7 +138,7 @@ class TestReviewRouterIntegration:
     def test_search_reviews_with_limit_and_offset(self, mock_search, client, sample_reviews_list):
         mock_search.return_value = sample_reviews_list
 
-        response = client.get("/reviews/search?q=movie&limit=2&offset=1")
+        response = client.get("/reviews/search?query=movie&limit=2&offset=1")
 
         assert response.status_code == 200
         data = response.json()
@@ -145,23 +151,18 @@ class TestReviewRouterIntegration:
         # Arrange
         mock_create.return_value = sample_review_data
 
-        new_review = {
-            "movieId": 1,
-            "reviewTitle": "Great Movie!",
-            "reviewBody": "This movie was amazing, highly recommend",
-            "rating": 5
-        }
+        new_review = ReviewCreate(
+            movieId= 1,
+            reviewTitle= "Great Movie!",
+            reviewBody= "This movie was amazing, highly recommend",
+            rating= 5
+        )
         
-        # Set up auth
-        app.dependency_overrides[getCurrentUser] = lambda: {
-            "username": "testuser", 
-            "userId": 1,
-            "role": "user"
-        }
+        app.dependency_overrides[getCurrentUser] = lambda: FakeUser(id=1, username="testuser", role="user")
         
         # Send request with auth header
         response = client.post("/reviews", 
-                             json=new_review,
+                             json=new_review.model_dump(),
                              headers={"Authorization": "Bearer testuser"})
 
         assert response.status_code == 201
@@ -182,24 +183,19 @@ class TestReviewRouterIntegration:
         
         # Set up expected updated review
         updated_review = sample_review_data.copy()
-        updated_review["reviewBody"] = "Updated review text"
-        updated_review["rating"] = 4
+        updated_review.reviewBody = "Updated review text"
+        updated_review.rating = 4
         mock_update.return_value = updated_review
 
-        update_data = {
-            "reviewBody": "Updated review text",
-            "rating": 4
-        }
+        update_data = ReviewUpdate(
+            reviewBody= "Updated review text",
+            rating= 4
+        )
 
-        # Set up auth to match the review owner
-        app.dependency_overrides[getCurrentUser] = lambda: {
-            "username": "testuser",  # Must match the review's username
-            "userId": 1,  # Must match the review's userId
-            "role": "user"
-        }
+        app.dependency_overrides[getCurrentUser] = lambda: FakeUser(id=1, username="testuser", role="user")
 
         response = client.put("/reviews/1", 
-                            json=update_data,
+                            json=update_data.model_dump(),
                             headers={"Authorization": "Bearer testuser"})
         
         # Assert

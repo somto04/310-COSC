@@ -81,7 +81,7 @@ def test_user_save_and_verify_contents(tmp_path, monkeypatch):
         ),
     ]
 
-    userRepo.saveAll(data)
+    userRepo.saveUsers(data)
     # Now read the file back and verify contents
     with open(test_file, "r") as file:
         saved_data = json.load(file)

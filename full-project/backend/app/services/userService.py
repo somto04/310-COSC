@@ -3,7 +3,7 @@ from typing import List
 from fastapi import HTTPException
 from ..schemas.user import User, UserCreate, UserUpdate
 from ..schemas.role import Role
-from ..repos.userRepo import get_next_user_id, loadUsers, saveAll
+from ..repos.userRepo import get_next_user_id, loadUsers, saveUsers
 from ..utilities.security import hashPassword, verifyPassword
 
 reset_tokens = {}  # token -> {"email": str, "expires": int}
@@ -76,7 +76,7 @@ def createUser(payload: UserCreate) -> User:
     )
 
     users.append(new_user)
-    saveAll(users)
+    saveUsers(users)
     return new_user
 
 
@@ -132,7 +132,7 @@ def updateUser(userId: int, payload: UserUpdate) -> User:
         if current_user.id == userId:
             updated_user = current_user.model_copy(update=update_data)
             users[index] = updated_user
-            saveAll(users)
+            saveUsers(users)
             return updated_user
 
     raise HTTPException(status_code=404, detail=f"User '{userId}' not found")
@@ -152,7 +152,7 @@ def deleteUser(userId: int):
     for index, user in enumerate(users):
         if user.id == userId:
             del users[index]
-            saveAll(users)
+            saveUsers(users)
             return
 
     raise HTTPException(status_code=404, detail=f"User '{userId}' not found")
@@ -191,7 +191,7 @@ def resetPassword(token: str, new_password: str) -> bool:
     for user in users:
         if user.email.lower() == data["email"]:
             user.pw = hashPassword(new_password.strip())
-            saveAll(users)
+            saveUsers(users)
             del reset_tokens[token]
             return True
     return False

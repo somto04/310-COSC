@@ -122,8 +122,7 @@ def test_logout_success(monkeypatch):
     """Should return success message when logout is called by authenticated user"""
     from app.routers import auth
 
-    fakeUser = CurrentUser(id=1, username="tester", role=Role.USER)
-    monkeypatch.setattr(auth, "getUsernameFromJsonDB", lambda username: fakeUser)
+    monkeypatch.setattr(auth, "getCurrentUser", fake_get_current_user)
 
     headers = {"Authorization": "Bearer tester"}
     response = client.post("/logout", headers=headers)
@@ -131,13 +130,13 @@ def test_logout_success(monkeypatch):
     assert response.status_code == 200
     body = response.json()
     assert "logged out successfully" in body["message"]
-    assert "tester" in body["message"]
+    assert "testuser" in body["message"]
 
 
 def test_getAdminDashboard(monkeypatch):
     from app.routers import auth
 
-    monkeypatch.setattr(auth, "loadUsers", fakeGetCurrentAdmin)
+    monkeypatch.setattr(auth, "getCurrentUser", fakeGetCurrentAdmin)
 
     client.headers.update({"Authorization": "Bearer tester"})
     response = client.get("/adminDashboard", headers={"Authorization": "Bearer testUser"})

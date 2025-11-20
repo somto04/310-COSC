@@ -4,7 +4,7 @@ import fastapi
 from fastapi.testclient import TestClient
 from app.app import app
 from ...repos import userRepo
-from ...schemas.user import User, UserCreate, UserUpdate
+from ...schemas.user import CurrentUser
 import app.routers.auth as auth
 from ..auth import getUsernameFromJsonDB
 
@@ -15,10 +15,11 @@ def mock_user(monkeypatch):
     """Mock getCurrentUser to return a fake user dictionary."""
     from app.routers import auth
 
-    def fake_get_current_user(token=None):
-        return {"username": "testuser", "role": "admin"}
-
-    monkeypatch.setattr(auth, "getCurrentUser", fake_get_current_user)
+    monkeypatch.setattr(
+        auth, 
+        "getCurrentUser", 
+        lambda token=None: CurrentUser(id=1, usernmae="testuser", role="admin")
+        )
 
 # unit tests
 def test_getUsernameFromJsonDB(monkeypatch):

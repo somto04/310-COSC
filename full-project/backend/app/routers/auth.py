@@ -3,13 +3,14 @@ from fastapi.security import OAuth2PasswordBearer
 from ..schemas.user import User
 from ..repos.userRepo import loadUsers
 from app.utilities.security import verifyPassword
-from ..schemas.user import CurrentUser
+from ..schemas.user import CurrentUser, Password, Email, Username
 from ..schemas.role import Role
 from ..services.userService import getUserByEmail, generateResetToken, resetPassword
 
 
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
 
 def getUsernameFromJsonDB(username: str) -> User | None:
     users = loadUsers()
@@ -18,30 +19,28 @@ def getUsernameFromJsonDB(username: str) -> User | None:
             return user
     return None
 
+
 def getCurrentUser(token: str = Depends(oauth2_scheme)) -> CurrentUser:
     user = getUsernameFromJsonDB(token)
     validateUser(user)
 
-    return CurrentUser(
-        id=user.id,
-        username=user.username,
-        role=user.role
-    )
+    return CurrentUser(id=user.id, username=user.username, role=user.role)
+
 
 def requireAdmin(user: CurrentUser = Depends(getCurrentUser)):
     validateUser(user)
-    
+
     if user.role != Role.ADMIN:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Admin privileges required"
+            status_code=status.HTTP_403_FORBIDDEN, detail="Admin privileges required"
         )
     return user
 
+
 @router.post("/token")
-def login(username: str = Form(...), password: str = Form(...)):
+def login(username: Username = Form(...), password: Password = Form(...)):
     """
-        Logs in user and blocks banned users before their password is validated
+    Logs in user and blocks banned users before their password is validated
     """
     user = getUsernameFromJsonDB(username)
     validateUser(user)
@@ -54,32 +53,37 @@ def login(username: str = Form(...), password: str = Form(...)):
 
     validatePassword(password, user)
 
-    return {"message": "Login successful",
-            "access_token": username,
-            "token_type": "bearer"}
+    return {
+        "message": "Login successful",
+        "access_token": username,
+        "token_type": "bearer",
+    }
+
 
 @router.post("/logout")
 def logout(currentUser: CurrentUser = Depends(getCurrentUser)):
     """
-        Logs the current user out by clearing or invalidating their token/session.
+    Logs the current user out by clearing or invalidating their token/session.
     """
     return {
         "message": f"User '{currentUser.username}' has been logged out successfully."
     }
 
+
 @router.get("/adminDashboard")
 def getAdminDashboard(admin: CurrentUser = Depends(requireAdmin)):
     return {"message": "Welcome to the admin dashboard"}
 
+
 @router.post("/forgot-password")
-def forgotPassword(email: str = Form(...)):
+def forgotPassword(email: Email = Form(...)):
     """
     Simulate sending a password reset link to the user's email.
 
     Returns:
         Message saying link was sent.
 
-    Raises: 
+    Raises:
         HTTPException: invalid email.
     """
     if not getUserByEmail(email):
@@ -90,14 +94,14 @@ def forgotPassword(email: str = Form(...)):
 
 
 @router.post("/reset-password")
-def resettingPassword(token: str = Form(...), new_password: str = Form(...)):
+def resettingPassword(token: str = Form(...), new_password: Password = Form(...)):
     """
     Reset a user's password using the provided token.
 
     Returns:
         Message saying reset was successful.
 
-    Raises: 
+    Raises:
         HTTPException: invalid token.
     """
     success = resetPassword(token, new_password)
@@ -106,6 +110,7 @@ def resettingPassword(token: str = Form(...), new_password: str = Form(...)):
 
     return {"message": "Password reset successful"}
 
+
 def validatePassword(password, user: User):
     if not verifyPassword(password, user.pw):
         raise HTTPException(
@@ -113,7 +118,8 @@ def validatePassword(password, user: User):
             detail="Invalid username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-        
+
+
 def validateUser(user: User):
     if not user:
         raise HTTPException(

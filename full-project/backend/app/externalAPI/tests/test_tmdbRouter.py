@@ -23,10 +23,10 @@ def client(app):
 
 
 @patch("app.externalAPI.tmdbRouter.getMovieDetails")
-def test_tmdb_details_success(mock_get_details, client):
+def test_tmdbDetailsSuccess(mock_get_details, client):
     """Successfully returns movie details."""
 
-    fake_movie = TMDbMovie(
+    fakeMovie = TMDbMovie(
         id=123,
         title="Inception",
         poster="https://image.tmdb.org/t/p/w500/poster.jpg",
@@ -34,7 +34,7 @@ def test_tmdb_details_success(mock_get_details, client):
         rating=8.8
     )
 
-    mock_get_details.return_value = fake_movie
+    mock_get_details.return_value = fakeMovie
 
     response = client.get("/tmdb/details/Inception")
 
@@ -49,7 +49,7 @@ def test_tmdb_details_success(mock_get_details, client):
 
 
 @patch("app.externalAPI.tmdbRouter.getMovieDetails")
-def test_tmdb_details_not_found(mock_get_details, client):
+def test_tmdbDetailsNotFound(mock_get_details, client):
     """If TMDb returns None, API should return 404."""
     
     mock_get_details.return_value = None
@@ -65,10 +65,10 @@ def test_tmdb_details_not_found(mock_get_details, client):
 # ---------------------------------
 
 @patch("app.externalAPI.tmdbRouter.getRecommendations")
-def test_tmdb_recommendations_success(mock_get_recs, client):
+def test_tmdbRecommendationsSuccess(mock_get_recs, client):
     """Successfully returns a list of recommendations."""
 
-    fake_recs = [
+    fakeRecs = [
         TMDbRecommendation(
             id=1,
             title="Dunkirk",
@@ -83,7 +83,7 @@ def test_tmdb_recommendations_success(mock_get_recs, client):
         )
     ]
 
-    mock_get_recs.return_value = fake_recs
+    mock_get_recs.return_value = fakeRecs
 
     response = client.get("/tmdb/recommendations/123")
 
@@ -99,7 +99,7 @@ def test_tmdb_recommendations_success(mock_get_recs, client):
 
 
 @patch("app.externalAPI.tmdbRouter.getRecommendations")
-def test_tmdb_recommendations_empty(mock_get_recs, client):
+def test_tmdbRecommendationsEmpty(mock_get_recs, client):
     """Even if TMDb returns empty list, should return 200 + empty list."""
     
     mock_get_recs.return_value = []

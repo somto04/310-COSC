@@ -224,7 +224,7 @@ class TestMovieRouterIntegration:
     def test_search_movies_with_query(self, mock_search, client, sample_movie_data):
         mock_search.return_value = [Movie(**sample_movie_data)]
 
-        response = client.get("/movies/search?q=inception")
+        response = client.get("/movies/search?query=inception")
         data = response.json()
 
         assert response.status_code == 200
@@ -236,7 +236,7 @@ class TestMovieRouterIntegration:
     def test_search_movies_no_results(self, mock_search, client):
         mock_search.return_value = []
 
-        response = client.get("/movies/search?q=none")
+        response = client.get("/movies/search?query=none")
         assert response.status_code == 404
         assert response.json()["detail"] == "Movie not found"
 

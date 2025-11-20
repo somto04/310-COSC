@@ -1,17 +1,18 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Form
 from fastapi.security import OAuth2PasswordBearer
-from ..repos.userRepo import loadAll
+from ..schemas.user import User
+from ..repos.userRepo import loadUsers
 from app.utilities.security import verifyPassword
-from ..services.userService import emailExists, generateResetToken, resetPassword
+from ..services.userService import getUserByEmail, generateResetToken, resetPassword
 
 
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
-def getUsernameFromJsonDB(username: str):
-    users = loadAll()
+def getUsernameFromJsonDB(username: str) -> User | None:
+    users = loadUsers()
     for user in users:
-        if user["username"] == username:
+        if user.username == username:
             return user
     return None
 
@@ -77,7 +78,7 @@ def forgotPassword(email: str = Form(...)):
     Raises: 
         HTTPException: invalid email.
     """
-    if not emailExists(email):
+    if not getUserByEmail(email):
         raise HTTPException(status_code=404, detail="Email not found")
 
     token = generateResetToken(email)

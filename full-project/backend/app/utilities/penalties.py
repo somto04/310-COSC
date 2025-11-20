@@ -1,44 +1,42 @@
 from typing import Optional
-from ..repos.userRepo import loadAll as loadUsers, saveAll as saveUsers  # adjust path
+from ..repos.userRepo import loadUsers, saveUsers
+from ..schemas.user import User
 
 MAX_PENALTIES = 3  # how many strikes before ban
 
-def findUserByUsername(username: str) -> Optional[dict]:
+def findUserByUsername(username: str) -> Optional[User]:
     users = loadUsers()
-    for u in users:
-        if u.get("username") == username:
-            return u
+    for user in users:
+        if user.username == username:
+            return user
     return None
 
-def incrementPenaltyForUser(userId: int) -> dict:
+def incrementPenaltyForUser(userId: int) -> User:
     """
-    Increase penaltyCount for a user and ban if max reached.
-    
-    Returns:
-        The updated user with penalties applied if needed.
-        
-    Raises: 
-        ValueError: if the user isnt found.
+    Increase penaltyCount for a user and ban them if max reached.
+    Returns the updated User model.
     """
     users = loadUsers()
-    updatedUser = None
-    for u in users:
-        if int(u.get("id")) == int(userId):
-            u["penaltyCount"] = int(u.get("penaltyCount", 0)) + 1
-            if u["penaltyCount"] >= MAX_PENALTIES:
-                u["isBanned"] = True
-            updatedUser = u
-            break
-    if updatedUser is None:
-        raise ValueError("User not found")
-    saveUsers(users)
-    return updatedUser
+    updated_user = None
 
-def setUserBanned(userId: int, isBanned: bool):
-    users = loadUsers()
-    for u in users:
-        if int(u.get("id")) == int(userId):
-            u["isBanned"] = bool(isBanned)
-            saveUsers(users)
-            return u
-    raise ValueError("User not found")
+    # loop with index so we can update the list
+    for i, user in enumerate(users):
+        if int(user.id) == int(userId):
+            user.penalties += 1
+
+            if user.penalties >= MAX_PENALTIES:
+                user.isBanned = True
+
+            updated_user = user
+            users[i] = user 
+            break
+
+    if updated_user is None:
+        raise ValueError("User not found")
+
+    saveUsers(users)
+    return updated_user
+
+
+
+

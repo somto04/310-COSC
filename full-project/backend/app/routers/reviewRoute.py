@@ -5,6 +5,7 @@ from ..schemas.user import CurrentUser
 from ..schemas.review import Review
 from ..services.reviewService import listReviews, createReview, deleteReview, updateReview, getReviewById, searchReviews
 from .auth import getCurrentUser, requireAdmin
+from ..schemas.role import Role
 
 router = APIRouter(prefix="/reviews", tags=["reviews"])
 
@@ -84,7 +85,7 @@ def removeReview(reviewId: int, currentUser: CurrentUser = Depends(getCurrentUse
     """
     review = getReviewById(reviewId)
     validateReview(review)
-    if currentUser.role != "admin":
+    if currentUser.role == Role.USER:
         validateReviewOwner(currentUser, review)
     else:
         requireAdmin(currentUser)

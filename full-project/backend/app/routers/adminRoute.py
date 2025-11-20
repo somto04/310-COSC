@@ -1,16 +1,15 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from auth import requireAdmin, getCurrentUser
+from fastapi import APIRouter, Depends
+from auth import requireAdmin
 from ..repos.reviewRepo import loadReviews, saveReviews
 from ..utilities.penalties import incrementPenaltyForUser
-from .reviewRoute import validateReview, getFlaggedReviews
+from .reviewRoute import validateReview
 from ..schemas.user import CurrentUser
-from ..schemas.role import Role
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
 #Adding accept/reject flag routes
 @router.post("/reviews/{reviewId}/acceptFlag")
-def acceptReviewFlag(reviewId: int, admin: CurrentUser = Depends(requireAdmin)):
+def acceptReviewFlag(reviewId: int, _: CurrentUser = Depends(requireAdmin)):
     """
     Admin accepts the flag.
     -> Penalize the review author
@@ -32,7 +31,7 @@ def acceptReviewFlag(reviewId: int, admin: CurrentUser = Depends(requireAdmin)):
              "isBanned": updatedUser.isBanned}
     
 @router.post("/reviews/{reviewId}/rejectFlag")
-def rejectReviewFlag(reviewId: int, admin: CurrentUser = Depends(requireAdmin)):
+def rejectReviewFlag(reviewId: int, _: CurrentUser = Depends(requireAdmin)):
     """
     Admin rejects the flag.
     -> NO penalty
@@ -43,7 +42,6 @@ def rejectReviewFlag(reviewId: int, admin: CurrentUser = Depends(requireAdmin)):
     validateReview(review)
     # Just unflag, no penalty
     review.flagged = False
-
     saveReviews(reviews)
 
     return {
@@ -52,7 +50,7 @@ def rejectReviewFlag(reviewId: int, admin: CurrentUser = Depends(requireAdmin)):
     }
 
 @router.post("/reviews/{reviewId}/markInappropriate")
-def markReviewInappropriate(reviewId: int, admin: CurrentUser = Depends(requireAdmin)):
+def markReviewInappropriate(reviewId: int, _: CurrentUser = Depends(requireAdmin)):
     reviews = loadReviews()
     review = next((review for review in reviews if review.Id == reviewId), None)
     validateReview(review)

@@ -26,20 +26,20 @@ def postUser(payload: UserCreate):
     return createUser(payload)
 
 @router.get("/{userId}", response_model = User)
-def getUser(userId: str):
+def getUser(userId: int):
     return getUserById(userId)
 
 @router.put("/{userId}", response_model = User)
-def putUser(userId: str, payload: UserUpdate):
+def putUser(userId: int, payload: UserUpdate):
     return updateUser(userId, payload)
 
 @router.delete("/{userId}", status_code=status.HTTP_204_NO_CONTENT)
-def removeUser(userId: str):
+def removeUser(userId: int):
     deleteUser(userId)
     return None
 
 @router.get("/userProfile/{userId}")
-def getUserProfile(userId: str, currentUser = Depends(getCurrentUser)):
+def getUserProfile(userId: int, currentUser = Depends(getCurrentUser)):
     """
     Gets the user profile of either the owner or another reviewer
 

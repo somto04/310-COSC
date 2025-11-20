@@ -54,7 +54,7 @@ def loadUsers() -> List[User]:
     return _load_cache()
 
 
-def saveAll(users: List[User]):
+def saveUsers(users: List[User]):
     """
     Save all users to the users data file.
 
@@ -72,4 +72,4 @@ def saveAll(users: List[User]):
     _base_save_all(_USER_DATA_PATH, user_dicts)
 
 
-__all__ = ["loadUsers", "saveAll"]
+__all__ = ["loadUsers", "saveUsers"]

@@ -28,9 +28,9 @@ def test_review_load_uses_tmp(tmp_path, monkeypatch):
         )
     ]
 
-    test_file.write_text(json.dumps([r.model_dump() for r in data]))
+    test_file.write_text(json.dumps([review.model_dump() for review in data]))
     # Patch the constant the functions read
-    monkeypatch.setattr(reviewRepo, "REVIEW_DATA_FILE", test_file, raising=False)
+    monkeypatch.setattr(reviewRepo, "REVIEW_DATA_PATH", test_file, raising=False)
 
     reviews = reviewRepo.loadReviews()
     assert len(reviews) == 2
@@ -41,7 +41,7 @@ def test_review_load_uses_tmp(tmp_path, monkeypatch):
 
 def test_review_save_and_verify_contents(tmp_path, monkeypatch):
     test_file = tmp_path / "reviews.json"
-    monkeypatch.setattr(reviewRepo, "REVIEW_DATA_FILE", test_file, raising=False)
+    monkeypatch.setattr(reviewRepo, "REVIEW_DATA_PATH", test_file, raising=False)
 
     data = [
     Review(

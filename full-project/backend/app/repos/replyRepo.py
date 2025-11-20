@@ -21,10 +21,11 @@ def _load_reply_cache() -> List[Reply]:
     Returns:
         List[Reply]: A list of reply.
     """
-    global _REPLY_CACHE
+    global _REPLY_CACHE, _NEXT_REPLY_ID
     if _REPLY_CACHE is None:
-        reply_dicts = _base_load_all(_REPLY_CACHE)
+        reply_dicts = _base_load_all(REPLY_DATA_PATH)
         _REPLY_CACHE = [Reply(**reply) for reply in reply_dicts]
+        _NEXT_REPLY_ID = getMaxReplyId(_REPLY_CACHE) + 1
     return _REPLY_CACHE
 
 def getNextReplyId() -> int:

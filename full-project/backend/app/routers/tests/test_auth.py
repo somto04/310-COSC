@@ -12,6 +12,20 @@ from ...schemas.role import Role
 
 client = TestClient(app)
 
+def fakeGetAdmin(token = None):
+    return User(
+        id=1,
+        username="testUser",
+        pw="password",
+        role=Role.ADMIN,
+        email="testuser@example.com",
+        age=30,
+        firstName="Test",
+        lastName="User",
+        penalties=0,
+        isBanned=False,
+    )
+
 def fakeGetCurrentAdmin(token=None):
         return CurrentUser(
             id=1,
@@ -121,17 +135,19 @@ def test_login_invalid(monkeypatch):
 
     response = client.post("/token", data={"username": "testuser", "password": "12345"})
     assert response.status_code == 401
-    assert "This user does not exist" in response.json()["detail"]
+    assert "Invalid username or password" in response.json()["detail"]
 
 
 def test_logout_success(monkeypatch):
     """Should return success message when logout is called by authenticated user"""
     from app.routers import auth
 
-    monkeypatch.setattr(auth, "getCurrentUser", fake_get_current_user)
+    app.dependency_overrides[auth.getCurrentUser] = lambda token=None: fake_get_current_user()
 
     headers = {"Authorization": "Bearer tester"}
     response = client.post("/logout", headers=headers)
+
+    app.dependency_overrides.pop(auth.getCurrentUser, None)
 
     assert response.status_code == 200
     body = response.json()
@@ -143,6 +159,7 @@ def test_getAdminDashboard(monkeypatch):
     from app.routers import auth
 
     monkeypatch.setattr(auth, "getCurrentUser", fakeGetCurrentAdmin)
+    monkeypatch.setattr(auth, "getUsernameFromJsonDB", fakeGetAdmin)
 
     client.headers.update({"Authorization": "Bearer tester"})
     response = client.get("/adminDashboard", headers={"Authorization": "Bearer testUser"})

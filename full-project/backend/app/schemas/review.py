@@ -12,18 +12,14 @@ class Review(BaseModel):
     flagged: Optional[bool] = False
 
 class ReviewCreate(BaseModel):
-    movieId: int
-    userId: Optional[int] = None 
     reviewTitle: str #= Field(minLength=3, maxLength=50, description=f"title of your review, must be less than {maxlength} characters")
     reviewBody: str
     rating: int = Field(ge=1, le=10)    
 
 class ReviewUpdate(BaseModel):
-    movieId: Optional[int] = None
-    userId: Optional[int] = None
     reviewTitle: Optional[str] = None
     reviewBody: Optional[str] = None
-    rating: int = Field(ge=1, le=10)    
+    rating: Optional[int] = Field(default=None, ge=1, le=10)    
 
 class Reply(BaseModel):
     id: int

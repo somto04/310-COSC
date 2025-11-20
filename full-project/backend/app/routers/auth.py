@@ -19,8 +19,11 @@ def getUsernameFromJsonDB(username: str):
 def getCurrentUser(token: str = Depends(oauth2_scheme)) -> CurrentUser:
     user = getUsernameFromJsonDB(token)
     validateUser(user)
+
+    userId = user.get("id") or user.get("userId")
+
     return CurrentUser(
-        id=user["id"],
+        id=userId,
         username=user["username"],
         role=user["role"]
     )
@@ -56,12 +59,12 @@ def login(username: str = Form(...), password: str = Form(...)):
             "token_type": "bearer"}
 
 @router.post("/logout")
-def logout(currentUser=Depends(getCurrentUser)):
+def logout(currentUser: CurrentUser = Depends(getCurrentUser)):
     """
         Logs the current user out by clearing or invalidating their token/session.
     """
     return {
-        "message": f"User '{currentUser['username']}' has been logged out successfully."
+        "message": f"User '{currentUser.username}' has been logged out successfully."
     }
 
 @router.get("/adminDashboard")

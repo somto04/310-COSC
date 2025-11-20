@@ -11,7 +11,7 @@ def test_review_load_uses_tmp(tmp_path, monkeypatch):
             movieId= 101,
             userId= 7,
             reviewTitle= "A Tale Worth a Thousand Berries",
-            reviewBody= "By the seas! This film had more heart than a feast at Baratie. Zoro nearly cried—well, almost.",
+            reviewBody= "By the seas! This film had more heart than a feast at Baratie. Zoro nearly cried, well, almost.",
             rating= 9.5,
             datePosted= "2025-01-12",
             flagged= False
@@ -28,8 +28,8 @@ def test_review_load_uses_tmp(tmp_path, monkeypatch):
         )
     ]
 
-    test_file.write_text(json.dumps([review.model_dump() for review in data]))
-    # Patch the constant the functions read
+    test_file.write_text(
+    json.dumps([review.model_dump() for review in data], ensure_ascii=False),encoding="utf-8")   
     monkeypatch.setattr(reviewRepo, "REVIEW_DATA_PATH", test_file, raising=False)
 
     reviews = reviewRepo.loadReviews()
@@ -89,13 +89,14 @@ def test_review_save_and_verify_contents(tmp_path, monkeypatch):
     reviewRepo.saveReviews(data)
 
     assert test_file.exists(), "users.json should have been created"
-    contents = json.loads(test_file.read_text())
-    assert contents == data
+    contents = json.loads(test_file.read_text(encoding="utf-8"))
+    expected = [review.model_dump() for review in data]
+    assert contents == expected
     assert len(contents) == 4
-    assert contents[2].reviewTitle == "Sanji’s Culinary Masterpiece"
-    assert contents[3].rating == 5.7
-    assert contents[3].reviewBody.startswith("Plot twist hit harder than Luffy’s Gatling")
-    assert contents[1].flagged is True
-    assert contents[0].userId == 7
-    assert contents[2].movieId == 103
-    assert contents[1].datePosted == "2025-03-22"
+    assert contents[2]["reviewTitle"] == "Sanji’s Culinary Masterpiece"
+    assert contents[3]["rating"] == 5.7
+    assert contents[3]["reviewBody"].startswith("Plot twist hit harder than Luffy’s Gatling")
+    assert contents[1]["flagged"] is True
+    assert contents[0]["userId"] == 7
+    assert contents[2]["movieId"] == 103
+    assert contents[1]["datePosted"] == "2025-03-22"

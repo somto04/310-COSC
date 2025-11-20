@@ -54,7 +54,7 @@ def test_create_user(mock_load, mock_save, fake_users):
         age=22,
         email="sam@example.com",
         username="samh",
-        pw="pass123",
+        pw="pass12345678",
         role="user",
     )
 
@@ -90,7 +90,7 @@ def test_update_user_success(mock_load, mock_save, fake_users):
         age=28,
         email="updated@example.com",
         username="updateduser",
-        pw="newpw",
+        pw="newpw1245678",
         role="admin",
     )
 
@@ -110,7 +110,7 @@ def test_update_user_not_found(mock_load, mock_save):
         age=40,
         email="missing@example.com",
         username="missing",
-        pw="1234",
+        pw="123456789",
         role="user",
     )
 

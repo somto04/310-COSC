@@ -32,9 +32,9 @@ def test_path_with_string():
 
 
 def test_path_with_path():
-    p = Path("/some/path/data.json")
-    result = repo._path(p)
-    assert result is p
+    test_path = Path("/some/path/data.json")
+    result = repo._path(test_path)
+    assert result is test_path
 
 
 def test_ensure_file_exists(tmp_path):

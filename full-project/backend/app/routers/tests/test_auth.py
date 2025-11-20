@@ -61,14 +61,6 @@ def fake_get_current_user(token=None):
         isBanned=False,
     )
     
-@pytest.fixture
-def mock_user(monkeypatch):
-    """Mock getCurrentUser to return a fake user dictionary."""
-    from app.routers import auth
-
-    monkeypatch.setattr(auth, "getCurrentUser", fake_get_current_user)
-
-
 # unit tests
 def test_getUsernameFromJsonDB(monkeypatch):
     """Should return a matching user when username exists"""

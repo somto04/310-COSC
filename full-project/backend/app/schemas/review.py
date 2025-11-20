@@ -14,7 +14,7 @@ class Review(BaseModel):
 class ReviewCreate(BaseModel):
     movieId: int
     userId: Optional[int] = None 
-    reviewTitle: str
+    reviewTitle: str #= Field(minLength=3, maxLength=50, description=f"title of your review, must be less than {maxlength} characters")
     reviewBody: str
     rating: int = Field(ge=1, le=10)    
     datePosted: Optional[str] = None

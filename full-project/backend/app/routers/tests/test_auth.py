@@ -7,10 +7,7 @@ from ...schemas.user import User
 from ...repos import userRepo
 from ...schemas.user import CurrentUser
 import app.routers.auth as auth
-from ..auth import (
-    getUsernameFromJsonDB,
-    decodeToken,
-)
+from ..auth import getUsernameFromJsonDB
 from ...schemas.role import Role
 
 client = TestClient(app)

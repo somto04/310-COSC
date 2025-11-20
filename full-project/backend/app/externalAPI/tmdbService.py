@@ -1,7 +1,7 @@
 import requests
 import os
 from dotenv import load_dotenv
-from app.schemas.tmdb import TMDbMovie, TMDbRecommendation
+from .tmdbSchema import TMDbMovie, TMDbRecommendation
 
 load_dotenv()
 

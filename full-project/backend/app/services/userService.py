@@ -166,10 +166,11 @@ def get_user_by_email(email: str) -> User | None:
         email (str): email to check
     """
     users = loadUsers()
-
-    
-
-    return any(u["email"].lower() == email.lower() for u in users)
+    normalized = email.lower()
+    for user in loadUsers():
+        if user.email.lower() == normalized:
+            return user
+    return None
 
 
 def generateResetToken(email: str) -> str:

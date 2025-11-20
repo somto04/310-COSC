@@ -3,7 +3,9 @@ COSC-310 Project by CTRL-ALT-DEFEAT
 
 ## Description
 
-Put an interesting description here for anyone that stumbles upon the repo to read, or don't
+SpoilerAlert! is a movie review platform built with FastAPI that lets users browse films, read and write reviews, and discover new recommendations. The system includes full user authentication, role-based permissions, movie filtering/search, and community-driven review interactions. It also integrates with the TMDb API to fetch real-time movie details and recommendations.
+
+The backend manages all core logic including reviews, replies, penalties, user accounts, and movie data, while the frontend delivers a clean, responsive UI for both casual users and admins. The platform is designed to be modular, testable, and easy to extend.
 
 ## to delete old coverage report and add a new one run the commands: 
 ```
@@ -19,8 +21,6 @@ pytest --junitxml=report/report.xml
 ```
 
 ## Other
-
-api website: http://127.0.0.1:8000/docs#/ (this is local, not sure why this is even here)
 
 To activate our virtual environment go to the fullproject then backend folder then enter: `source backendvenv\Scripts\Activate`
 

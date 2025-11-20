@@ -3,57 +3,170 @@ import json
 import fastapi
 from fastapi.testclient import TestClient
 from app.app import app
+from ...schemas.user import User
 from ...repos import userRepo
 from ...schemas.user import CurrentUser
 import app.routers.auth as auth
-from app.schemas.role import Role
-from ..auth import getUsernameFromJsonDB
+from ..auth import (
+    getUsernameFromJsonDB,
+    decodeToken,
+)
+from ...schemas.role import Role
 
 client = TestClient(app)
+
 
 @pytest.fixture
 def mock_user(monkeypatch):
     """Mock getCurrentUser to return a fake user dictionary."""
     from app.routers import auth
 
-    monkeypatch.setattr(
-        auth, 
-        "getCurrentUser", 
-        lambda token=None: CurrentUser(id=1, username="testuser", role=Role.ADMIN)
+    def fake_get_current_user(token=None):
+        return User(
+            id=1,
+            username="testuser",
+            pw="HashedPassword21",
+            role=Role.ADMIN,
+            email="testuser@example.com",
+            age=30,
+            firstName="Test",
+            lastName="User",
+            penalties=0,
+            isBanned=False,
         )
+
+    monkeypatch.setattr(auth, "getCurrentUser", fake_get_current_user)
+
 
 # unit tests
 def test_getUsernameFromJsonDB(monkeypatch):
     """Should return a matching user when username exists"""
     from app.routers import auth
 
-    # Fake loadAll() returns a mock "database" of users
-    def fake_loadAll():
+    # Fake loadUsers() returns a mock "database" of users
+    def fake_loadUsers():
         return [
-            {"username": "testUser", "pw": "password", "role": "admin", "userId": 1},
-            {"username": "other", "pw": "1234", "role": "user", "userId": 2},
+            User(
+                id=1,
+                username="testUser",
+                pw="Password1",
+                role=Role.ADMIN,
+                email="testuser@example.com",
+                age=30,
+                firstName="Test",
+                lastName="User",
+                penalties=0,
+                isBanned=False,
+            ), 
+            User(
+                id=2,
+                username="anotherUser",
+                pw="Password2",
+                role=Role.USER,
+                email="anotheruser@example.com",
+                age=25,
+                firstName="Another",
+                lastName="User",
+                penalties=0,
+                isBanned=False,
+            )
         ]
 
-    monkeypatch.setattr(auth, "loadAll", fake_loadAll)
+    monkeypatch.setattr(auth, "loadUsers", fake_loadUsers)
 
     user = getUsernameFromJsonDB("testUser")
     assert user is not None
-    assert user["username"] == "testUser"
+    assert user.username == "testUser"
 
 
 def test_getInvalidUsernameFromJsonDB(monkeypatch):
     """Should return None when username does not exist"""
     from app.routers import auth
 
-    def fake_loadAll():
+    def fake_loadUsers():
         return [
-            {"username": "testUser", "pw": "password", "role": "admin", "userId": 1},
+            User(
+                id=1,
+                username="testUser",
+                pw="Password1",
+                role=Role.ADMIN,
+                email="testuser@example.com",
+                age=30,
+                firstName="Test",
+                lastName="User",
+                penalties=0,
+                isBanned=False,
+            ), 
+            User(
+                id=2,
+                username="anotherUser",
+                pw="Password2",
+                role=Role.USER,
+                email="anotheruser@example.com",
+                age=25,
+                firstName="Another",
+                lastName="User",
+                penalties=0,
+                isBanned=False,
+            )
         ]
 
-    monkeypatch.setattr(auth, "loadAll", fake_loadAll)
+    monkeypatch.setattr(auth, "loadUsers", fake_loadUsers)
 
     user = getUsernameFromJsonDB("nouser")
     assert user is None
+
+
+def test_decodeToken(monkeypatch):
+    """Should decode a token to the corresponding user dict"""
+    from app.routers import auth
+
+    def fake_loadUsers():
+        return [
+            User(
+                id=1,
+                username="testUser",
+                pw="password",
+                role=Role.ADMIN,
+                email="testuser@example.com",
+                age=30,
+                firstName="Test",
+                lastName="User",
+                penalties=0,
+                isBanned=False,
+            ), 
+            User(
+                id=2,
+                username="anotherUser",
+                pw="password2",
+                role=Role.USER,
+                email="anotheruser@example.com",
+                age=25,
+                firstName="Another",
+                lastName="User",
+                penalties=0,
+                isBanned=False,
+            )
+        ]
+
+    monkeypatch.setattr(auth, "loadUsers", fake_loadUsers)
+
+    expected = User(
+        id=1,
+        username="testUser",
+        pw="password",
+        role=Role.ADMIN,
+        email="testuser@example.com",
+        age=30,
+        firstName="Test",
+        lastName="User",
+        penalties=0,
+        isBanned=False,
+    )
+
+    result = decodeToken("testUser")
+    assert result == expected
+
 
 def test_login_valid(monkeypatch):
     """Should return success message when username and password are valid"""
@@ -74,6 +187,7 @@ def test_login_valid(monkeypatch):
     assert response.status_code == 200
     body = response.json()
     assert "Login successful" in body["message"]
+
 
 def test_login_invalid(monkeypatch):
     """Should raise HTTP 401 when password is incorrect"""
@@ -104,15 +218,14 @@ def test_logout_success(monkeypatch):
     assert "logged out successfully" in body["message"]
     assert "tester" in body["message"]
 
+
 def test_getAdminDashboard(monkeypatch):
     from app.routers import auth
 
-    def fake_loadAll():
-        return [
-            {"username": "tester", "pw": "password", "role": "admin", "userId": 1}
-        ]
+    def fake_loadUsers():
+        return [{"username": "tester", "pw": "password", "role": "admin", "userId": 1}]
 
-    monkeypatch.setattr(auth, "loadAll", fake_loadAll)
+    monkeypatch.setattr(auth, "loadUsers", fake_loadUsers)
 
     client.headers.update({"Authorization": "Bearer tester"})
     response = client.get("/adminDashboard", headers={"Authorization": "Bearer tester"})

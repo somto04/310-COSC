@@ -16,6 +16,7 @@ from app.routers.userRoute import router
 from app.schemas.user import User, UserCreate, UserUpdate
 from ..userRoute import getUserProfile
 from app.routers.auth import getCurrentUser
+from app.schemas.role import Role
 
 
 @pytest.fixture
@@ -42,8 +43,10 @@ def sample_users():
             "age": 25,
             "email": "alice@example.com",
             "username": "alicej",
-            "pw": "secret123",
-            "role": "user"
+            "pw": "SecureP@ss123",
+            "role": Role.USER, 
+            "penalties": 0,
+            "isBanned": False
         },
         {
             "id": 2,
@@ -52,8 +55,10 @@ def sample_users():
             "age": 30,
             "email": "bob@example.com",
             "username": "bobsmith",
-            "pw": "password",
-            "role": "admin"
+            "pw": "passwHOrd!@#234",
+            "role": Role.ADMIN,
+            "penalties": 1,
+            "isBanned": False
         } 
     ]
 
@@ -66,8 +71,7 @@ def new_user_payload():
         "age": 22,
         "email": "Charlie@example.com",
         "username": "snoopyfan123",
-        "pw": "password",
-        "role": "user"
+        "pw": "MyP@ssword456",
     }
     
 @pytest.fixture
@@ -103,7 +107,7 @@ def test_create_user(mock_create, client, new_user_payload):
     assert response.status_code == 201 
     data = response.json()
     assert data["username"] == "snoopyfan123"
-    assert data ["role"] == "user"
+    assert data ["role"] == Role.USER
     assert data["age"] >= 16
     mock_create.assert_called_once()
     
@@ -116,7 +120,7 @@ def test_get_user_by_id(mock_get, client, sample_users):
     data = response.json()
     assert data["id"] == 1
     assert data["username"] == "alicej"
-    mock_get.assert_called_once_with("1")
+    mock_get.assert_called_once_with(1)
 
 @patch("app.routers.userRoute.updateUser")
 def test_update_user(mock_update, client, sample_users, updated_user_payload):
@@ -131,7 +135,7 @@ def test_update_user(mock_update, client, sample_users, updated_user_payload):
     assert data["email"] == "aliceupdated@example.com"
     
     from app.schemas.user import UserUpdate
-    mock_update.assert_called_once_with("1", UserUpdate(**updated_user_payload))
+    mock_update.assert_called_once_with(1, UserUpdate(**updated_user_payload))
 
 @patch("app.routers.userRoute.deleteUser")
 def test_delete_user(mock_delete, client):
@@ -139,10 +143,10 @@ def test_delete_user(mock_delete, client):
     mock_delete.return_value = None
     response = client.delete("/users/1")
     assert response.status_code == 204
-    mock_delete.assert_called_once_with("1")
+    mock_delete.assert_called_once_with(1)
 
 def fake_get_current_user():
-    return MagicMock(id="1")
+    return MagicMock(id=1)
 
 def test_get_user_profile(sample_users):
     """Gets the user profile based on the userId given"""

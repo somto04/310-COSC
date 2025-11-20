@@ -24,7 +24,7 @@ def searchReviews(query: str) -> List[Review]:
 
     matching_movie_ids = [
         movie["id"] for movie in movies
-        if strippedQuery in str(movie.get("title", "")).lower()
+        if strippedQuery in movie.get("title", "").lower()
     ]
 
     return [review for review in reviews if review.movieId in matching_movie_ids]

@@ -36,57 +36,57 @@ def client(app):
 
 
 @pytest.fixture
-def sampleMovieData():
-    return {
-        "id": 1,
-        "title": "Inception",
-        "movieIMDbRating": 8.8,
-        "movieGenres": ["Action", "Sci-Fi", "Thriller"],
-        "directors": ["Christopher Nolan"],
-        "mainStars": ["Leonardo DiCaprio", "Tom Hardy"],
-        "description": "A thief who steals corporate secrets",
-        "datePublished": "2010-07-16",
-        "duration": 148
-    }
+def sample_movie_data():
+    return Movie(
+        id= 1,
+        title= "Inception",
+        movieIMDbRating= 8.8,
+        movieGenres= ["Action", "Sci-Fi", "Thriller"],
+        directors= ["Christopher Nolan"],
+        mainStars= ["Leonardo DiCaprio", "Tom Hardy"],
+        description= "A thief who steals corporate secrets",
+        datePublished= "2010-07-16",
+        duration= 148
+    )
 
 
 @pytest.fixture
 def sampleMoviesList(sampleMovieData):
     return [
-        sampleMovieData,
-        {
-            "id": 2,
-            "title": "The Matrix",
-            "movieIMDbRating": 8.7,
-            "movieGenres": ["Action", "Sci-Fi"],
-            "directors": ["Lana Wachowski", "Lilly Wachowski"],
-            "mainStars": ["Keanu Reeves", "Laurence Fishburne"],
-            "description": "A hacker discovers reality is a simulation",
-            "datePublished": "1999-03-31",
-            "duration": 136
-        },
-        {
-            "id": 3,
-            "title": "The Godfather",
-            "movieIMDbRating": 9.2,
-            "movieGenres": ["Crime", "Drama"],
-            "directors": ["Francis Ford Coppola"],
-            "mainStars": ["Marlon Brando", "Al Pacino"],
-            "description": "A mafia family's power struggles",
-            "datePublished": "1972-03-24",
-            "duration": 175
-        },
-        {
-            "id": 4,
-            "title": "Pulp Fiction",
-            "movieIMDbRating": 8.9,
-            "movieGenres": ["Crime", "Drama"],
-            "directors": ["Quentin Tarantino"],
-            "mainStars": ["John Travolta", "Uma Thurman"],
-            "description": "Interconnected crime stories",
-            "datePublished": "1994-10-14",
-            "duration": 154
-        }
+        sample_movie_data,
+        Movie(
+            id= 2,
+            title= "The Matrix",
+            movieIMDbRating= 8.7,
+            movieGenres= ["Action", "Sci-Fi"],
+            directors= ["Lana Wachowski", "Lilly Wachowski"],
+            mainStars= ["Keanu Reeves", "Laurence Fishburne"],
+            description= "A hacker discovers reality is a simulation",
+            datePublished= "1999-03-31",
+            duration= 136
+        ),
+        Movie(
+            id= 3,
+            title= "The Godfather",
+            movieIMDbRating= 9.2,
+            movieGenres= ["Crime", "Drama"],
+            directors= ["Francis Ford Coppola"],
+            mainStars= ["Marlon Brando", "Al Pacino"],
+            description= "A mafia family's power struggles",
+            datePublished= "1972-03-24",
+            duration= 175
+        ),
+        Movie(
+            id= 4,
+            title= "Pulp Fiction",
+            movieIMDbRating= 8.9,
+            movieGenres= ["Crime", "Drama"],
+            directors= ["Quentin Tarantino"],
+            mainStars= ["John Travolta", "Uma Thurman"],
+            description= "Interconnected crime stories",
+            datePublished= "1994-10-14",
+            duration= 154
+        )
     ]
 
 
@@ -197,8 +197,8 @@ class TestMovieServiceUnit:
 class TestMovieRouterIntegration:
 
     @patch('app.routers.movieRoute.listMovies')
-    def test_GetAllMoviesEndpoint(self, mockList, client, sampleMoviesList):
-        mockList.return_value = [Movie(**m) for m in sampleMoviesList]
+    def test_get_all_movies_endpoint(self, mock_list, client, sample_movies_list):
+        mock_list.return_value = sample_movies_list
 
         response = client.get("/movies")
         data = response.json()
@@ -208,8 +208,8 @@ class TestMovieRouterIntegration:
         assert data[0]["title"] == "Inception"
 
     @patch('app.routers.movieRoute.getMovieById')
-    def test_getMovieByIdEndpoint(self, mockGet, client, sampleMovieData):
-        mockGet.return_value = Movie(**sampleMovieData)
+    def test_get_movie_by_id_endpoint(self, mock_get, client, sample_movie_data):
+        mock_get.return_value = sample_movie_data
 
         response = client.get("/movies/1")
         data = response.json()
@@ -229,8 +229,8 @@ class TestMovieRouterIntegration:
         assert response.json()["detail"] == "Movie not found"
 
     @patch('app.routers.movieRoute.searchMovie')
-    def test_searchMoviesWithQuery(self, mockSearch, client, sampleMovieData):
-        mockSearch.return_value = [Movie(**sampleMovieData)]
+    def test_search_movies_with_query(self, mock_search, client, sample_movie_data):
+        mock_search.return_value = sample_movie_data
 
         response = client.get("/movies/search?query=inception")
         data = response.json()

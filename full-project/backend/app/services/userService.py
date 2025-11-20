@@ -188,9 +188,9 @@ def resetPassword(token: str, new_password: str) -> bool:
         return False
 
     users = loadUsers()
-    for u in users:
-        if u["email"].lower() == data["email"]:
-            u["pw"] = hashPassword(new_password.strip())
+    for user in users:
+        if user.email.lower() == data["email"]:
+            user.pw = hashPassword(new_password.strip())
             saveAll(users)
             del reset_tokens[token]
             return True

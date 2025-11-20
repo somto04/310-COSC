@@ -5,7 +5,12 @@ from ..repos.userRepo import loadUsers
 from app.utilities.security import verifyPassword
 from ..schemas.user import CurrentUser, Password, Email, Username
 from ..schemas.role import Role
-from ..services.userService import getUserByEmail, generateResetToken, resetPassword, getUserByUsername
+from ..services.userService import (
+    getUserByEmail,
+    generateResetToken,
+    resetPassword,
+    getUserByUsername,
+)
 
 
 router = APIRouter()
@@ -28,8 +33,7 @@ def requireAdmin(currentUser: CurrentUser = Depends(getCurrentUser)) -> CurrentU
     return currentUser
 
 
-
-def validatePassword(password, user: User):
+def validatePassword(password: Password, user: User) -> None:
     if not verifyPassword(password, user.pw):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -56,8 +60,7 @@ def login(username: Username = Form(...), password: Password = Form(...)):
     """
     Logs in user and blocks banned users before their password is validated
     """
-    user = getUserByUsername(username)
-    ensureUserExists(user)
+    user = ensureUserExists(getUserByUsername(username))
 
     if user.isBanned:
         raise HTTPException(

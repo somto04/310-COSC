@@ -7,6 +7,12 @@ from ..schemas.user import CurrentUser
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
+#helper method to avoid redundancy
+def reviewHasNext(reviewId: int) -> bool:
+    reviews = loadReviews()
+    review = next((review for review in reviews if review.Id == reviewId), None)
+    return review is not None
+
 #Adding accept/reject flag routes
 @router.post("/reviews/{reviewId}/acceptFlag")
 def acceptReviewFlag(reviewId: int, _: CurrentUser = Depends(requireAdmin)):
@@ -15,8 +21,9 @@ def acceptReviewFlag(reviewId: int, _: CurrentUser = Depends(requireAdmin)):
     -> Penalize the review author
     -> Remove the review from flagged list (unflag it)
     """
+    
     reviews = loadReviews()
-    review = next((review for review in reviews if review.Id == reviewId), None)
+    review = reviewHasNext(reviewId)
     validateReview(review)
 
     review.flagged = False
@@ -38,7 +45,7 @@ def rejectReviewFlag(reviewId: int, _: CurrentUser = Depends(requireAdmin)):
     -> Remove review from flagged list (unflag it)
     """
     reviews = loadReviews()
-    review = next((review for review in reviews if review.Id == reviewId), None)
+    review = reviewHasNext(reviewId)
     validateReview(review)
     # Just unflag, no penalty
     review.flagged = False
@@ -52,7 +59,7 @@ def rejectReviewFlag(reviewId: int, _: CurrentUser = Depends(requireAdmin)):
 @router.post("/reviews/{reviewId}/markInappropriate")
 def markReviewInappropriate(reviewId: int, _: CurrentUser = Depends(requireAdmin)):
     reviews = loadReviews()
-    review = next((review for review in reviews if review.Id == reviewId), None)
+    review = reviewHasNext(reviewId)
     validateReview(review)
 
     review.flagged = True

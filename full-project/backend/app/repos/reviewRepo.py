@@ -12,23 +12,6 @@ def getMaxReviewId(reviews: List[Review]) -> int:
     """
     return max((review.id for review in reviews), default=0)
 
-def getNextReviewId() -> int:
-    """
-    Get the next available review ID.
-
-    Returns:
-        int: The next review ID.
-    """
-    global _NEXT_REVIEW_ID
-    if _NEXT_REVIEW_ID is None:
-        _load_review_cache()
-
-    assert _NEXT_REVIEW_ID is not None
-
-    next_id = _NEXT_REVIEW_ID
-    _NEXT_REVIEW_ID += 1
-    return next_id
-
 
 def _load_review_cache() -> List[Review]:
     """
@@ -46,6 +29,24 @@ def _load_review_cache() -> List[Review]:
         maxId = getMaxReviewId(_REVIEW_CACHE)
         _NEXT_REVIEW_ID = maxId + 1
     return _REVIEW_CACHE
+
+def getNextReviewId() -> int:
+    """
+    Get the next available review ID.
+
+    Returns:
+        int: The next review ID.
+    """
+    global _NEXT_REVIEW_ID
+    if _NEXT_REVIEW_ID is None:
+        _load_review_cache()
+
+    assert _NEXT_REVIEW_ID is not None
+
+    next_id = _NEXT_REVIEW_ID
+    _NEXT_REVIEW_ID += 1
+    return next_id
+
 
 def loadReviews() -> List[Review]:
     """

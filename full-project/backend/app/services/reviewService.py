@@ -46,13 +46,8 @@ def createReview(payload: ReviewCreate) -> Review:
     """
     reviews = loadReviews()
 
-    newId = getNextReviewId()
-
-    if any(review.id == newId for review in reviews):
-        raise HTTPException(status_code=409, detail="ID collision; retry.")
-    
     newReview = Review(
-        id=newId, 
+        id=getNextReviewId(), 
         movieId=payload.movieId, 
         userId=payload.userId,
         reviewTitle=payload.reviewTitle.strip(), 

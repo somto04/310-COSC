@@ -3,7 +3,7 @@ from fastapi.security import OAuth2PasswordBearer
 from ..schemas.user import User
 from ..repos.userRepo import loadUsers
 from app.utilities.security import verifyPassword
-from ..services.userService import get_user_by_email, generateResetToken, resetPassword
+from ..services.userService import getUserByEmail, generateResetToken, resetPassword
 
 
 router = APIRouter()
@@ -78,7 +78,7 @@ def forgotPassword(email: str = Form(...)):
     Raises: 
         HTTPException: invalid email.
     """
-    if not get_user_by_email(email):
+    if not getUserByEmail(email):
         raise HTTPException(status_code=404, detail="Email not found")
 
     token = generateResetToken(email)

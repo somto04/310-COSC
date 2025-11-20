@@ -8,6 +8,49 @@ from ..schemas.role import Role
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
+#Adding accept/reject flag routes
+@router.post("/reviews/{reviewId}/acceptFlag")
+def acceptReviewFlag(reviewId: int, admin: CurrentUser = Depends(requireAdmin)):
+    """
+    Admin accepts the flag.
+    -> Penalize the review author
+    -> Remove the review from flagged list (unflag it)
+    """
+    reviews = loadReviews()
+    review = next((review for review in reviews if review.Id == reviewId), None)
+    validateReview(review)
+
+    review.flagged = False
+    
+    authorId = review.userId
+    updatedUser = incrementPenaltyForUser(authorId)
+    saveReviews(reviews)
+
+    return {"message": "Review flag accepted and cleared",
+             "userId": updatedUser.id,
+             "penaltyCount": updatedUser.penalties,
+             "isBanned": updatedUser.isBanned}
+    
+@router.post("/reviews/{reviewId}/rejectFlag")
+def rejectReviewFlag(reviewId: int, admin: CurrentUser = Depends(requireAdmin)):
+    """
+    Admin rejects the flag.
+    -> NO penalty
+    -> Remove review from flagged list (unflag it)
+    """
+    reviews = loadReviews()
+    review = next((review for review in reviews if review.Id == reviewId), None)
+    validateReview(review)
+    # Just unflag, no penalty
+    review.flagged = False
+
+    saveReviews(reviews)
+
+    return {
+        "message": "Flag rejected. Review unflagged (no penalty applied).",
+        "reviewId": reviewId
+    }
+
 @router.post("/reviews/{reviewId}/markInappropriate")
 def markReviewInappropriate(reviewId: int, admin: CurrentUser = Depends(requireAdmin)):
     reviews = loadReviews()
@@ -35,24 +78,3 @@ def getFlaggedReviews():
     reviews = loadReviews()
     return [review for review in reviews if review.flagged is True]
   
-
-@router.get("/reports/reviews")
-def getReportNotifications(currentUser: CurrentUser = Depends(getCurrentUser)):
-    """
-    Admin endpoint - return flagged review reports.
-    Requires admin role.
-    """
-
-    # Typed Pydantic model, no dict access
-    if currentUser.role != Role.ADMIN:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Admin only"
-        )
-
-    flagged = getFlaggedReviews()
-
-    return {
-        "count": len(flagged),
-        "flagged": flagged
-    }

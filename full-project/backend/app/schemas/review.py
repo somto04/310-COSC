@@ -20,16 +20,3 @@ class ReviewUpdate(BaseModel):
     reviewTitle: Optional[str] = None
     reviewBody: Optional[str] = None
     rating: Optional[int] = Field(default=None, ge=1, le=10)    
-
-class Reply(BaseModel):
-    id: int
-    reviewId: int
-    userId: int
-    replyBody: str
-    datePosted: str
-
-class ReplyCreate(BaseModel):
-    reviewId: int
-    userId: int
-    replyBody: str
-    datePosted: str

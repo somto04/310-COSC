@@ -1,152 +1,214 @@
-from typing import List, Dict
+from typing import List, Dict, Any
 from fastapi import HTTPException
 from ..schemas.movie import Movie, MovieUpdate, MovieCreate
 from ..repos.movieRepo import loadAll, saveAll
 
+
+
+# Helpers to work with models
+def loadMovies() -> List[Movie]:
+    movieDataList = loadAll()  # list of dicts from the repo
+    movies: List[Movie] = [Movie(**movieData) for movieData in movieDataList]
+    return movies
+
+
+def saveMovies(movies: List[Movie]) -> None:
+    movieDataList = [movie.model_dump() for movie in movies]
+    saveAll(movieDataList)
+
+
+
 def listMovies() -> List[Movie]:
-    data = loadAll()
-    print("Loaded", len(data), "movies")
-    return [Movie(**m) for m in data]
+    """ 
+    Lists all movies from the movies JSON.
+    
+    """
+    movies = loadMovies()
+    print("Loaded", len(movies), "movies")
+    return movies
+
 
 def createMovie(payload: MovieCreate) -> Movie:
-    """ 
-    Creates a new movie by generating a new id and adding into the movies json
-    
-    Return:
-        New movie
     """
-    movies = loadAll()
-    new_movie = payload.model_dump()
-
-    existing_ids = [m.get("id") for m in movies if isinstance(m.get("id"), int)]
-    new_movie["id"] = max(existing_ids, default=0) + 1
-
-    movies.append(new_movie)
-    saveAll(movies)
-    return Movie(**new_movie)
-
-def getMovieByFilter(genre: str = None, year: int = None, director: str = None, star: str = None) -> List[Dict]:
-    """ 
-    Filters movies based on genre, year, director, and star 
+    Creates a new movie by generating a new id and adding it into the movies JSON.
 
     Returns:
-        Movies that match the filters.
-
+        Newly created Movie model
     """
-    movies = loadAll()
-    results = []
+    movies = loadMovies()
 
-    for m in movies:
-        genres = [g.lower().strip() for g in m.get("movieGenres", [])]
-        directors = [d.lower().strip() for d in m.get("directors", [])]
-        stars = [s.lower().strip() for s in m.get("mainStars", [])]
-        movieYear = str(m.get("datePublished", ""))[:4]  
+    existingIds = [movie.id for movie in movies if isinstance(movie.id, int)]
+    newId = max(existingIds, default=0) + 1
 
-        if genre and not any(genre.lower() in g for g in genres):
+    newMovie = Movie(id=newId, **payload.model_dump())
+    movies.append(newMovie)
+
+    saveMovies(movies)
+    return newMovie
+
+
+def getMovieByFilter(
+    genre: str | None = None,
+    year: int | None = None,
+    director: str | None = None,
+    star: str | None = None,
+) -> List[Movie]:
+    """
+    Filters movies based on genre, year, director, and star.
+
+    Returns:
+        List of Movie models that match the filters.
+    """
+    movies = loadMovies()
+    filteredMovies: List[Movie] = []
+
+    genreQuery = genre.lower().strip() if genre else None
+    directorQuery = director.lower().strip() if director else None
+    starQuery = star.lower().strip() if star else None
+    yearQuery = str(year) if year is not None else None
+
+    for movie in movies:
+        movieYear = str(movie.datePublished)[:4]
+
+        # Genre filter
+        if genreQuery:
+            loweredGenres = [genreItem.lower().strip() for genreItem in movie.movieGenres]
+            if not any(genreQuery in loweredGenre for loweredGenre in loweredGenres):
+                continue
+
+        # Year filter
+        if yearQuery and movieYear != yearQuery:
             continue
 
-        if year and movieYear != str(year):
-            continue
-        
-        if director and not any(director.lower() in d for d in directors):
-            continue
+        # Director filter
+        if directorQuery:
+            loweredDirectors = [directorItem.lower().strip() for directorItem in movie.directors]
+            if not any(directorQuery in loweredDirector for loweredDirector in loweredDirectors):
+                continue
 
-        if star and not any(star.lower() in s for s in stars):
-            continue
-        
-        results.append({
-            "id": m.get("id"),
-            "title": m.get("title"),
-            "movieIMDbRating": m.get("movieIMDbRating"),
-            "movieGenres": m.get("movieGenres"),
-            "directors": m.get("directors"),
-            "mainStars": m.get("mainStars"),
-            "description": m.get("description"),
-            "datePublished": m.get("datePublished"),
-            "duration": m.get("duration"),
-        })
-    return results
+        # Star filter
+        if starQuery:
+            loweredStars = [starItem.lower().strip() for starItem in movie.mainStars]
+            if not any(starQuery in loweredStar for loweredStar in loweredStars):
+                continue
+
+        filteredMovies.append(movie)
+
+    return filteredMovies
+
 
 def getMovieById(movieId: int) -> Movie:
-    for m in loadAll():
-        if int(m.get("id")) == int(movieId): 
-            return Movie(**m)
+    """
+    Retrieves a movie by its ID.
+    
+    """
+    movies = loadMovies()
+
+    for movie in movies:
+        if int(movie.id) == int(movieId):
+            return movie
+
     raise HTTPException(status_code=404, detail="Movie not found")
+
 
 def updateMovie(movieId: int, payload: MovieUpdate) -> Movie:
-    movies = loadAll()
-    for idx, m in enumerate(movies):
-        if int(m.get("id")) == int(movieId):
-            updates = payload.model_dump(exclude_unset=True)
-            movies[idx] = {**m, **updates}
-            saveAll(movies)
-            return Movie(**movies[idx])
+    """ 
+    Updates a movie by its ID with the provided fields.
+
+    """
+    movies = loadMovies()
+    updateFields = payload.model_dump(exclude_unset=True)
+
+    for movieIndex, movie in enumerate(movies):
+        if int(movie.id) == int(movieId):
+            updatedMovie = movie.model_copy(update=updateFields)
+            movies[movieIndex] = updatedMovie
+            saveMovies(movies)
+            return updatedMovie
+
     raise HTTPException(status_code=404, detail="Movie not found")
 
+
 def deleteMovie(movieId: int) -> None:
-    movies = loadAll()
-    filtered = [m for m in movies if int(m.get("id")) != int(movieId)]
-    if len(filtered) == len(movies):
+    """ 
+    Deletes a movie by its ID.
+    
+    """
+    movies = loadMovies()
+    filteredMovies = [movie for movie in movies if int(movie.id) != int(movieId)]
+
+    if len(filteredMovies) == len(movies):
         raise HTTPException(status_code=404, detail="Movie not found")
-    saveAll(filtered)
 
-def searchViaFilters(filters: Dict) -> List[Dict]:
-    results = []
-    for m in loadAll():
-        match = True
-        for key, value in filters.items():
-            if key not in m:
-                match = False
+    saveMovies(filteredMovies)
+
+
+
+def searchViaFilters(filters: Dict[str, Any]) -> List[Movie]:
+    """
+    Generic filter function based on keys in the Movie model.
+    Applies dynamic filters against each movie converted to a dict.
+    """
+    movies = loadMovies()
+    matchedMovies: List[Movie] = []
+
+    for movie in movies:
+        movieDict = movie.model_dump()
+        isMatch = True
+
+        for filterKey, filterValue in filters.items():
+            if filterKey not in movieDict:
+                isMatch = False
                 break
-            if isinstance(value, str):
-                if str(m[key]).lower() != value.lower():
-                    match = False
-                    break
-            elif isinstance(value, (int, float)):
-                if m[key] != value:
-                    match = False
-                    break
-            elif isinstance(value, list):
-                if not all(item in m[key] for item in value):
-                    match = False
-                    break
-        if match:
-            results.append({
-                "id": m.get("id"),
-                "title": m.get("title"),
-                "movieIMDbRating": m.get("movieIMDbRating"),
-                "movieGenres": m.get("movieGenres"),
-                "directors": m.get("directors"),
-                "mainStars": m.get("mainStars"),
-                "description": m.get("description"),
-                "datePublished": m.get("datePublished"),
-                "duration": m.get("duration"),
-            })
-    return results
 
-def searchMovie(query: str) -> List[Dict]:
-    q = (query or "").lower().strip()
-    if not q:
+            movieFieldValue = movieDict[filterKey]
+
+            if isinstance(filterValue, str):
+                if str(movieFieldValue).lower() != filterValue.lower():
+                    isMatch = False
+                    break
+
+            elif isinstance(filterValue, (int, float)):
+                if movieFieldValue != filterValue:
+                    isMatch = False
+                    break
+
+            elif isinstance(filterValue, list):
+                if not all(filterItem in movieFieldValue for filterItem in filterValue):
+                    isMatch = False
+                    break
+
+        if isMatch:
+            matchedMovies.append(movie)
+
+    return matchedMovies
+
+
+
+def searchMovie(query: str) -> List[Movie]:
+    """
+      Searches movies based on a query string across multiple fields.
+    
+    """
+    cleanedQuery = (query or "").lower().strip()
+    if not cleanedQuery:
         return []
 
-    results = []
-    for m in loadAll():
-        title = str(m.get("title", "")).lower()
-        desc = str(m.get("description", "")).lower()
-        genres = " ".join(m.get("movieGenres", [])).lower()
-        stars = " ".join(m.get("mainStars", [])).lower()
-        directors = " ".join(m.get("directors", [])).lower()
+    movies = loadMovies()
+    matchedMovies: List[Movie] = []
 
-        if any(q in field for field in [title, desc, genres, stars, directors]):
-            results.append({
-                "id": m.get("id"),
-                "title": m.get("title"),
-                "movieIMDbRating": m.get("movieIMDbRating"),
-                "movieGenres": m.get("movieGenres"),
-                "directors": m.get("directors"),
-                "mainStars": m.get("mainStars"),
-                "description": m.get("description"),
-                "datePublished": m.get("datePublished"),
-                "duration": m.get("duration"),
-            })
-    return results
+    for movie in movies:
+        titleText = (movie.title or "").lower()
+        descriptionText = (movie.description or "").lower()
+
+        genreText = " ".join(genre.lower() for genre in movie.movieGenres)
+        starText = " ".join(star.lower() for star in movie.mainStars)
+        directorText = " ".join(director.lower() for director in movie.directors)
+
+        if any(
+            cleanedQuery in fieldText
+            for fieldText in [titleText, descriptionText, genreText, starText, directorText]
+        ):
+            matchedMovies.append(movie)
+
+    return matchedMovies

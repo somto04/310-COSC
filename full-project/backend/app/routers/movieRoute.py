@@ -1,9 +1,8 @@
-
 from typing import List, Optional
-from app.routers.auth import requireAdmin
 from fastapi import APIRouter, HTTPException, status, Depends
-from ..schemas.movie import Movie, MovieCreate, MovieUpdate
-from ..services.movieService import (
+from app.routers.auth import requireAdmin
+from app.schemas.movie import Movie, MovieCreate, MovieUpdate
+from app.services.movieService import (
     listMovies,
     createMovie,
     getMovieById,
@@ -15,13 +14,18 @@ from ..services.movieService import (
 
 router = APIRouter(prefix="/movies", tags=["movies"])
 
+
 @router.get("/search", response_model=List[Movie])
-def searchMovies(q: Optional[str] = None, query: Optional[str] = None):
-    keyword = q or query or ""
-    results = searchMovie(keyword)
+def searchMovies(query: Optional[str] = None):
+    keyword = (query or "").lower().strip()
+
+    results = searchMovie(keyword)   # returns List[Movie]
+
     if not results:
         raise HTTPException(status_code=404, detail="Movie not found")
-    return results
+
+    return results 
+
 
 @router.get("/filter", response_model=List[Movie])
 def filterMovies(
@@ -30,43 +34,43 @@ def filterMovies(
     director: Optional[str] = None,
     star: Optional[str] = None,
 ):
-    """
-    Filters movies based on genre, year, director, and star
 
-    Returns:
-      Movies that match the filters.
+    genreQuery = genre.lower().strip() if genre else None
+    directorQuery = director.lower().strip() if director else None
+    starQuery = star.lower().strip() if star else None
 
-    Raises:
-      HTTPException: If no movies were found with the given filters.
-      """
-    results = getMovieByFilter(genre, year, director, star)
+    results = getMovieByFilter(genreQuery, year, directorQuery, starQuery)
+
     if not results:
         raise HTTPException(status_code=404, detail="No movies found with the given filters")
+
     return results
+
 
 @router.get("", response_model=List[Movie])
 def getMovies():
     return listMovies()
 
+
 @router.get("/{movieId}", response_model=Movie)
 def getMovie(movieId: int):
     return getMovieById(movieId)
 
-# ---------- #
+
+
 # ADMIN ONLY #
-# ---------- #
-"""admin: dict = Depends(requireAdmin) - require admin function has to return true"""
 
 @router.post("", response_model=Movie, status_code=status.HTTP_201_CREATED)
 def postMovie(payload: MovieCreate, admin: dict = Depends(requireAdmin)):
     return createMovie(payload)
 
+
 @router.put("/{movieId}", response_model=Movie)
 def putMovie(movieId: int, payload: MovieUpdate, admin: dict = Depends(requireAdmin)):
     return updateMovie(movieId, payload)
+
 
 @router.delete("/{movieId}", status_code=status.HTTP_204_NO_CONTENT)
 def removeMovie(movieId: int, admin: dict = Depends(requireAdmin)):
     deleteMovie(movieId)
     return None
-

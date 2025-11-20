@@ -5,8 +5,6 @@ from app.routers import replyRoute
 from app.repos import replyRepo
 from ...schemas.reply import Reply
 
-client = TestClient(app)
-
 # Fake login dependency
 app.dependency_overrides[replyRoute.getCurrentUser] = lambda: {
     "id": 1,
@@ -35,8 +33,11 @@ def mock_repos(monkeypatch):
     monkeypatch.setattr("app.services.replyService.loadReplies", fakeLoadReplies)
     monkeypatch.setattr("app.services.replyService.saveReplies", fakeSaveReplies)
 
+@pytest.fixture
+def client(mock_repos):
+    return TestClient(app)
 
-def test_get_replies():
+def test_get_replies(client):
     """Checks that /replies/{reviewId} returns a valid response (even if empty)."""
     response = client.get("/replies/1")
 
@@ -50,7 +51,7 @@ def test_get_replies():
             assert "userId" in data[0]
 
 
-def test_post_reply():
+def test_post_reply(client):
     """Checks that /replies accepts new replies correctly."""
     payload = {
         "reviewId": 1,

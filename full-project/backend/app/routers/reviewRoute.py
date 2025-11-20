@@ -35,15 +35,6 @@ def getReviews(page: int = 1, limit: int = 10):
     return reviews[start:end]
 
 
-@router.get("/flagged", response_model=List[Review],)
-def getFlaggedReviews():
-    if getCurrentUser.role != Role.ADMIN:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Admin only"
-        )
-    reviews = listReviews()
-    return [review for review in reviews if review.flagged is True]
 
 @router.post("", response_model=Review, status_code=201)
 def postReview(payload: ReviewCreate, currentUser: CurrentUser = Depends(getCurrentUser)):

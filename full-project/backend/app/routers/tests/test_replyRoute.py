@@ -4,8 +4,6 @@ from app.app import app
 from app.routers import replyRoute
 from app.repos import replyRepo
 
-client = TestClient(app)
-
 # Fake login dependency
 app.dependency_overrides[replyRoute.getCurrentUser] = lambda: {
     "id": 1,
@@ -30,6 +28,9 @@ def mock_repos(monkeypatch):
     monkeypatch.setattr(replyRepo, "loadAll", fake_load_all)
     monkeypatch.setattr(replyRepo, "saveAll", fake_save_all)
 
+@pytest.fixture
+def client(mock_repos):
+    return TestClient(app)
 
 def test_get_replies():
     """Checks that /replies/{reviewId} returns a valid response (even if empty)."""

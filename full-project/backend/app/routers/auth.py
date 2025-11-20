@@ -5,36 +5,50 @@ from ..repos.userRepo import loadUsers
 from app.utilities.security import verifyPassword
 from ..schemas.user import CurrentUser, Password, Email, Username
 from ..schemas.role import Role
-from ..services.userService import getUserByEmail, generateResetToken, resetPassword
+from ..services.userService import getUserByEmail, generateResetToken, resetPassword, getUserByUsername
 
 
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
-
-def getUsernameFromJsonDB(username: str) -> User | None:
-    users = loadUsers()
-    for user in users:
-        if user.username == username:
-            return user
-    return None
+# ==================================HELPER FUNCTIONS==================================
 
 
 def getCurrentUser(token: str = Depends(oauth2_scheme)) -> CurrentUser:
-    user = getUsernameFromJsonDB(token)
-    validateUser(user)
-
+    user = ensureUserExists(getUserByUsername(token))
     return CurrentUser(id=user.id, username=user.username, role=user.role)
 
 
-def requireAdmin(user: CurrentUser = Depends(getCurrentUser)):
-    validateUser(user)
-
-    if user.role != Role.ADMIN:
+def requireAdmin(currentUser: CurrentUser = Depends(getCurrentUser)) -> CurrentUser:
+    if currentUser.role != Role.ADMIN:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Admin privileges required"
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin privileges required",
+        )
+    return currentUser
+
+
+
+def validatePassword(password, user: User):
+    if not verifyPassword(password, user.pw):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+
+def ensureUserExists(user: User | None) -> User:
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="This user does not exist",
+            headers={"WWW-Authenticate": "Bearer"},
         )
     return user
+
+
+# =================================ROUTE HANDLERS==================================
 
 
 @router.post("/token")
@@ -42,8 +56,8 @@ def login(username: Username = Form(...), password: Password = Form(...)):
     """
     Logs in user and blocks banned users before their password is validated
     """
-    user = getUsernameFromJsonDB(username)
-    validateUser(user)
+    user = getUserByUsername(username)
+    ensureUserExists(user)
 
     if user.isBanned:
         raise HTTPException(
@@ -109,21 +123,3 @@ def resettingPassword(token: str = Form(...), new_password: Password = Form(...)
         raise HTTPException(status_code=400, detail="Invalid or expired token")
 
     return {"message": "Password reset successful"}
-
-
-def validatePassword(password, user: User):
-    if not verifyPassword(password, user.pw):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid username or password",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-
-
-def validateUser(user: User):
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="This user does not exist",
-            headers={"WWW-Authenticate": "Bearer"},
-        )

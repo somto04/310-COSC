@@ -74,23 +74,20 @@ def test_list_reviews(mockLoad, fakeReviews):
 @patch("app.services.reviewService.saveReviews")
 @patch("app.services.reviewService.loadReviews")
 def test_create_review(mockLoad, mockSave, fakeReviews):
-    """this test checks creating a new review according to our review schema"""
     mockLoad.return_value = fakeReviews
 
     payload = ReviewCreate(
-        movieId=12,
-        userId=50001,
         reviewTitle="New Review",
-        rating=9,
         reviewBody="Loved it",
-        flagged=False,
+        rating=9,
     )
 
-    new_review = reviewService.createReview(payload)
+    new_review = reviewService.createReview(12, 50001, payload)
 
     assert new_review.movieId == 12
     assert new_review.reviewTitle == "New Review"
     mockSave.assert_called_once()
+
 
 @patch("app.services.reviewService.loadReviews")
 def test_get_review_by_id_found(mockLoad, fakeReviews):
@@ -110,17 +107,16 @@ def test_get_review_by_id_not_found(mockLoad):
 @patch("app.services.reviewService.saveReviews")
 @patch("app.services.reviewService.loadReviews")
 def test_update_review(mockLoad, mockSave, fakeReviews):
-    """this test checks updating an existing review"""
     mockLoad.return_value = fakeReviews
+
     payload = ReviewUpdate(
-        movieId=10,
-        userId=40846,
         reviewTitle="Updated title",
-        rating=10,
         reviewBody="Amazing",
-        flagged=True,
+        rating=10,
     )
+
     updated = reviewService.updateReview(1, payload)
+
     assert updated.reviewTitle == "Updated title"
     mockSave.assert_called_once()
 
@@ -129,16 +125,16 @@ def test_update_review(mockLoad, mockSave, fakeReviews):
 @patch("app.services.reviewService.loadReviews")
 def test_update_review_not_found(mockLoad, mockSave):
     mockLoad.return_value = []
+
     payload = ReviewUpdate(
-        movieId=10,
-        userId=40000,
         reviewTitle="Hi",
-        rating=10,
         reviewBody="Test",
-        flagged=False,
+        rating=10,
     )
+
     with pytest.raises(HTTPException):
         reviewService.updateReview(999, payload)
+
 
 # this test checks deleting a review successfully
 @patch("app.services.reviewService.saveReviews")

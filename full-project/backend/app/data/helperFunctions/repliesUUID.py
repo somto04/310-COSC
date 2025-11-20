@@ -6,7 +6,7 @@ with open(path, "r", encoding="utf-8") as f:
     replies = json.load(f)
 
 cleaned = []
-next_id = 1
+nextId = 1
 
 for r in replies:
     try:
@@ -14,8 +14,8 @@ for r in replies:
         r["id"] = int(r["id"])
     except Exception:
         # assign a new int ID if UUID
-        r["id"] = next_id
-        next_id += 1
+        r["id"] = nextId
+        nextId += 1
 
     # convert other fields to int where possible
     try:

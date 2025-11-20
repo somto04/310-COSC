@@ -59,13 +59,27 @@ def mock_user(monkeypatch):
     """Mock getCurrentUser to return a fake user dictionary."""
     from app.routers import auth
 
+    def fake_get_current_user(token=None):
+        return User(
+            id=1,
+            username="testuser",
+            pw="HashedPassword21",
+            role=Role.ADMIN,
+            email="testuser@example.com",
+            age=30,
+            firstName="Test",
+            lastName="User",
+            penalties=0,
+            isBanned=False,
+        )
+
     monkeypatch.setattr(auth, "getCurrentUser", fake_get_current_user)
 
 
 # unit tests
 def test_getUsernameFromJsonDB(monkeypatch):
     """Should return a matching user when username exists"""
-    from app.routers import auth
+    from app.routers import auth   
 
     monkeypatch.setattr(auth, "loadUsers", fakeLoadUsers)
 
@@ -82,25 +96,6 @@ def test_getInvalidUsernameFromJsonDB(monkeypatch):
 
     user = getUsernameFromJsonDB("nouser")
     assert user is None
-
-
-#     monkeypatch.setattr(auth, "loadUsers", fake_loadUsers)
-
-#     expected = User(
-#         id=1,
-#         username="testUser",
-#         pw="password",
-#         role=Role.ADMIN,
-#         email="testuser@example.com",
-#         age=30,
-#         firstName="Test",
-#         lastName="User",
-#         penalties=0,
-#         isBanned=False,
-#     )
-
-#     result = decodeToken("testUser")
-#     assert result == expected
 
 
 def test_login_valid(monkeypatch):

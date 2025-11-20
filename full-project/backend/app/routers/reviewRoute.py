@@ -12,8 +12,25 @@ def searchReview(q: str = "", limit: int = 50, offset: int = 0):
     return results[offset : offset + limit]
 
 @router.get("", response_model=List[Review])
-def getReviews():
-    return listReviews()
+def getReviews(page: int = 1, limit: int = 10):
+    """
+    Returns paginated reviews.
+    
+    """
+    # Make sure page and limit are valid
+    if page < 1:
+        page = 1
+    if limit < 1:
+        limit = 10
+
+    reviews = listReviews()  # returns full list
+
+    # Calculate pagination slice
+    start = (page - 1) * limit
+    end = start + limit
+
+    return reviews[start:end]
+
 
 @router.get("/flagged", response_model=List[Review])
 def getFlaggedReviews():

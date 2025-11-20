@@ -88,11 +88,11 @@ def updateReview(reviewId: int, payload: ReviewUpdate) -> Review:
         HTTPException: review not found
     """  
     reviews = loadReviews()
-    for idx, it in enumerate(reviews):
-        if it.id == reviewId:
+    for index, review in enumerate(reviews):
+        if review.id == reviewId:
             updateData = payload.model_dump(exclude_unset=True)
             
-            updatedDict = it.model_dump()
+            updatedDict = review.model_dump()
             updatedDict.update(updateData)
             
             if 'reviewTitle' in updateData and updatedDict['reviewTitle']:
@@ -105,7 +105,7 @@ def updateReview(reviewId: int, payload: ReviewUpdate) -> Review:
                 updatedDict['rating'] = int(updatedDict['rating'])
             
             updated = Review(**updatedDict)
-            reviews[idx] = updated
+            reviews[index] = updated
             saveReviews(reviews)
             return updated
         

@@ -40,24 +40,24 @@ def fakeLoadUsers():
         )
     ]
 
+def fake_get_current_user(token=None):
+    return User(
+        id=1,
+        username="testuser",
+        pw="HashedPassword21",
+        role=Role.ADMIN,
+        email="testuser@example.com",
+        age=30,
+        firstName="Test",
+        lastName="User",
+        penalties=0,
+        isBanned=False,
+    )
+    
 @pytest.fixture
 def mock_user(monkeypatch):
     """Mock getCurrentUser to return a fake user dictionary."""
     from app.routers import auth
-
-    def fake_get_current_user(token=None):
-        return User(
-            id=1,
-            username="testuser",
-            pw="HashedPassword21",
-            role=Role.ADMIN,
-            email="testuser@example.com",
-            age=30,
-            firstName="Test",
-            lastName="User",
-            penalties=0,
-            isBanned=False,
-        )
 
     monkeypatch.setattr(auth, "getCurrentUser", fake_get_current_user)
 
@@ -157,10 +157,10 @@ def test_logout_success(monkeypatch):
 def test_getAdminDashboard(monkeypatch):
     from app.routers import auth
 
-    monkeypatch.setattr(auth, "loadUsers", fake_loadUsers)
+    monkeypatch.setattr(auth, "loadUsers", fakeLoadUsers)
 
     client.headers.update({"Authorization": "Bearer tester"})
-    response = client.get("/adminDashboard", headers={"Authorization": "Bearer tester"})
+    response = client.get("/adminDashboard", headers={"Authorization": "Bearer testUser"})
     assert response.status_code == 200
     data = response.json()
     assert data["message"] == "Welcome to the admin dashboard"

@@ -99,6 +99,21 @@ def getUserById(userId: int) -> User:
             return user
     raise HTTPException(status_code=404, detail=f"User '{userId}' not found")
 
+def getUserByUsername(username: str) -> User | None:
+    """
+    Get a user by username
+
+    Args:
+        username (str): Username of the user to retrieve
+
+    Returns:
+        User or None if not found
+    """ 
+    users = loadUsers()
+    for user in users:
+        if user.username == username:
+            return user
+    return None
 
 def updateUser(userId: int, payload: UserUpdate) -> User:
     """

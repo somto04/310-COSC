@@ -106,12 +106,18 @@ def test_login_valid(monkeypatch):
 
 def test_login_invalid(monkeypatch):
     """Should raise HTTP 401 when password is incorrect"""
-    from app.routers import auth
+    from app.routers import auth as loginRoute
+    from app.utilities import security
 
-    def fake_get_current_user(username):
-        return {"username": "testuser", "pw": "wrongpw"}
+    def fake_get_user(username):
+        # simulate stored *hashed* password
+        return {"username": "testuser", "pw": "$2b$12$FakeHashString1234567890"}
 
-    monkeypatch.setattr(auth, "getCurrentUser", fake_get_current_user)
+    def fake_verify_password(plain, hashed):
+        return False
+
+    monkeypatch.setattr(loginRoute, "getUsernameFromJsonDB", fake_get_user)
+    monkeypatch.setattr(loginRoute, "verifyPassword", fake_verify_password)
 
     response = client.post("/token", data={"username": "testuser", "password": "12345"})
     assert response.status_code == 401

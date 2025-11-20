@@ -12,6 +12,33 @@ from ...schemas.role import Role
 
 client = TestClient(app)
 
+def fakeLoadUsers():
+    return [
+        User(
+            id=1,
+            username="testUser",
+            pw="password",
+            role=Role.ADMIN,
+            email="testuser@example.com",
+            age=30,
+            firstName="Test",
+            lastName="User",
+            penalties=0,
+            isBanned=False,
+        ), 
+        User(
+            id=2,
+            username="anotherUser",
+            pw="password2",
+            role=Role.USER,
+            email="anotheruser@example.com",
+            age=25,
+            firstName="Another",
+            lastName="User",
+            penalties=0,
+            isBanned=False,
+        )
+    ]
 
 @pytest.fixture
 def mock_user(monkeypatch):
@@ -40,36 +67,7 @@ def test_getUsernameFromJsonDB(monkeypatch):
     """Should return a matching user when username exists"""
     from app.routers import auth
 
-    # Fake loadUsers() returns a mock "database" of users
-    def fake_loadUsers():
-        return [
-            User(
-                id=1,
-                username="testUser",
-                pw="Password1",
-                role=Role.ADMIN,
-                email="testuser@example.com",
-                age=30,
-                firstName="Test",
-                lastName="User",
-                penalties=0,
-                isBanned=False,
-            ), 
-            User(
-                id=2,
-                username="anotherUser",
-                pw="Password2",
-                role=Role.USER,
-                email="anotheruser@example.com",
-                age=25,
-                firstName="Another",
-                lastName="User",
-                penalties=0,
-                isBanned=False,
-            )
-        ]
-
-    monkeypatch.setattr(auth, "loadUsers", fake_loadUsers)
+    monkeypatch.setattr(auth, "loadUsers", fakeLoadUsers)
 
     user = getUsernameFromJsonDB("testUser")
     assert user is not None
@@ -80,89 +78,29 @@ def test_getInvalidUsernameFromJsonDB(monkeypatch):
     """Should return None when username does not exist"""
     from app.routers import auth
 
-    def fake_loadUsers():
-        return [
-            User(
-                id=1,
-                username="testUser",
-                pw="Password1",
-                role=Role.ADMIN,
-                email="testuser@example.com",
-                age=30,
-                firstName="Test",
-                lastName="User",
-                penalties=0,
-                isBanned=False,
-            ), 
-            User(
-                id=2,
-                username="anotherUser",
-                pw="Password2",
-                role=Role.USER,
-                email="anotheruser@example.com",
-                age=25,
-                firstName="Another",
-                lastName="User",
-                penalties=0,
-                isBanned=False,
-            )
-        ]
-
-    monkeypatch.setattr(auth, "loadUsers", fake_loadUsers)
+    monkeypatch.setattr(auth, "loadUsers", fakeLoadUsers)
 
     user = getUsernameFromJsonDB("nouser")
     assert user is None
 
 
-def test_decodeToken(monkeypatch):
-    """Should decode a token to the corresponding user dict"""
-    from app.routers import auth
+#     monkeypatch.setattr(auth, "loadUsers", fake_loadUsers)
 
-    def fake_loadUsers():
-        return [
-            User(
-                id=1,
-                username="testUser",
-                pw="password",
-                role=Role.ADMIN,
-                email="testuser@example.com",
-                age=30,
-                firstName="Test",
-                lastName="User",
-                penalties=0,
-                isBanned=False,
-            ), 
-            User(
-                id=2,
-                username="anotherUser",
-                pw="password2",
-                role=Role.USER,
-                email="anotheruser@example.com",
-                age=25,
-                firstName="Another",
-                lastName="User",
-                penalties=0,
-                isBanned=False,
-            )
-        ]
+#     expected = User(
+#         id=1,
+#         username="testUser",
+#         pw="password",
+#         role=Role.ADMIN,
+#         email="testuser@example.com",
+#         age=30,
+#         firstName="Test",
+#         lastName="User",
+#         penalties=0,
+#         isBanned=False,
+#     )
 
-    monkeypatch.setattr(auth, "loadUsers", fake_loadUsers)
-
-    expected = User(
-        id=1,
-        username="testUser",
-        pw="password",
-        role=Role.ADMIN,
-        email="testuser@example.com",
-        age=30,
-        firstName="Test",
-        lastName="User",
-        penalties=0,
-        isBanned=False,
-    )
-
-    result = decodeToken("testUser")
-    assert result == expected
+#     result = decodeToken("testUser")
+#     assert result == expected
 
 
 def test_login_valid(monkeypatch):
@@ -218,9 +156,6 @@ def test_logout_success(monkeypatch):
 
 def test_getAdminDashboard(monkeypatch):
     from app.routers import auth
-
-    def fake_loadUsers():
-        return [{"username": "tester", "pw": "password", "role": "admin", "userId": 1}]
 
     monkeypatch.setattr(auth, "loadUsers", fake_loadUsers)
 

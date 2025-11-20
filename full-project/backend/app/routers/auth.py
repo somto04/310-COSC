@@ -21,12 +21,10 @@ def getCurrentUser(token: str = Depends(oauth2_scheme)) -> CurrentUser:
     user = getUsernameFromJsonDB(token)
     validateUser(user)
 
-    userId = user.get("id") or user.get("userId")
-
     return CurrentUser(
-        id=userId,
-        username=user["username"],
-        role=user["role"]
+        id=user.id,
+        username=user.username,
+        role=user.role
     )
 
 def requireAdmin(user: CurrentUser = Depends(getCurrentUser)):
@@ -69,7 +67,7 @@ def logout(currentUser: CurrentUser = Depends(getCurrentUser)):
     }
 
 @router.get("/adminDashboard")
-def getAdminDashboard(admin = Depends(requireAdmin)):
+def getAdminDashboard(admin: CurrentUser = Depends(requireAdmin)):
     return {"message": "Welcome to the admin dashboard"}
 
 @router.post("/forgot-password")

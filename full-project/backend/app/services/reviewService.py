@@ -1,7 +1,7 @@
 from typing import List
 from fastapi import HTTPException
 from ..schemas.review import Review, ReviewUpdate, ReviewCreate
-from ..repos.reviewRepo import loadReviews, saveReviews, getMaxReviewId
+from ..repos.reviewRepo import loadReviews, saveReviews, getNextReviewId
 from ..repos import movieRepo
 
 def searchReviews(query: str) -> List[Review]:
@@ -46,7 +46,7 @@ def createReview(payload: ReviewCreate) -> Review:
     """
     reviews = loadReviews()
 
-    newId = getMaxReviewId()
+    newId = getNextReviewId()
 
     if any(review.id == newId for review in reviews):
         raise HTTPException(status_code=409, detail="ID collision; retry.")

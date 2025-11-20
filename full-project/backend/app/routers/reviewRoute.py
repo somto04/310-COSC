@@ -3,6 +3,8 @@ from fastapi import APIRouter, status, Depends, HTTPException
 from ..schemas.review import Review, ReviewCreate, ReviewUpdate
 from ..services.reviewService import listReviews, createReview, deleteReview, updateReview, getReviewById, searchReviews
 from .auth import getCurrentUser, requireAdmin
+from ..schemas.role import Role
+
 
 router = APIRouter(prefix="/reviews", tags=["reviews"])
 
@@ -32,10 +34,6 @@ def getReviews(page: int = 1, limit: int = 10):
     return reviews[start:end]
 
 
-@router.get("/flagged", response_model=List[Review])
-def getFlaggedReviews():
-    reviews = listReviews()
-    return [review for review in reviews if review.flagged is True]
 
 @router.post("", response_model=Review, status_code=201)
 def postReview(payload: ReviewCreate, currentUser: dict = Depends(getCurrentUser)):

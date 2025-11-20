@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional
 
 class Review(BaseModel):
@@ -7,7 +7,7 @@ class Review(BaseModel):
     userId: int
     reviewTitle: str
     reviewBody: str
-    rating: int
+    rating: int = Field(ge=1, le=10)
     datePosted: Optional[str] = None
     flagged: Optional[bool] = False
 
@@ -16,7 +16,7 @@ class ReviewCreate(BaseModel):
     userId: Optional[int] = None 
     reviewTitle: str
     reviewBody: str
-    rating: int
+    rating: int = Field(ge=1, le=10)    
     datePosted: Optional[str] = None
     flagged: Optional[bool] = False
 
@@ -25,6 +25,6 @@ class ReviewUpdate(BaseModel):
     userId: Optional[int] = None
     reviewTitle: Optional[str] = None
     reviewBody: Optional[str] = None
-    rating: Optional[int] = None
+    rating: int = Field(ge=1, le=10)    
     datePosted: Optional[str] = None
     flagged: Optional[bool] = None

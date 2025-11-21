@@ -68,5 +68,61 @@
     "userId": 100,
     "replyBody": "This is a simple test reply!",
     "datePosted": "3 Nov 2025"
+  },
+  {
+    "id": 11,
+    "reviewId": 1,
+    "userId": 100,
+    "replyBody": "This is a simple test reply!",
+    "datePosted": "3 Nov 2025"
+  },
+  {
+    "id": 12,
+    "reviewId": 1,
+    "userId": 100,
+    "replyBody": "This is a simple test reply!",
+    "datePosted": "3 Nov 2025"
+  },
+  {
+    "id": 13,
+    "reviewId": 1,
+    "userId": 100,
+    "replyBody": "This is a simple test reply!",
+    "datePosted": "3 Nov 2025"
+  },
+  {
+    "id": 14,
+    "reviewId": 1,
+    "userId": 100,
+    "replyBody": "This is a simple test reply!",
+    "datePosted": "3 Nov 2025"
+  },
+  {
+    "id": 15,
+    "reviewId": 1,
+    "userId": 100,
+    "replyBody": "This is a simple test reply!",
+    "datePosted": "3 Nov 2025"
+  },
+  {
+    "id": 16,
+    "reviewId": 1,
+    "userId": 100,
+    "replyBody": "This is a simple test reply!",
+    "datePosted": "3 Nov 2025"
+  },
+  {
+    "id": 17,
+    "reviewId": 1,
+    "userId": 100,
+    "replyBody": "This is a simple test reply!",
+    "datePosted": "3 Nov 2025"
+  },
+  {
+    "id": 18,
+    "reviewId": 1,
+    "userId": 100,
+    "replyBody": "This is a simple test reply!",
+    "datePosted": "3 Nov 2025"
   }
 ]

@@ -99,11 +99,12 @@ def getMovieByFilter(
     return filteredMovies
 
 
-def getMovieById(movieId: int) -> Movie:
+def getMovieById(movieId: int | str) -> Movie:
     """
     Retrieves a movie by its ID.
     
     """
+    movieId = int(movieId)
     movies = loadMovies()
 
     for movie in movies:

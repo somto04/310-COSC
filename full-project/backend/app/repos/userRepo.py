@@ -7,14 +7,14 @@ _USER_CACHE: List[User] | None = None
 _NEXT_USER_ID: int | None = None
 
 
-def _getMaxUserId(users: List[User]) -> int:
+def getMaxUserId(users: List[User]) -> int:
     """
     Return the maximum user ID in a list of users, or 0 if empty.
     """
     return max((user.id for user in users), default=0)
 
 
-def _loadCache() -> List[User]:
+def loadCache() -> List[User]:
     """
     Load users from the data file into a cache.
 
@@ -28,7 +28,7 @@ def _loadCache() -> List[User]:
         user_dicts = _baseLoadAll(_USER_DATA_PATH)
         _USER_CACHE = [User(**user) for user in user_dicts]
 
-        max_id = _getMaxUserId(_USER_CACHE)
+        max_id = getMaxUserId(_USER_CACHE)
         _NEXT_USER_ID = max_id + 1
     return _USER_CACHE
 
@@ -42,7 +42,7 @@ def getNextUserId() -> int:
     """
     global _NEXT_USER_ID
     if _NEXT_USER_ID is None:
-        _loadCache()
+        loadCache()
 
     assert _NEXT_USER_ID is not None
 
@@ -58,7 +58,7 @@ def loadUsers() -> List[User]:
     Returns:
         List[User]: A list of users.
     """
-    return _loadCache()
+    return loadCache()
 
 
 def saveUsers(users: List[User]):
@@ -71,7 +71,7 @@ def saveUsers(users: List[User]):
     global _USER_CACHE, _NEXT_USER_ID
     _USER_CACHE = users
 
-    max_id = _getMaxUserId(users)
+    max_id = getMaxUserId(users)
     if _NEXT_USER_ID is None or _NEXT_USER_ID <= max_id:
         _NEXT_USER_ID = max_id + 1
 

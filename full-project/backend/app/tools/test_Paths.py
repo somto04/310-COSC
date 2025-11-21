@@ -1,6 +1,7 @@
 import pytest
 from pathlib import Path
 from app.tools.Paths import getProjectRoot
+from app.tools.Paths import getProjectRoot
 
 def test_pathExists(tmp_path, mocker):
     # Create a fake file structure which resolve will return
@@ -17,5 +18,6 @@ def test_pathNotFound(tmp_path, mocker):
     mocker.patch.object(Path, "resolve", return_value=fakeFile)
 
     with pytest.raises(RuntimeError, match="Could not locate project root."):
+        getProjectRoot()
         getProjectRoot()
     

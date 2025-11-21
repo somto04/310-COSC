@@ -2,7 +2,9 @@ import json
 from pathlib import Path
 from typing import List, Dict, Any
 from app.tools.Paths import getProjectRoot
+from app.tools.Paths import getProjectRoot
 
+DATA_DIR = getProjectRoot() / "backend" / "app" / "data"
 DATA_DIR = getProjectRoot() / "backend" / "app" / "data"
 
 def _fullPath (name: str | Path) -> Path:

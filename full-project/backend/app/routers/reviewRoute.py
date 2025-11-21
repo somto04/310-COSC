@@ -79,7 +79,7 @@ def putReview(
         The updated review.
 
     Raises:
-        HTTPException: If the review doesnt exist or they are not the owner.
+        HTTPException: If the review doesn't exist or they are not the owner.
     """
     review = getReviewById(reviewId)
     validateReview(review)

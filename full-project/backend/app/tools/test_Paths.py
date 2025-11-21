@@ -19,5 +19,5 @@ def test_pathNotFound(tmp_path, mocker):
 
     with pytest.raises(RuntimeError, match="Could not locate project root."):
         getProjectRoot()
-        getProjectRoot()
+        
     

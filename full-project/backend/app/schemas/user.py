@@ -201,7 +201,7 @@ class UserUpdate(BaseModel):
             raise ValueError(
                 f"User must be {MIN_AGE} years or older to update an account"
             )
-        return user_age
+        return userAge
 
 
 class AdminUserUpdate(UserUpdate):

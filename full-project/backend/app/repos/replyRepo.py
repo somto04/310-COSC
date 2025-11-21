@@ -1,5 +1,5 @@
 from typing import List
-from.repo import _base_save_all, _base_load_all, DATA_DIR
+from.repo import _baseSaveAll, _baseLoadAll, DATA_DIR
 from ..schemas.reply import Reply
 
 _REPLY_DATA_PATH = DATA_DIR / "replies.json"
@@ -13,7 +13,7 @@ def getMaxReplyId(replies: List[Reply]) -> int:
     return max((reply.id for reply in replies), default=0)
 
 
-def _load_reply_cache() -> List[Reply]: 
+def _loadReplyCache() -> List[Reply]: 
     """
     Load reply from the data file into a cache.
 
@@ -23,7 +23,7 @@ def _load_reply_cache() -> List[Reply]:
     """
     global _REPLY_CACHE, _NEXT_REPLY_ID
     if _REPLY_CACHE is None:
-        reply_dicts = _base_load_all(_REPLY_DATA_PATH)
+        reply_dicts = _baseLoadAll(_REPLY_DATA_PATH)
         _REPLY_CACHE = [Reply(**reply) for reply in reply_dicts]
         _NEXT_REPLY_ID = getMaxReplyId(_REPLY_CACHE) + 1
     return _REPLY_CACHE
@@ -37,7 +37,7 @@ def getNextReplyId() -> int:
     """
     global _NEXT_REPLY_ID
     if _NEXT_REPLY_ID is None:
-        _load_reply_cache()
+        _loadReplyCache()
 
     assert _NEXT_REPLY_ID is not None
 
@@ -52,7 +52,7 @@ def loadReplies() -> List[Reply]:
     Returns:
         List[Reply]: A list of reply items.
     """
-    return _load_reply_cache
+    return _loadReplyCache
     
 def saveReplies(replies: List[Reply]) -> None: 
     """
@@ -64,6 +64,6 @@ def saveReplies(replies: List[Reply]) -> None:
     global _REPLY_CACHE
     _REPLY_CACHE = replies
     reply_dict = [reply.model_dump() for reply in replies]
-    _base_save_all(REPLY_DATA_PATH, reply_dict)
+    _baseSaveAll(_REPLY_DATA_PATH, reply_dict)
 
 __all__ = ["loadAll", "saveAll"]

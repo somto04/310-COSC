@@ -71,7 +71,7 @@ def saveMovies(movies: List[Movie]) -> None:
     if _NEXT_MOVIE_ID is None or _NEXT_MOVIE_ID <= maxId:
         _NEXT_MOVIE_ID = maxId + 1
 
-    movie_dict = [movie.model_dump() for movie in movies]
+    movie_dict = [movie.model_dump(mode="json") for movie in movies]
     _base_save_all(MOVIE_DATA_PATH, movie_dict)
 
 def loadAll():

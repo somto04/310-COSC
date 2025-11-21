@@ -2,7 +2,6 @@ from typing import List
 from fastapi import APIRouter, status, Depends, HTTPException
 from ..schemas.review import Review, ReviewCreate, ReviewUpdate
 from ..schemas.user import CurrentUser
-from ..schemas.review import Review
 from ..services.reviewService import (
     listReviews,
     createReview,

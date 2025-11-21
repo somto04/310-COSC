@@ -1,7 +1,7 @@
 import pytest
 from pathlib import Path
 from app.tools.Paths import getProjectRoot
-from app.tools.Paths import getProjectRoot
+
 
 def test_pathExists(tmp_path, mocker):
     # Create a fake file structure which resolve will return

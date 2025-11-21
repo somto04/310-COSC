@@ -14,7 +14,7 @@ def getMaxUserId(users: List[User]) -> int:
     return max((user.id for user in users), default=0)
 
 
-def loadCache() -> List[User]:
+def _loadCache() -> List[User]:
     """
     Load users from the data file into a cache.
 
@@ -42,7 +42,7 @@ def getNextUserId() -> int:
     """
     global _NEXT_USER_ID
     if _NEXT_USER_ID is None:
-        loadCache()
+        _loadCache()
 
     assert _NEXT_USER_ID is not None
 
@@ -58,7 +58,7 @@ def loadUsers() -> List[User]:
     Returns:
         List[User]: A list of users.
     """
-    return loadCache()
+    return _loadCache()
 
 
 def saveUsers(users: List[User]):

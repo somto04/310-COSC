@@ -19,7 +19,7 @@ from app.services.authService import (
     resetPassword,
     UserNotFoundError,
     InvalidPasswordError,
-    reset_tokens,
+    resetTokens,
 )
 from app.services import authService
 from app.repos import userRepo
@@ -71,9 +71,9 @@ def makeCurrentUser(user: User) -> CurrentUser:
 @pytest.fixture(autouse=True)
 def clearResetTokens():
     """Ensure reset_tokens is clean for each test."""
-    reset_tokens.clear()
+    resetTokens.clear()
     yield
-    reset_tokens.clear()
+    resetTokens.clear()
 
 
 # ======================================================================
@@ -106,8 +106,8 @@ def testValidatePasswordIncorrect():
 def testGenerateResetTokenStoresData():
     token = generateResetToken(VALID_EMAIL)
 
-    assert token in reset_tokens
-    data = reset_tokens[token]
+    assert token in resetTokens
+    data = resetTokens[token]
     assert data["email"] == VALID_EMAIL.lower()
     assert isinstance(data["expires"], int)
 
@@ -141,7 +141,7 @@ def testResetPasswordFailsForExpiredToken(monkeypatch):
     token = generateResetToken(user.email)
 
     # force expiration in the past
-    reset_tokens[token]["expires"] = int(time.time()) - 10
+    resetTokens[token]["expires"] = int(time.time()) - 10
 
     monkeypatch.setattr(userRepo, "loadUsers", lambda: [user])
     monkeypatch.setattr(userRepo, "saveUsers", lambda users: None)
@@ -171,4 +171,4 @@ def testResetPasswordFailsWhenEmailNotFound(monkeypatch):
 
     assert result is False
     # token should still exist since no user was updated
-    assert token in reset_tokens
+    assert token in resetTokens

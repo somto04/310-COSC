@@ -23,7 +23,7 @@ def fakeLogin():
 
 
 @pytest.fixture(autouse=True)
-def mock_repos(monkeypatch):
+def mockRepos(monkeypatch):
     """Prevent touching the real replies.json."""
     fakeData = [
         Reply(
@@ -53,11 +53,10 @@ def mock_repos(monkeypatch):
 
 
 @pytest.fixture
-def client(mock_repos):
+def client(mockRepos):
     return TestClient(app)
 
-
-def test_get_replies(client):
+def test_getReplies(client):
     """Checks that /replies/{reviewId} returns a valid response (even if empty)."""
     response = client.get("/replies/1")
 
@@ -71,7 +70,7 @@ def test_get_replies(client):
             assert "userId" in data[0]
 
 
-def test_post_reply(client):
+def test_postReply(client):
     """Checks that /replies accepts new replies correctly."""
     payload = {
         "reviewId": 1,

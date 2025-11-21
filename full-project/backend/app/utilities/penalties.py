@@ -17,7 +17,7 @@ def incrementPenaltyForUser(userId: int) -> User:
     Returns the updated User model.
     """
     users = loadUsers()
-    updated_user = None
+    updatedUser = None
 
     # loop with index so we can update the list
     for i, user in enumerate(users):
@@ -27,15 +27,15 @@ def incrementPenaltyForUser(userId: int) -> User:
             if user.penalties >= MAX_PENALTIES:
                 user.isBanned = True
 
-            updated_user = user
+            updatedUser = user
             users[i] = user 
             break
 
-    if updated_user is None:
+    if updatedUser is None:
         raise ValueError("User not found")
 
     saveUsers(users)
-    return updated_user
+    return updatedUser
 
 
 

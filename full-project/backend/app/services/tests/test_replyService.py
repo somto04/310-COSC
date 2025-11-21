@@ -4,14 +4,14 @@ from app.services import replyService
 from app.schemas.reply import ReplyCreate, Reply
 
 # sample fake replies list
-fake_replies = [
+fakeReplies = [
     Reply(id=1, reviewId=1, userId=1001, replyBody="I agree", datePosted= "1 Jan 2024"),
     Reply(id=2, reviewId=2, userId=1002, replyBody="Nice point!", datePosted="2 Jan 2024")
 ]
 
 @patch("app.services.replyService.loadReplies")
-def test_list_replies_for_review(mock_load):
-    mock_load.return_value = fake_replies
+def test_listRepliesForReview(mockLoad):
+    mockLoad.return_value = fakeReplies
 
     results = replyService.listReplies(1)
 
@@ -23,9 +23,9 @@ def test_list_replies_for_review(mock_load):
 
 @patch("app.services.replyService.saveReplies")
 @patch("app.services.replyService.loadReplies")
-def test_create_reply(mock_load, mock_save):
+def test_createReply(mockLoad, mockSave):
     """ testing creating a new reply (date is required) """
-    mock_load.return_value = fake_replies
+    mockLoad.return_value = fakeReplies
 
     payload = ReplyCreate(
         reviewId=12,
@@ -34,15 +34,15 @@ def test_create_reply(mock_load, mock_save):
         datePosted="3 Jan 2024" 
     )
 
-    new_reply = replyService.createReply(payload)
+    newReply = replyService.createReply(payload)
 
-    assert isinstance(new_reply, Reply)
-    assert new_reply.reviewId == 12
-    assert new_reply.userId == 999
-    assert new_reply.replyBody == "This is a test reply"
-    assert new_reply.datePosted == "3 Jan 2024"
+    assert isinstance(newReply, Reply)
+    assert newReply.reviewId == 12
+    assert newReply.userId == 999
+    assert newReply.replyBody == "This is a test reply"
+    assert newReply.datePosted == "3 Jan 2024"
 
     # verify saveAll called with updated data
-    mock_save.assert_called_once()
-    saved_data = mock_save.call_args[0][0]
+    mockSave.assert_called_once()
+    saved_data = mockSave.call_args[0][0]
     assert any(reply.replyBody == "This is a test reply" for reply in saved_data)

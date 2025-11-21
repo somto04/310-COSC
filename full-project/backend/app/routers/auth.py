@@ -1,15 +1,16 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Form
 from fastapi.security import OAuth2PasswordBearer
-from ..schemas.user import User
-from ..repos.userRepo import loadUsers
-from app.utilities.security import verifyPassword
+
 from ..schemas.user import CurrentUser, Password, Email, Username
 from ..schemas.role import Role
-from ..services.userService import (
-    getUserByEmail,
+from ..services.userService import getUserByEmail, getUserByUsername
+from ..services.authService import (
+    validatePassword,
+    ensureUserExists,
     generateResetToken,
     resetPassword,
-    getUserByUsername,
+    UserNotFoundError,
+    InvalidPasswordError,
 )
 
 
@@ -20,7 +21,20 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 
 def getCurrentUser(token: str = Depends(oauth2_scheme)) -> CurrentUser:
-    user = ensureUserExists(getUserByUsername(token))
+    """
+    Resolve the current user from the bearer token (username for now).
+    Maps domain errors to HTTP errors.
+    """
+    try:
+        user = ensureUserExists(getUserByUsername(token))
+    except UserNotFoundError:
+        # Token is invalid / user no longer exists
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid authentication credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
     return CurrentUser(id=user.id, username=user.username, role=user.role)
 
 
@@ -33,46 +47,36 @@ def requireAdmin(currentUser: CurrentUser = Depends(getCurrentUser)) -> CurrentU
     return currentUser
 
 
-def validatePassword(password: Password, user: User) -> None:
-    if not verifyPassword(password, user.pw):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid username or password",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-
-
-def ensureUserExists(user: User | None) -> User:
-    if user is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="This user does not exist",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    return user
-
-
 # =================================ROUTE HANDLERS==================================
 
 
 @router.post("/token")
 def login(username: Username = Form(...), password: Password = Form(...)):
     """
-    Logs in user and blocks banned users before their password is validated
+    Logs in user and blocks banned users before their password is validated.
+    All domain auth errors are mapped to HTTP here.
     """
-    user = ensureUserExists(getUserByUsername(username))
+    try:
+        user = ensureUserExists(getUserByUsername(username))
 
-    if user.isBanned:
+        if user.isBanned:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Account banned due to repeated violations",
+            )
+
+        validatePassword(user, password)
+
+    except (UserNotFoundError, InvalidPasswordError):
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Account banned due to repeated violations",
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid username or password",
+            headers={"WWW-Authenticate": "Bearer"},
         )
-
-    validatePassword(password, user)
 
     return {
         "message": "Login successful",
-        "access_token": username,
+        "access_token": username,  # should be token when implemented
         "token_type": "bearer",
     }
 
@@ -97,13 +101,12 @@ def forgotPassword(email: Email = Form(...)):
     """
     Simulate sending a password reset link to the user's email.
 
-    Returns:
-        Message saying link was sent.
-
     Raises:
-        HTTPException: invalid email.
+        HTTPException: if the email is not associated with a user.
     """
-    if not getUserByEmail(email):
+    try:
+        ensureUserExists(getUserByEmail(email))
+    except UserNotFoundError:
         raise HTTPException(status_code=404, detail="Email not found")
 
     token = generateResetToken(email)

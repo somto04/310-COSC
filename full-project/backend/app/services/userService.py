@@ -6,8 +6,6 @@ from ..schemas.role import Role
 from ..repos.userRepo import getNextUserId, loadUsers, saveUsers
 from ..utilities.security import hashPassword, verifyPassword
 
-reset_tokens = {}  # token -> {"email": str, "expires": int}
-
 
 def isUsernameTaken(
     users: List[User], username: str, *, exclude_user_id: int | None = None
@@ -24,14 +22,14 @@ def isUsernameTaken(
     Example:
         "Ichigo76" and "ichigo76" are considered the same.
     """
-    normalized_new_username = username.lower()
+    normalizedNewUsername = username.lower()
 
     for user in users:
         if exclude_user_id is not None and user.id == exclude_user_id:
             continue
 
-        normalized_existing_username = user.username.lower()
-        if normalized_existing_username == normalized_new_username:
+        normalizedExistingUsername = user.username.lower()
+        if normalizedExistingUsername == normalizedNewUsername:
             return True
 
     return False
@@ -63,21 +61,21 @@ def createUser(payload: UserCreate) -> User:
     if isUsernameTaken(users, payload.username):
         raise HTTPException(status_code=409, detail="Username already taken; retry.")
 
-    hashed_pw = hashPassword(payload.pw)
+    hashedPw = hashPassword(payload.pw)
 
-    new_user = User(
+    newUser = User(
         id=getNextUserId(),
         username=payload.username,
         firstName=payload.firstName,
         lastName=payload.lastName,
         age=payload.age,
         email=payload.email,
-        pw=hashed_pw,
+        pw=hashedPw,
     )
 
-    users.append(new_user)
+    users.append(newUser)
     saveUsers(users)
-    return new_user
+    return newUser
 
 
 def getUserById(userId: int) -> User:
@@ -100,6 +98,23 @@ def getUserById(userId: int) -> User:
     raise HTTPException(status_code=404, detail=f"User '{userId}' not found")
 
 
+def getUserByUsername(username: str) -> User | None:
+    """
+    Get a user by username
+
+    Args:
+        username (str): Username of the user to retrieve
+
+    Returns:
+        User or None if not found
+    """
+    users = loadUsers()
+    for user in users:
+        if user.username == username:
+            return user
+    return None
+
+
 def updateUser(userId: int, payload: UserUpdate) -> User:
     """
     Update user info by ID
@@ -116,21 +131,21 @@ def updateUser(userId: int, payload: UserUpdate) -> User:
         HTTPException: user not found
     """
     users = loadUsers()
-    update_data = payload.model_dump(exclude_unset=True)
+    updateData = payload.model_dump(exclude_unset=True)
 
-    if "username" in update_data and update_data["username"] is not None:
-        new_username = update_data["username"]
-        if isUsernameTaken(users, new_username, exclude_user_id=userId):
+    if "username" in updateData and updateData["username"] is not None:
+        newUsername = updateData["username"]
+        if isUsernameTaken(users, newUsername, exclude_user_id=userId):
             raise HTTPException(
                 status_code=409, detail="Username already taken; retry."
             )
 
-    if "pw" in update_data and update_data["pw"] is not None:
-        update_data["pw"] = hashPassword(update_data["pw"])
+    if "pw" in updateData and updateData["pw"] is not None:
+        updateData["pw"] = hashPassword(updateData["pw"])
 
     for index, current_user in enumerate(users):
         if current_user.id == userId:
-            updated_user = current_user.model_copy(update=update_data)
+            updated_user = current_user.model_copy(update=updateData)
             users[index] = updated_user
             saveUsers(users)
             return updated_user
@@ -161,7 +176,7 @@ def deleteUser(userId: int):
 def getUserByEmail(email: str) -> User | None:
     """
     Check if email exists
-    
+
     Args:
         email (str): email to check
     """
@@ -171,27 +186,3 @@ def getUserByEmail(email: str) -> User | None:
         if user.email.lower() == normalized:
             return user
     return None
-
-
-def generateResetToken(email: str) -> str:
-    """Generate a temporary reset token"""
-    token = secrets.token_hex(16)
-    expires = int(time.time()) + 900  # expires in 15 min
-    reset_tokens[token] = {"email": email.lower(), "expires": expires}
-    return token
-
-
-def resetPassword(token: str, new_password: str) -> bool:
-    """Reset password if token valid"""
-    data = reset_tokens.get(token)
-    if not data or data["expires"] < time.time():
-        return False
-
-    users = loadUsers()
-    for user in users:
-        if user.email.lower() == data["email"]:
-            user.pw = hashPassword(new_password.strip())
-            saveUsers(users)
-            del reset_tokens[token]
-            return True
-    return False

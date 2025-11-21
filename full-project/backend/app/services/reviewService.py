@@ -20,15 +20,15 @@ def searchReviews(query: str) -> List[Review]:
 
     # If query is a number, treat as movie ID
     if strippedQuery.isdigit():
-        movie_id = int(strippedQuery)
-        return [review for review in reviews if review.movieId == movie_id]
+        movieId = int(strippedQuery)
+        return [review for review in reviews if review.movieId == movieId]
 
-    matching_movie_ids = [
+    matchingMovieIds = [
         movie["id"] for movie in movies
         if strippedQuery in movie.get("title", "").lower()
     ]
 
-    return [review for review in reviews if review.movieId in matching_movie_ids]
+    return [review for review in reviews if review.movieId in matchingMovieIds]
 
 
 def listReviews() -> List[Review]:

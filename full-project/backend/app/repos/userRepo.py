@@ -1,5 +1,5 @@
 from typing import List
-from .repo import _base_load_all, _base_save_all, DATA_DIR
+from .repo import _baseLoadAll, _baseSaveAll, DATA_DIR
 from ..schemas.user import User
 
 _USER_DATA_PATH = DATA_DIR / "users.json"
@@ -25,7 +25,7 @@ def _loadCache() -> List[User]:
     """
     global _USER_CACHE, _NEXT_USER_ID
     if _USER_CACHE is None:
-        user_dicts = _base_load_all(_USER_DATA_PATH)
+        user_dicts = _baseLoadAll(_USER_DATA_PATH)
         _USER_CACHE = [User(**user) for user in user_dicts]
 
         max_id = _getMaxUserId(_USER_CACHE)
@@ -76,7 +76,7 @@ def saveUsers(users: List[User]):
         _NEXT_USER_ID = max_id + 1
 
     user_dicts = [user.model_dump() for user in users]
-    _base_save_all(_USER_DATA_PATH, user_dicts)
+    _baseSaveAll(_USER_DATA_PATH, user_dicts)
 
 
 __all__ = ["loadUsers", "saveUsers"]

@@ -27,7 +27,7 @@ def test_movieLoadUsesTmp(tmp_path, monkeypatch):
             directors=["Makoto Shinkai"],
             mainStars=["Ryunosuke Kamiki", "Mone Kamishiraishi"],
             description="Two teenagers mysteriously swap bodies and connect across time.",
-            datePublished=date(2016,8-26),
+            datePublished=date(2016,8,26),
             duration=112,
             yearReleased=2016
         )

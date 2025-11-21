@@ -10,7 +10,7 @@ from app.utilities.security import verifyPassword
 
 # these fixtures provide mock user data for testing that follows our user schema
 @pytest.fixture
-def fake_users():
+def fakeUsers():
     return [
         User(
             id=1,
@@ -37,8 +37,8 @@ def fake_users():
 
 # this tests that all users currently stored are listed correctly
 @patch("app.services.userService.loadUsers")
-def test_list_users(mock_load, fake_users):
-    mock_load.return_value = fake_users
+def test_listUsers(mockLoad, fakeUsers):
+    mockLoad.return_value = fakeUsers
     result = userService.listUsers()
     assert len(result) == 2
     assert all(isinstance(u, User) for u in result)
@@ -47,8 +47,8 @@ def test_list_users(mock_load, fake_users):
 # this tests that a new user is created and saved correctly according to our schema
 @patch("app.services.userService.saveUsers")
 @patch("app.services.userService.loadUsers")
-def test_create_user(mock_load, mock_save, fake_users):
-    mock_load.return_value = list(fake_users)
+def test_createUser(mockLoad, mockSave, fakeUsers):
+    mockLoad.return_value = list(fakeUsers)
 
     payload = UserCreate(
         firstName="Sam",
@@ -59,56 +59,56 @@ def test_create_user(mock_load, mock_save, fake_users):
         pw="SecureP@ss123",
     )
 
-    new_user = userService.createUser(payload)
-    assert new_user.firstName == "Sam"
-    assert new_user.username == "samh"
-    assert new_user.id == 3
-    assert new_user.pw != payload.pw
-    assert new_user.pw.startswith("$2")
-    mock_save.assert_called_once()
+    newUser = userService.createUser(payload)
+    assert newUser.firstName == "Sam"
+    assert newUser.username == "samh"
+    assert newUser.id == 3
+    assert newUser.pw != payload.pw
+    assert newUser.pw.startswith("$2")
+    mockSave.assert_called_once()
 
-    args, kwargs = mock_save.call_args
-    saved_users = args[0]
+    args, kwargs = mockSave.call_args
+    savedUsers = args[0]
 
-    assert len(saved_users) == 3 
-    assert saved_users[-1] == new_user
-    assert isinstance(saved_users[-1], User)
+    assert len(savedUsers) == 3 
+    assert savedUsers[-1] == newUser
+    assert isinstance(savedUsers[-1], User)
 
 
 @patch("app.services.userService.saveUsers")
 @patch("app.services.userService.loadUsers")
-def test_create_user_hashes_password(mock_load, mock_save, fake_users):
-    mock_load.return_value = fake_users
+def test_createUserHashesPassword(mockLoad, mockSave, fakeUsers):
+    mockLoad.return_value = fakeUsers
 
-    plain_pw = "Pass123A"
+    plainPw = "Pass123A"
     payload = UserCreate(
         username="newuser",
         firstName="Sam",
         lastName="Hill",
         age=22,
         email="sam@example.com",
-        pw=plain_pw,
+        pw=plainPw,
     )
 
-    new_user = userService.createUser(payload)
+    newUser = userService.createUser(payload)
 
     # 1. Should not store raw password
-    assert new_user.pw != plain_pw
+    assert newUser.pw != plainPw
 
     # 2. Hash should actually verify
-    assert verifyPassword(plain_pw, new_user.pw)
+    assert verifyPassword(plainPw, newUser.pw)
 
     # 3. Still only one save
-    mock_save.assert_called_once()
+    mockSave.assert_called_once()
 
     # 4. check what got saved
-    saved_users = mock_save.call_args[0][0]
-    assert saved_users[-1].pw == new_user.pw
+    savedUsers = mockSave.call_args[0][0]
+    assert savedUsers[-1].pw == newUser.pw
 
 
 @patch("app.services.userService.loadUsers")
-def test_create_user_username_taken(mock_load, fake_users):
-    mock_load.return_value = fake_users
+def test_createUserUsernameTaken(mockLoad, fakeUsers):
+    mockLoad.return_value = fakeUsers
 
     payload = UserCreate(
         firstName="Alex",
@@ -126,16 +126,16 @@ def test_create_user_username_taken(mock_load, fake_users):
 
 # this tests that a user can be retrieved by their ID correctly
 @patch("app.services.userService.loadUsers")
-def test_get_user_by_id_found(mock_load, fake_users):
-    mock_load.return_value = fake_users
+def test_getUserByIdFound(mockLoad, fakeUsers):
+    mockLoad.return_value = fakeUsers
     result = userService.getUserById(1)
     assert result.username == "alexm"
 
 
 # this tests that an error is raised when trying to get a user that does not exist
 @patch("app.services.userService.loadUsers")
-def test_get_user_by_id_not_found(mock_load):
-    mock_load.return_value = []
+def test_getUserByIdNotFound(mockLoad):
+    mockLoad.return_value = []
     with pytest.raises(HTTPException) as exc:
         userService.getUserById(999)
     assert exc.value.status_code == 404
@@ -144,8 +144,8 @@ def test_get_user_by_id_not_found(mock_load):
 # this tests that a current user is updated and saved correctly according to our schema
 @patch("app.services.userService.saveUsers")
 @patch("app.services.userService.loadUsers")
-def test_update_user_success(mock_load, mock_save, fake_users):
-    mock_load.return_value = fake_users
+def test_updateUserSuccess(mockLoad, mockSave, fakeUsers):
+    mockLoad.return_value = fakeUsers
 
     payload = UserUpdate(
         firstName="Updated",
@@ -156,18 +156,18 @@ def test_update_user_success(mock_load, mock_save, fake_users):
         pw="NewP@ssw0rd",
     )
 
-    assert fake_users[0].username != "updateduser"
+    assert fakeUsers[0].username != "updateduser"
     updated = userService.updateUser(1, payload)
     assert updated.firstName == "Updated"
     assert updated.username == "updateduser"
-    mock_save.assert_called_once()
+    mockSave.assert_called_once()
 
 
 # this tests that an error is raised when trying to update a user that does not exist
 @patch("app.services.userService.saveUsers")
 @patch("app.services.userService.loadUsers")
-def test_update_user_not_found(mock_load, mock_save):
-    mock_load.return_value = []
+def test_updateUserNotFound(mockLoad, mockSave):
+    mockLoad.return_value = []
     payload = UserUpdate(
         firstName="Missing",
         lastName="Person",
@@ -185,17 +185,17 @@ def test_update_user_not_found(mock_load, mock_save):
 # this tests that a user is deleted correctly
 @patch("app.services.userService.saveUsers")
 @patch("app.services.userService.loadUsers")
-def test_delete_user_success(mock_load, mock_save, fake_users):
-    mock_load.return_value = fake_users
+def test_deleteUserSuccess(mockLoad, mockSave, fakeUsers):
+    mockLoad.return_value = fakeUsers
     userService.deleteUser(1)
-    mock_save.assert_called_once()
+    mockSave.assert_called_once()
 
 
 # this tests that an error is raised when trying to delete a user that does not exist
 @patch("app.services.userService.saveUsers")
 @patch("app.services.userService.loadUsers")
-def test_delete_user_not_found(mock_load, mock_save, fake_users):
-    mock_load.return_value = fake_users
+def test_deleteUserNotFound(mockLoad, mockSave, fakeUsers):
+    mockLoad.return_value = fakeUsers
     with pytest.raises(HTTPException) as exc:
         userService.deleteUser(999)
     assert exc.value.status_code == 404

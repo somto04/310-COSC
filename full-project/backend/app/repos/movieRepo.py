@@ -1,6 +1,5 @@
 from typing import List, Dict, Any
-from .repo import _base_load_all, _base_save_all, DATA_DIR
-from ..schemas.movie import Movie
+from .repo import _baseLoadAll, _baseSaveAll, DATA_DIR
 
 MOVIE_DATA_PATH = DATA_DIR / "movies.json"
 _MOVIE_CACHE: List[Movie] | None = None

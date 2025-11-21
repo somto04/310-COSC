@@ -6,7 +6,7 @@ from app.schemas.role import Role
 
 def test_IncrementPenalty(monkeypatch):
     # fake user data
-    fake_users = [
+    fakeUsers = [
         User(
             id=1,
             username="test",
@@ -21,7 +21,7 @@ def test_IncrementPenalty(monkeypatch):
         )
     ]
 
-    monkeypatch.setattr("app.utilities.penalties.loadUsers", lambda: fake_users)
+    monkeypatch.setattr("app.utilities.penalties.loadUsers", lambda: fakeUsers)
 
     saved = []
     monkeypatch.setattr(
@@ -37,7 +37,7 @@ def test_IncrementPenalty(monkeypatch):
 
 def test_IncrementPenaltyBan(monkeypatch):
     # fake user data
-    fake_users = [
+    fakeUsers = [
         User(
             id=2,
             username="beta",
@@ -52,7 +52,7 @@ def test_IncrementPenaltyBan(monkeypatch):
         )
     ]
 
-    monkeypatch.setattr("app.utilities.penalties.loadUsers", lambda: fake_users)
+    monkeypatch.setattr("app.utilities.penalties.loadUsers", lambda: fakeUsers)
 
     saved = []
     monkeypatch.setattr(

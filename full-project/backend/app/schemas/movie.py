@@ -49,7 +49,7 @@ class Movie(BaseModel):
 
     @model_validator(mode="before")
     @classmethod
-    def extract_year(cls, values):
+    def extractYear(cls, values):
         # Pydantic may pass positional args as a tuple
         if isinstance(values, tuple):
             values = dict(zip(cls.model_fields, values))

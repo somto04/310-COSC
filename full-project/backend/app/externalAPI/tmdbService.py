@@ -17,6 +17,15 @@ def getMovieDetails(movieName: str) -> TMDbMovie | None:
         params={"api_key": TMDB_API_KEY, "query": movieName}
     )
 
+
+def getMovieDetails(movieName: str) -> TMDbMovie | None:
+    """Retrieve main movie details from TMDb"""
+    
+    response = requests.get(
+        f"{BASE_URL}/search/movie",
+        params={"api_key": TMDB_API_KEY, "query": movieName}
+    )
+
     data = response.json()
 
     if not data.get("results"):

@@ -7,6 +7,28 @@ SpoilerAlert! is a movie review platform built with FastAPI that lets users brow
 
 The backend manages all core logic including reviews, replies, penalties, user accounts, and movie data, while the frontend delivers a clean, responsive UI for both casual users and admins. The platform is designed to be modular, testable, and easy to extend.
 
+## Personal Contributions 
+
+Helped design the system architecture following the MVC structure (Model, View, Controller) and contributed to the Architecture & Design Document
+
+Worked on defining and refining functional and non-functional requirements in the SRS, along with user stories and acceptance criteria
+
+Implemented and improved backend features including movie, user, and review handling using FastAPI
+
+Refactored large parts of the backend to use Pydantic models instead of raw dicts for better validation and reliability
+
+Contributed to testing efforts by fixing failing tests, adding mocks, and improving overall test structure
+
+Cleaned and reorganized repository structure to make the codebase more maintainable and easier to navigate
+
+Added external API integration improvements (TMDb) and helped simplify the interface through a façade pattern
+
+Assisted in documenting traceability between requirements, design, and implementation for milestone submissions
+
+Participated in designing and reviewing sequence diagrams, component diagrams, and class diagrams for the documentation
+
+Contributed evenly to writing, editing, and formatting the project documents with the rest of the team
+
 ## to delete old coverage report and add a new one run the commands: 
 ```
 rm -r htmlcov  

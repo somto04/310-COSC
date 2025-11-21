@@ -3,10 +3,10 @@ import os, json, pandas as pd
 # Folder that holds your movie subfolders
 DATA_DIR = os.path.dirname(__file__)
 movies, reviews, users = [], [], []
-user_ids = {}
-movie_id = 1
-review_id = 1
-user_id = 1
+userIds = {}
+movieId = 1
+reviewId = 1
+userId = 1
 
 print("Looking in:", os.path.abspath(DATA_DIR))
 if not os.path.exists(DATA_DIR):
@@ -17,25 +17,25 @@ else:
 # loop through subfolders
 for folder in os.listdir(DATA_DIR):
     path = os.path.join(DATA_DIR, folder)
-    meta_path = os.path.join(path, "metadata.json")
-    reviews_path = os.path.join(path, "movieReviews.csv")
+    metaPath = os.path.join(path, "metadata.json")
+    reviewsPath = os.path.join(path, "movieReviews.csv")
 
     # skip files like import_data.py or movies.json
     if not os.path.isdir(path):
         continue
 
     print(f"Checking folder: {folder}")
-    print("  metadata.json exists:", os.path.exists(meta_path))
-    print("  movieReviews.csv exists:", os.path.exists(reviews_path))
+    print("  metadata.json exists:", os.path.exists(metaPath))
+    print("  movieReviews.csv exists:", os.path.exists(reviewsPath))
 
-    if not os.path.exists(meta_path):
+    if not os.path.exists(metaPath):
         continue
 
     #read metadata
-    with open(meta_path, "r", encoding="utf-8") as f:
+    with open(metaPath, "r", encoding="utf-8") as f:
         meta = json.load(f)
     movies.append({
-        "id": movie_id,
+        "id": movieId,
         "title": meta.get("title"),
         "movieIMDbRating": meta.get("movieIMDbRating"),
         "movieGenres": meta.get("movieGenres"),
@@ -47,27 +47,27 @@ for folder in os.listdir(DATA_DIR):
     })
 
     #read reviews
-    if os.path.exists(reviews_path):
-        df = pd.read_csv(reviews_path)
+    if os.path.exists(reviewsPath):
+        df = pd.read_csv(reviewsPath)
         for _, row in df.iterrows():
             username = str(row.get("User", "Unknown")).strip()
-            if username not in user_ids:
-                user_ids[username] = user_id
-                users.append({"id": user_id, "username": username})
-                user_id += 1
+            if username not in userIds:
+                userIds[username] = userId
+                users.append({"id": userId, "username": username})
+                userId += 1
 
             reviews.append({
-                "id": review_id,
-                "movie_id": movie_id,
-                "user_id": user_ids[username],
+                "id": reviewId,
+                "movie_id": movieId,
+                "user_id": userIds[username],
                 "review_title": row.get("Review Title"),
                 "review_text": row.get("Review"),
                 "rating": row.get("User's Rating out of 10"),
                 "date_posted": row.get("Date of Review")
             })
-            review_id += 1
+            reviewId += 1
 
-    movie_id += 1
+    movieId += 1
 
 #save all three JSON files i think lolsss
 #save directly into the same folder as this script

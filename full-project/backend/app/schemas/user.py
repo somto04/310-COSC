@@ -8,6 +8,7 @@ from pydantic import (
 from typing import Annotated, Optional
 from .role import Role
 import re
+from pydantic.functional_validators import AfterValidator
 
 MAX_NAME_LENGTH = 50
 MIN_EMAIL_LENGTH = 5
@@ -19,6 +20,21 @@ MIN_USERNAME_LENGTH = 3
 MAX_USERNAME_LENGTH = 30
 MIN_PASSWORD_LENGTH = 8
 MAX_PASSWORD_LENGTH = 256
+
+
+def _checkPasswordComplexity(value: str) -> str:
+    """
+    Extra password complexity check:
+    - at least one uppercase
+    - at least one lowercase
+    - at least one digit
+    """
+    if not PASSWORD_RE.match(value):
+        raise ValueError(
+            "Password must contain at least one uppercase, one lowercase, and one digit"
+        )
+    return value
+
 
 Username = Annotated[
     str,
@@ -36,6 +52,7 @@ Password = Annotated[
         min_length=MIN_PASSWORD_LENGTH,
         max_length=MAX_PASSWORD_LENGTH,
     ),
+    AfterValidator(_checkPasswordComplexity),
 ]
 Email = Annotated[
     str,
@@ -130,19 +147,12 @@ class UserCreate(BaseModel):
 
     @field_validator("age")
     @classmethod
-    def check_age(cls, user_age):
-        if user_age < MIN_AGE:
+    def checkAge(cls, userAge):
+        if userAge < MIN_AGE:
             raise ValueError(
                 f"User must be {MIN_AGE} years or older to create an account"
             )
-        return user_age
-
-    @field_validator("pw")
-    @classmethod
-    def password_complexity(cls, pw: str):
-        if not PASSWORD_RE.match(pw):
-            raise ValueError("Password must contain uppercase, lowercase, and a digit")
-        return pw
+        return userAge
 
 
 class UserUpdate(BaseModel):
@@ -186,19 +196,12 @@ class UserUpdate(BaseModel):
 
     @field_validator("age")
     @classmethod
-    def check_age(cls, user_age):
-        if user_age is not None and user_age < MIN_AGE:
+    def checkAge(cls, userAge):
+        if userAge is not None and userAge < MIN_AGE:
             raise ValueError(
                 f"User must be {MIN_AGE} years or older to update an account"
             )
-        return user_age
-
-    @field_validator("pw")
-    @classmethod
-    def password_complexity(cls, pw: str):
-        if not PASSWORD_RE.match(pw):
-            raise ValueError("Password must contain uppercase, lowercase, and a digit")
-        return pw
+        return userAge
 
 
 class AdminUserUpdate(UserUpdate):

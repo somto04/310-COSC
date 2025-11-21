@@ -12,10 +12,7 @@ from app.app import app
 from app.routers.reviewRoute import router, getCurrentUser
 from app.schemas.review import Review, ReviewCreate, ReviewUpdate
 
-# ============================================================================ #
 # SETUP & FIXTURES
-# ============================================================================ #
-
 @pytest.fixture
 def app():
     """Create a FastAPI app instance for testing"""

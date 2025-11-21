@@ -12,11 +12,10 @@ from app.schemas.user import (
 )
 from app.schemas.role import Role
 from app.utilities.security import hashPassword
-from app.services.authService import reset_tokens
+from app.services.authService import resetTokens
 
-# ======================================================================
+
 # Common helpers / fixtures
-# ======================================================================
 
 client = TestClient(app)
 
@@ -60,9 +59,9 @@ def makeCurrentUser(user: User) -> CurrentUser:
 @pytest.fixture(autouse=True)
 def clearResetTokens():
     """Ensure reset_tokens is clean for each test."""
-    reset_tokens.clear()
+    resetTokens.clear()
     yield
-    reset_tokens.clear()
+    resetTokens.clear()
 
 
 # ======================================================================
@@ -72,7 +71,7 @@ def clearResetTokens():
 # ------------- LOGIN -------------
 
 
-def testLoginSuccess(monkeypatch):
+def test_loginSuccess(monkeypatch):
     """Valid username/password, non-banned user → 200 + success message."""
     user = makeUser()
 
@@ -89,7 +88,7 @@ def testLoginSuccess(monkeypatch):
     assert body["access_token"] == VALID_USERNAME
 
 
-def testLoginInvalidPassword(monkeypatch):
+def test_loginInvalidPassword(monkeypatch):
     """Wrong password → 401 from router validatePassword."""
     user = makeUser()
 
@@ -104,7 +103,7 @@ def testLoginInvalidPassword(monkeypatch):
     assert "Invalid username or password" in response.json()["detail"]
 
 
-def testLoginUserDoesNotExist(monkeypatch):
+def test_loginUserDoesNotExist(monkeypatch):
     """No such user → 401 from ensureUserExists."""
     monkeypatch.setattr(auth, "getUserByUsername", lambda username: None)
 
@@ -117,7 +116,7 @@ def testLoginUserDoesNotExist(monkeypatch):
     assert response.json()["detail"] == "Invalid username or password"
 
 
-def testLoginBannedUser(monkeypatch):
+def test_loginBannedUser(monkeypatch):
     """Banned user → 403 even if credentials are correct."""
     bannedUser = makeUser(isBanned=True)
 
@@ -135,7 +134,7 @@ def testLoginBannedUser(monkeypatch):
 # ------------- LOGIN REQUEST VALIDATION (Annotated types) -------------
 
 
-def testLoginValidationRejectsShortUsername():
+def test_loginValidationRejectsShortUsername():
     """Username shorter than MIN_USERNAME_LENGTH → 422."""
     response = client.post(
         "/token",
@@ -145,7 +144,7 @@ def testLoginValidationRejectsShortUsername():
     assert response.status_code == 422
 
 
-def testLoginValidationRejectsBadUsernameChars():
+def test_loginValidationRejectsBadUsernameChars():
     """Username with invalid characters (space) → 422."""
     response = client.post(
         "/token",
@@ -155,7 +154,7 @@ def testLoginValidationRejectsBadUsernameChars():
     assert response.status_code == 422
 
 
-def testLoginValidationRejectsShortPassword():
+def test_loginValidationRejectsShortPassword():
     """Password shorter than MIN_PASSWORD_LENGTH → 422."""
     response = client.post(
         "/token",
@@ -168,7 +167,7 @@ def testLoginValidationRejectsShortPassword():
 # ------------- LOGOUT -------------
 
 
-def testLogoutSuccess(monkeypatch):
+def test_logoutSuccess(monkeypatch):
     """Authenticated user can logout → 200."""
     user = makeUser()
     current = makeCurrentUser(user)
@@ -185,7 +184,7 @@ def testLogoutSuccess(monkeypatch):
     assert user.username in body["message"]
 
 
-def testLogoutUnauthorized(monkeypatch):
+def test_logoutUnauthorized(monkeypatch):
     """If getCurrentUser fails (no user), logout → 401."""
     # getUserByUsername returns None, so ensureUserExists will raise HTTPException(401)
     monkeypatch.setattr(auth, "getUserByUsername", lambda token: None)
@@ -201,7 +200,7 @@ def testLogoutUnauthorized(monkeypatch):
 # ------------- ADMIN DASHBOARD -------------
 
 
-def testAdminDashboardAllowed():
+def test_adminDashboardAllowed():
     """Admin role can access /adminDashboard → 200."""
     adminUser = makeUser(role=Role.ADMIN)
     current = makeCurrentUser(adminUser)
@@ -216,7 +215,7 @@ def testAdminDashboardAllowed():
     assert response.json()["message"] == "Welcome to the admin dashboard"
 
 
-def testAdminDashboardForbidden():
+def test_adminDashboardForbidden():
     """Non-admin role → 403."""
     normalUser = makeUser(role=Role.USER)
     current = makeCurrentUser(normalUser)
@@ -234,7 +233,7 @@ def testAdminDashboardForbidden():
 # ------------- FORGOT PASSWORD -------------
 
 
-def testForgotPasswordSuccess(monkeypatch):
+def test_forgotPasswordSuccess(monkeypatch):
     """Existing email → 200 + token returned."""
     user = makeUser()
 
@@ -249,7 +248,7 @@ def testForgotPasswordSuccess(monkeypatch):
     assert "token" in body
 
 
-def testForgotPasswordEmailNotFound(monkeypatch):
+def test_forgotPasswordEmailNotFound(monkeypatch):
     """Unknown email → 404."""
     monkeypatch.setattr(auth, "getUserByEmail", lambda email: None)
 
@@ -259,7 +258,7 @@ def testForgotPasswordEmailNotFound(monkeypatch):
     assert response.json()["detail"] == "Email not found"
 
 
-def testForgotPasswordInvalidEmailFormat():
+def test_forgotPasswordInvalidEmailFormat():
     """Malformed email fails Email Annotated validation → 422."""
     response = client.post("/forgot-password", data={"email": "not-an-email"})
 
@@ -269,7 +268,7 @@ def testForgotPasswordInvalidEmailFormat():
 # ------------- RESET PASSWORD -------------
 
 
-def testResetPasswordSuccess(monkeypatch):
+def test_resetPasswordSuccess(monkeypatch):
     """resetPassword returns True → 200."""
     monkeypatch.setattr(auth, "resetPassword", lambda token, pw: True)
 
@@ -282,7 +281,7 @@ def testResetPasswordSuccess(monkeypatch):
     assert "Password reset successful" in response.json()["message"]
 
 
-def testResetPasswordInvalidOrExpired(monkeypatch):
+def test_resetPasswordInvalidOrExpired(monkeypatch):
     """resetPassword returns False → 400."""
     monkeypatch.setattr(auth, "resetPassword", lambda token, pw: False)
 

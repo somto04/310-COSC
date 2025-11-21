@@ -11,7 +11,7 @@ class ResetTokenData(TypedDict):
     expires: int
 
 
-reset_tokens: dict[str, ResetTokenData] = {}  # token -> {"email": str, "expires": int}
+resetTokens: dict[str, ResetTokenData] = {}  # token -> {"email": str, "expires": int}
 
 
 class AuthenticationError(Exception):
@@ -53,13 +53,13 @@ def generateResetToken(email: Email) -> str:
     """Generate a temporary reset token"""
     token = secrets.token_hex(16)
     expires = int(time.time()) + 900  # expires in 15 min
-    reset_tokens[token] = {"email": email, "expires": expires}
+    resetTokens[token] = {"email": email, "expires": expires}
     return token
 
 
 def resetPassword(token: str, new_password: Password) -> bool:
     """Reset password if token valid"""
-    data = reset_tokens.get(token)
+    data = resetTokens.get(token)
     if not data or data["expires"] < time.time():
         return False
 
@@ -68,6 +68,6 @@ def resetPassword(token: str, new_password: Password) -> bool:
         if user.email == data["email"]:
             user.pw = hashPassword(new_password)
             saveUsers(users)
-            del reset_tokens[token]
+            del resetTokens[token]
             return True
     return False

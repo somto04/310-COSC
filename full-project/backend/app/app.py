@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.routers import movieRoute, reviewRoute, userRoute, auth, replyRoute
+from app.routers import movieRoute, reviewRoute, userRoute, auth, replyRoute, adminRoute
 from app.externalAPI import tmdbRouter
 # Create FastAPI instance w the name of our project
 app = FastAPI(title = "SpoilerAlert API")
@@ -9,6 +9,7 @@ app.include_router(movieRoute.router)
 app.include_router(reviewRoute.router)
 app.include_router(userRoute.router)
 app.include_router(auth.router)
+app.include_router(adminRoute.router)
 app.include_router(replyRoute.router)
 app.include_router(tmdbRouter.router)
 # Basic root endpoint to verify API is running

@@ -18,7 +18,7 @@ from ..repos.movieRepo import loadMovies, saveMovies, getNextMovieId
 
 
 
-def listReviews() -> List[Movie]:
+def listMovies() -> List[Movie]:
     """ Lists all movies currently stored """
     return loadMovies()
 

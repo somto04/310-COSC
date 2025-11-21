@@ -118,7 +118,9 @@ def forgotPassword(email: Annotated[Email, Form(...)]):
 
 
 @router.post("/reset-password")
-def resettingPassword(token: Annotated[str, Form(...)], new_password: Annotated[Password, Form(...)]):
+def resettingPassword(
+    token: Annotated[str, Form(...)], new_password: Annotated[Password, Form(...)]
+):
     """
     Reset a user's password using the provided token.
 

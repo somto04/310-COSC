@@ -4,22 +4,40 @@ from app.app import app
 from app.routers import replyRoute
 from app.repos import replyRepo
 from ...schemas.reply import Reply
+from app.routers import auth
+from app.schemas.user import CurrentUser
+from app.schemas.role import Role
 
-# Fake login dependency
-app.dependency_overrides[replyRoute.getCurrentUser] = lambda: {
-    "id": 1,
-    "username": "tester",
-    "role": "admin"
-}
+
+@pytest.fixture(autouse=True)
+def fakeLogin():
+    """Pretend every request is authenticated as an admin user."""
+    fakeUser = CurrentUser(
+        id=1,
+        username="tester",
+        role=Role.ADMIN,
+    )
+    app.dependency_overrides[auth.getCurrentUser] = lambda: fakeUser
+    yield
+    app.dependency_overrides.clear()
 
 
 @pytest.fixture(autouse=True)
 def mock_repos(monkeypatch):
     """Prevent touching the real replies.json."""
     fakeData = [
-        Reply(id=1, reviewId=1, userId=1001, replyBody="I agree", datePosted= "1 Jan 2024"),
-        Reply(id=2, reviewId=2, userId=1002, replyBody="Nice point!", datePosted="2 Jan 2024")
+        Reply(
+            id=1, reviewId=1, userId=1001, replyBody="I agree", datePosted="1 Jan 2024"
+        ),
+        Reply(
+            id=2,
+            reviewId=2,
+            userId=1002,
+            replyBody="Nice point!",
+            datePosted="2 Jan 2024",
+        ),
     ]
+
     def fakeLoadReplies():
         return fakeData
 
@@ -33,9 +51,11 @@ def mock_repos(monkeypatch):
     monkeypatch.setattr("app.services.replyService.loadReplies", fakeLoadReplies)
     monkeypatch.setattr("app.services.replyService.saveReplies", fakeSaveReplies)
 
+
 @pytest.fixture
 def client(mock_repos):
     return TestClient(app)
+
 
 def test_get_replies(client):
     """Checks that /replies/{reviewId} returns a valid response (even if empty)."""
@@ -57,7 +77,7 @@ def test_post_reply(client):
         "reviewId": 1,
         "userId": 100,
         "replyBody": "This is a simple test reply!",
-        "datePosted": "3 Nov 2025"
+        "datePosted": "3 Nov 2025",
     }
 
     response = client.post("/replies", json=payload)

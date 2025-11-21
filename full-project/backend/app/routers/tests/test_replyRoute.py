@@ -3,8 +3,7 @@ from fastapi.testclient import TestClient
 from app.app import app
 from app.routers import replyRoute
 from app.repos import replyRepo
-
-client = TestClient(app)
+from ...schemas.reply import Reply
 
 # Fake login dependency
 app.dependency_overrides[replyRoute.getCurrentUser] = lambda: {
@@ -17,25 +16,31 @@ app.dependency_overrides[replyRoute.getCurrentUser] = lambda: {
 @pytest.fixture(autouse=True)
 def mock_repos(monkeypatch):
     """Prevent touching the real replies.json."""
-    fake_data = []
+    fakeData = [
+        Reply(id=1, reviewId=1, userId=1001, replyBody="I agree", datePosted= "1 Jan 2024"),
+        Reply(id=2, reviewId=2, userId=1002, replyBody="Nice point!", datePosted="2 Jan 2024")
+    ]
+    def fakeLoadReplies():
+        return fakeData
 
-    def fake_load_all():
-        return fake_data
-
-    def fake_save_all(data):
-        fake_data.clear()
-        fake_data.extend(data)
+    def fakeSaveReplies(data):
+        fakeData.clear()
+        fakeData.extend(data)
         return True
 
-    monkeypatch.setattr(replyRepo, "loadAll", fake_load_all)
-    monkeypatch.setattr(replyRepo, "saveAll", fake_save_all)
+    monkeypatch.setattr(replyRepo, "loadReplies", fakeLoadReplies)
+    monkeypatch.setattr(replyRepo, "saveReplies", fakeSaveReplies)
+    monkeypatch.setattr("app.services.replyService.loadReplies", fakeLoadReplies)
+    monkeypatch.setattr("app.services.replyService.saveReplies", fakeSaveReplies)
 
+@pytest.fixture
+def client(mock_repos):
+    return TestClient(app)
 
-def test_get_replies():
+def test_get_replies(client):
     """Checks that /replies/{reviewId} returns a valid response (even if empty)."""
     response = client.get("/replies/1")
 
-    # route should exist
     assert response.status_code in [200, 404]
 
     if response.status_code == 200:
@@ -46,7 +51,7 @@ def test_get_replies():
             assert "userId" in data[0]
 
 
-def test_post_reply():
+def test_post_reply(client):
     """Checks that /replies accepts new replies correctly."""
     payload = {
         "reviewId": 1,

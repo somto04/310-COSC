@@ -7,8 +7,19 @@ from ..services.userService import listUsers, createUser, deleteUser, updateUser
 router = APIRouter(prefix = "/users", tags = ["users"])
 
 @router.get("", response_model=List[User])
-def getUsers():
-    return listUsers()
+def getUsers(page: int = 1, limit: int = 25):
+    if page < 1:
+        page = 1
+    if limit < 1:
+        limit = 25
+
+    users = listUsers()   # returns full list of User models
+
+    start = (page - 1) * limit
+    end = start + limit
+
+    return users[start:end]
+
 
 @router.post("", response_model=User, status_code=201)
 def postUser(payload: UserCreate):

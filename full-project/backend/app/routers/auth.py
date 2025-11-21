@@ -3,6 +3,8 @@ from fastapi.security import OAuth2PasswordBearer
 from ..schemas.user import User
 from ..repos.userRepo import loadUsers
 from app.utilities.security import verifyPassword
+from ..schemas.user import CurrentUser
+from ..schemas.role import Role
 from ..services.userService import getUserByEmail, generateResetToken, resetPassword
 
 
@@ -16,18 +18,20 @@ def getUsernameFromJsonDB(username: str) -> User | None:
             return user
     return None
 
-def decodeToken(token: str):
+def getCurrentUser(token: str = Depends(oauth2_scheme)) -> CurrentUser:
     user = getUsernameFromJsonDB(token)
     validateUser(user)
-    return user
 
-def getCurrentUser(token: str = Depends(oauth2_scheme)):
-    return decodeToken(token)
+    return CurrentUser(
+        id=user.id,
+        username=user.username,
+        role=user.role
+    )
 
-def requireAdmin(user: dict = Depends(getCurrentUser)):
+def requireAdmin(user: CurrentUser = Depends(getCurrentUser)):
     validateUser(user)
     
-    if user.get("role") != "admin":
+    if user.role != Role.ADMIN:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Admin privileges required"
@@ -42,7 +46,7 @@ def login(username: str = Form(...), password: str = Form(...)):
     user = getUsernameFromJsonDB(username)
     validateUser(user)
 
-    if user.get("isBanned"):
+    if user.isBanned:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Account banned due to repeated violations",
@@ -55,16 +59,16 @@ def login(username: str = Form(...), password: str = Form(...)):
             "token_type": "bearer"}
 
 @router.post("/logout")
-def logout(currentUser=Depends(getCurrentUser)):
+def logout(currentUser: CurrentUser = Depends(getCurrentUser)):
     """
         Logs the current user out by clearing or invalidating their token/session.
     """
     return {
-        "message": f"User '{currentUser['username']}' has been logged out successfully."
+        "message": f"User '{currentUser.username}' has been logged out successfully."
     }
 
 @router.get("/adminDashboard")
-def getAdminDashboard(admin = Depends(requireAdmin)):
+def getAdminDashboard(admin: CurrentUser = Depends(requireAdmin)):
     return {"message": "Welcome to the admin dashboard"}
 
 @router.post("/forgot-password")
@@ -102,16 +106,15 @@ def resettingPassword(token: str = Form(...), new_password: str = Form(...)):
 
     return {"message": "Password reset successful"}
 
-def validatePassword(password, user):
-    hashedPw = user.get("pw")
-    if not verifyPassword(password, hashedPw):
+def validatePassword(password, user: User):
+    if not verifyPassword(password, user.pw):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
         
-def validateUser(user):
+def validateUser(user: User):
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

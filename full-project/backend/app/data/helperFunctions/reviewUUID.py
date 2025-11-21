@@ -6,20 +6,20 @@ with open(path, "r", encoding="utf-8") as f:
     reviews = json.load(f)
 
 cleaned = []
-next_id = 1
+nextId = 1
 
 for r in reviews:
     # Skip any invalid entries where rating is not a digit
-    rating_str = str(r.get("rating", "")).strip()
-    if not rating_str.isdigit():
+    ratingStr = str(r.get("rating", "")).strip()
+    if not ratingStr.isdigit():
         continue
 
     # Fix or replace bad IDs
     try:
         r["id"] = int(r["id"])
     except Exception:
-        r["id"] = next_id
-        next_id += 1
+        r["id"] = nextId
+        nextId += 1
 
     # Force all numeric fields to int
     r["movieId"] = int(r["movieId"])

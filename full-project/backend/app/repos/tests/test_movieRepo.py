@@ -3,8 +3,8 @@ import app.repos.movieRepo as movieRepo
 from app.schemas.movie import Movie   
 from datetime import date
 
-def test_movie_load_uses_tmp(tmp_path, monkeypatch):
-    test_file = tmp_path / "movies.json"
+def test_movieLoadUsesTmp(tmp_path, monkeypatch):
+    testFile = tmp_path / "movies.json"
 
     data = [
         Movie(

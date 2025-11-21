@@ -44,7 +44,7 @@ def sample_movie_data():
 
 
 @pytest.fixture
-def sample_movies_list(sample_movie_data):
+def sampleMoviesList(sampleMovieData):
     return [
         sample_movie_data,
         Movie(
@@ -105,7 +105,7 @@ class TestMovieServiceUnit:
         mock_load.return_value = sample_movies_list
         from app.services.movieService import createMovie
 
-        new_movie_data = MovieCreate(
+        newMovieData = MovieCreate(
             title="Interstellar",
             movieIMDbRating=8.6,
             movieGenres=["Adventure", "Drama", "Sci-Fi"],
@@ -119,7 +119,7 @@ class TestMovieServiceUnit:
         result = createMovie(new_movie_data)
         assert result.id == 5
         assert result.title == "Interstellar"
-        mock_save.assert_called_once()
+        mockSave.assert_called_once()
 
     @patch('app.services.movieService.loadMovies')
     def test_get_movie_by_id_success(self, mock_load, sample_movie_data):
@@ -212,9 +212,9 @@ class TestMovieRouterIntegration:
         assert data["title"] == "Inception"
 
     @patch('app.routers.movieRoute.getMovieById')
-    def test_get_movie_by_id_not_found(self, mock_get, client):
+    def test_getMovieByIdNotFound(self, mockGet, client):
         from fastapi import HTTPException
-        mock_get.side_effect = HTTPException(status_code=404, detail="Movie not found")
+        mockGet.side_effect = HTTPException(status_code=404, detail="Movie not found")
 
         response = client.get("/movies/999")
 
@@ -231,11 +231,11 @@ class TestMovieRouterIntegration:
         assert response.status_code == 200
         assert len(data) == 1
         assert data[0]["title"] == "Inception"
-        mock_search.assert_called_once_with("inception")
+        mockSearch.assert_called_once_with("inception")
 
     @patch('app.routers.movieRoute.searchMovie')
-    def test_search_movies_no_results(self, mock_search, client):
-        mock_search.return_value = []
+    def test_searchMoviesNoResults(self, mockSearch, client):
+        mockSearch.return_value = []
 
         response = client.get("/movies/search?query=none")
         assert response.status_code == 404
@@ -268,8 +268,8 @@ class TestMovieEdgeCases:
         mock_load.return_value = [sample_movie_data]
         from app.services.movieService import updateMovie
 
-        update_data = MovieUpdate(movieIMDbRating=9.0)
-        result = updateMovie(1, update_data)
+        updateData = MovieUpdate(movieIMDbRating=9.0)
+        result = updateMovie(1, updateData)
 
         assert result.movieIMDbRating == Decimal("9.0")
         assert result.title == "Inception"

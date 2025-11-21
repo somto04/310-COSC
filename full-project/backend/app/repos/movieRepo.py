@@ -1,5 +1,5 @@
 from typing import List, Dict, Any
-from .repo import _base_load_all, _base_save_all, DATA_DIR
+from .repo import _baseLoadAll, _baseSaveAll, DATA_DIR
 from ..schemas.movie import Movie
 
 MOVIE_DATA_FILE = DATA_DIR / "movies.json"

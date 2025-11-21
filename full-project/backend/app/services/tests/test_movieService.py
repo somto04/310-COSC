@@ -32,46 +32,46 @@ sampleMovies = [
 
 @pytest.fixture(autouse=True)
 def mockRepo(monkeypatch):
-    monkeypatch.setattr(movieService, "loadMovies", lambda: [m.model_copy() for m in sampleMovies.copy()])
+    monkeypatch.setattr(movieService, "loadMovies", lambda: [movie.model_copy() for movie in sampleMovies.copy()])
     monkeypatch.setattr(movieService, "saveMovies", lambda data: None)
 
 
-def test_list_movies():
+def test_listMovies():
     movies = movieService.listMovies()
     assert len(movies) == 2
     assert movies[0].title == "Avengers Endgame"
 
 
-def test_get_movie_by_id_success():
+def test_getMovieByIdSuccess():
     movie = movieService.getMovieById(1)
     assert movie.title == "Avengers Endgame"
 
 
-def test_get_movie_by_id_not_found():
+def test_getMovieByIdNotFound():
     with pytest.raises(HTTPException) as excInfo:
         movieService.getMovieById(999)
     assert excInfo.value.status_code == 404
     assert "Movie not found" in excInfo.value.detail
 
 
-def test_search_movie_title_match():
+def test_searchMovieTitleMatch():
     results = movieService.searchMovie("Inception")
     assert len(results) == 1
     assert results[0].title == "Inception"
 
 
-def test_search_movie_partial_match():
+def test_searchMoviePartialMatch():
     results = movieService.searchMovie("Avengers")
     assert len(results) == 1
     assert results[0].title == "Avengers Endgame"
 
 
-def test_search_movie_no_match():
+def test_searchMovieNoMatch():
     results = movieService.searchMovie("UnknownTitle")
     assert results == []
 
 
-def test_delete_movie_removes_correct_id(monkeypatch):
+def test_deleteMovieRemovesCorrectId(monkeypatch):
     captured = {}
 
     def fakesaveMovies(data):
@@ -85,7 +85,7 @@ def test_delete_movie_removes_correct_id(monkeypatch):
     assert all(savedMovie.id != 1 for savedMovie in captured["saved"])
 
 
-def test_create_movie():
+def test_createMovie():
     
     movieService.loadMovies = lambda: sampleMovies.copy()
     savedMovies: list = []
@@ -116,7 +116,7 @@ def test_create_movie():
     assert any(savedMovie.title == "Testing Movie" for savedMovie in savedMovies)
 
 
-def test_update_movie():
+def test_updateMovie():
     movieService.loadMovies = lambda: sampleMovies.copy()
     savedMovies: list = []
 
@@ -136,25 +136,25 @@ def test_update_movie():
     assert savedMovies[0].title == "Updated Title"
 
 
-def test_get_movie_by_filter_genre():
+def test_getMovieByFilterGenre():
     results = movieService.getMovieByFilter(genre="Action")
     assert len(results) == 1
     assert results[0].title == "Avengers Endgame"
 
 
-def test_get_movie_by_filter_year():
+def test_getMovieByFilterYear():
     results = movieService.getMovieByFilter(year=2010)
     assert len(results) == 1
     assert results[0].title == "Inception"
 
 
-def test_get_movie_by_filter_director():
+def test_getMovieByFilterDirector():
     results = movieService.getMovieByFilter(director="Nolan")
     assert len(results) == 1
     assert results[0].title == "Inception"
 
 
-def test_get_movie_by_filter_star():
+def test_getMovieByFilterStar():
     results = movieService.getMovieByFilter(star="Robert")
     assert len(results) == 1
     assert results[0].title == "Avengers Endgame"

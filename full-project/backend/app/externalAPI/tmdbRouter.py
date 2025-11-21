@@ -5,16 +5,16 @@ from .tmdbSchema import TMDbMovie, TMDbRecommendation
 router = APIRouter(prefix="/tmdb", tags=["tmdb"])
 
 
-@router.get("/details/{movie_name}", response_model=TMDbMovie)
-def movie_details(movie_name: str):
+@router.get("/details/{movieName}", response_model=TMDbMovie)
+def movieDetails(movieName: str):
     """Fetch movie details from TMDB by movie name."""
-    details = getMovieDetails(movie_name)
+    details = getMovieDetails(movieName)
     if not details:
         raise HTTPException(status_code=404, detail="Movie not found")
     return details
 
 
-@router.get("/recommendations/{movie_id}", response_model=list[TMDbRecommendation])
-def movie_recommendations(movie_id: int):
+@router.get("/recommendations/{movieId}", response_model=list[TMDbRecommendation])
+def movieRecommendations(movieId: int):
     """Fetch movie recommendations from TMDB by movie ID."""
-    return getRecommendations(movie_id)
+    return getRecommendations(movieId)

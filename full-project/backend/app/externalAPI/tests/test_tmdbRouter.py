@@ -23,10 +23,10 @@ def client(app):
 
 
 @patch("app.externalAPI.tmdbRouter.getMovieDetails")
-def test_tmdb_details_success(mock_get_details, client):
+def test_tmdbDetailsSuccess(mockGetDetails, client):
     """Successfully returns movie details."""
 
-    fake_movie = TMDbMovie(
+    fakeMovie = TMDbMovie(
         id=123,
         title="Inception",
         poster="https://image.tmdb.org/t/p/w500/poster.jpg",
@@ -34,7 +34,7 @@ def test_tmdb_details_success(mock_get_details, client):
         rating=8.8
     )
 
-    mock_get_details.return_value = fake_movie
+    mockGetDetails.return_value = fakeMovie
 
     response = client.get("/tmdb/details/Inception")
 
@@ -45,14 +45,14 @@ def test_tmdb_details_success(mock_get_details, client):
     assert data["title"] == "Inception"
     assert data["rating"] == 8.8
 
-    mock_get_details.assert_called_once_with("Inception")
+    mockGetDetails.assert_called_once_with("Inception")
 
 
 @patch("app.externalAPI.tmdbRouter.getMovieDetails")
-def test_tmdb_details_not_found(mock_get_details, client):
+def test_tmdbDetailsNotFound(mockGetDetails, client):
     """If TMDb returns None, API should return 404."""
     
-    mock_get_details.return_value = None
+    mockGetDetails.return_value = None
 
     response = client.get("/tmdb/details/UnknownMovie")
 
@@ -60,15 +60,14 @@ def test_tmdb_details_not_found(mock_get_details, client):
     assert response.json()["detail"] == "Movie not found"
 
 
-# ---------------------------------
+
 # TEST /tmdb/recommendations/{movie_id}
-# ---------------------------------
 
 @patch("app.externalAPI.tmdbRouter.getRecommendations")
-def test_tmdb_recommendations_success(mock_get_recs, client):
+def test_tmdbRecommendationsSuccess(mockGetRecs, client):
     """Successfully returns a list of recommendations."""
 
-    fake_recs = [
+    fakeRecs = [
         TMDbRecommendation(
             id=1,
             title="Dunkirk",
@@ -83,7 +82,7 @@ def test_tmdb_recommendations_success(mock_get_recs, client):
         )
     ]
 
-    mock_get_recs.return_value = fake_recs
+    mockGetRecs.return_value = fakeRecs
 
     response = client.get("/tmdb/recommendations/123")
 
@@ -95,18 +94,18 @@ def test_tmdb_recommendations_success(mock_get_recs, client):
     assert data[0]["title"] == "Dunkirk"
     assert data[1]["title"] == "Tenet"
 
-    mock_get_recs.assert_called_once_with(123)
+    mockGetRecs.assert_called_once_with(123)
 
 
 @patch("app.externalAPI.tmdbRouter.getRecommendations")
-def test_tmdb_recommendations_empty(mock_get_recs, client):
+def test_tmdbRecommendationsEmpty(mockGetRecs, client):
     """Even if TMDb returns empty list, should return 200 + empty list."""
     
-    mock_get_recs.return_value = []
+    mockGetRecs.return_value = []
 
     response = client.get("/tmdb/recommendations/999")
 
     assert response.status_code == 200
     assert response.json() == []
 
-    mock_get_recs.assert_called_once_with(999)
+    mockGetRecs.assert_called_once_with(999)

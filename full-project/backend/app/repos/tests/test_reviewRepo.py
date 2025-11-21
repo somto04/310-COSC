@@ -2,8 +2,8 @@ import json
 import app.repos.reviewRepo as reviewRepo
 from ...schemas.review import Review
 
-def test_review_load_uses_tmp(tmp_path, monkeypatch):
-    test_file = tmp_path / "reviews.json"
+def test_reviewLoadUsesTmp(tmp_path, monkeypatch):
+    testFile = tmp_path / "reviews.json"
 
     data = [
         Review(
@@ -28,9 +28,9 @@ def test_review_load_uses_tmp(tmp_path, monkeypatch):
         )
     ]
 
-    test_file.write_text(
+    testFile.write_text(
     json.dumps([review.model_dump() for review in data], ensure_ascii=False),encoding="utf-8")   
-    monkeypatch.setattr(reviewRepo, "REVIEW_DATA_PATH", test_file, raising=False)
+    monkeypatch.setattr(reviewRepo, "REVIEW_DATA_PATH", testFile, raising=False)
 
     reviews = reviewRepo.loadReviews()
     assert len(reviews) == 2
@@ -39,9 +39,9 @@ def test_review_load_uses_tmp(tmp_path, monkeypatch):
     assert reviews[1].userId == 3
     assert reviews[1].flagged is True
 
-def test_review_save_and_verify_contents(tmp_path, monkeypatch):
-    test_file = tmp_path / "reviews.json"
-    monkeypatch.setattr(reviewRepo, "REVIEW_DATA_PATH", test_file, raising=False)
+def test_reviewSaveAndVerifyContents(tmp_path, monkeypatch):
+    testFile = tmp_path / "reviews.json"
+    monkeypatch.setattr(reviewRepo, "REVIEW_DATA_PATH", testFile, raising=False)
 
     data = [
     Review(
@@ -88,8 +88,8 @@ def test_review_save_and_verify_contents(tmp_path, monkeypatch):
 
     reviewRepo.saveReviews(data)
 
-    assert test_file.exists(), "users.json should have been created"
-    contents = json.loads(test_file.read_text(encoding="utf-8"))
+    assert testFile.exists(), "users.json should have been created"
+    contents = json.loads(testFile.read_text(encoding="utf-8"))
     expected = [review.model_dump() for review in data]
     assert contents == expected
     assert len(contents) == 4

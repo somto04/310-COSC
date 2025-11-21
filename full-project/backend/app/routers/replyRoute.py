@@ -1,8 +1,9 @@
 from fastapi import APIRouter, Depends
 from typing import List
-from ..schemas.review import Reply, ReplyCreate
+from ..schemas.reply import Reply, ReplyCreate
 from ..services.replyService import listReplies, createReply
 from .auth import getCurrentUser
+from ..schemas.user import CurrentUser
 
 router = APIRouter(prefix="/replies", tags=["replies"])
 
@@ -12,6 +13,6 @@ def getReplies(reviewId: int):
     return listReplies(reviewId)
 
 @router.post("", response_model=Reply)
-def postReply(payload: ReplyCreate, currentUser: dict = Depends(getCurrentUser)):
-    """ Creates a mew reply (only logged in users are able to post one)"""
+def postReply(payload: ReplyCreate, currentUser: CurrentUser = Depends(getCurrentUser)):
+    """ Creates a new reply (only logged in users are able to post one)"""
     return createReply(payload)

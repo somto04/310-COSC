@@ -15,6 +15,14 @@ from app.routers.movieRoute import router
 from app.schemas.movie import Movie, MovieCreate, MovieUpdate
 
 
+import pytest
+from fastapi.testclient import TestClient
+from fastapi import FastAPI
+from unittest.mock import patch
+from app.routers.movieRoute import router
+from app.schemas.movie import Movie, MovieCreate, MovieUpdate
+
+
 @pytest.fixture
 def app():
     app = FastAPI()

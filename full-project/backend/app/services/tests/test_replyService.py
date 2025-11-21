@@ -1,50 +1,48 @@
 import pytest
 from unittest.mock import patch
 from app.services import replyService
-from app.schemas.review import ReplyCreate, Reply
+from app.schemas.reply import ReplyCreate, Reply
 
 # sample fake replies list
-fakeReplies = [
-    {"id": 1, "reviewId": 10, "userId": 1001, "replyBody": "I agree", "datePosted": "1 Jan 2024"},
-    {"id": 2, "reviewId": 11, "userId": 1002, "replyBody": "Nice point!", "datePosted": "2 Jan 2024"},
+fake_replies = [
+    Reply(id=1, reviewId=1, userId=1001, replyBody="I agree", datePosted= "1 Jan 2024"),
+    Reply(id=2, reviewId=2, userId=1002, replyBody="Nice point!", datePosted="2 Jan 2024")
 ]
 
-# testing listing replies for a review
-@patch("app.services.replyService.loadAll")
-def test_listRepliesForReview(mockLoad):
-    mockLoad.return_value = fakeReplies
+@patch("app.services.replyService.loadReplies")
+def test_list_replies_for_review(mock_load):
+    mock_load.return_value = fake_replies
 
-    results = replyService.listReplies(10)
+    results = replyService.listReplies(1)
 
     assert len(results) == 1
     assert isinstance(results[0], Reply)
-    assert results[0].reviewId == 10
+    assert results[0].reviewId == 1
     assert results[0].replyBody == "I agree"
 
 
-# testing creating a new reply (date is required)
-@patch("app.services.replyService.saveAll")
-@patch("app.services.replyService.loadAll")
-def test_createReply(mockLoad, mockSave):
-    mockLoad.return_value = fakeReplies
+@patch("app.services.replyService.saveReplies")
+@patch("app.services.replyService.loadReplies")
+def test_create_reply(mock_load, mock_save):
+    """ testing creating a new reply (date is required) """
+    mock_load.return_value = fake_replies
 
     payload = ReplyCreate(
         reviewId=12,
         userId=999,
         replyBody="This is a test reply",
-        datePosted="3 Jan 2024"   # now provided
+        datePosted="3 Jan 2024" 
     )
 
-    newReply = replyService.createReply(payload)
+    new_reply = replyService.createReply(payload)
 
-    # returned object type and fields
-    assert isinstance(newReply, Reply)
-    assert newReply.reviewId == 12
-    assert newReply.userId == 999
-    assert newReply.replyBody == "This is a test reply"
-    assert newReply.datePosted == "3 Jan 2024"
+    assert isinstance(new_reply, Reply)
+    assert new_reply.reviewId == 12
+    assert new_reply.userId == 999
+    assert new_reply.replyBody == "This is a test reply"
+    assert new_reply.datePosted == "3 Jan 2024"
 
     # verify saveAll called with updated data
-    mockSave.assert_called_once()
-    savedData = mockSave.call_args[0][0]
-    assert any(r["replyBody"] == "This is a test reply" for r in savedData)
+    mock_save.assert_called_once()
+    saved_data = mock_save.call_args[0][0]
+    assert any(reply.replyBody == "This is a test reply" for reply in saved_data)

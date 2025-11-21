@@ -28,16 +28,3 @@ class ReviewUpdate(BaseModel):
     rating: int = Field(ge=1, le=10)    
     datePosted: Optional[str] = None
     flagged: Optional[bool] = None
-
-class Reply(BaseModel):
-    id: int
-    reviewId: int
-    userId: int
-    replyBody: str
-    datePosted: str
-
-class ReplyCreate(BaseModel):
-    reviewId: int
-    userId: int
-    replyBody: str
-    datePosted: str

@@ -15,6 +15,7 @@ from app.schemas.review import Review, ReviewCreate, ReviewUpdate
 
 # SETUP & FIXTURES
 
+
 @pytest.fixture
 def app():
     """Create a FastAPI app instance for testing"""
@@ -33,14 +34,14 @@ def client(app):
 def sampleReviewData():
     """Sample review data for testing"""
     return Review(
-        id= 1,
-        movieId= 1,
-        userId= 1,
-        username= "testuser",
-        reviewTitle= "Great Movie!",
-        reviewBody= "This movie was amazing, highly recommend",
-        rating= 5,
-        flagged= False
+        id=1,
+        movieId=1,
+        userId=1,
+        reviewTitle="Great Movie!",
+        reviewBody="This movie was amazing, highly recommend",
+        rating=5,
+        datePosted="2023-10-01",
+        flagged=False,
     )
 
 
@@ -50,26 +51,27 @@ def sampleReviewsList(sampleReviewData):
     return [
         sampleReviewData,
         Review(
-            id= 2,
-            movieId= 1,
-            userId= 2,
-            username= "anotheruser",
-            reviewTitle= "Not bad",
-            reviewBody= "It was okay, nothing special",
-            rating= 3,
-            flagged= False
+            id=2,
+            movieId=1,
+            userId=2,
+            reviewTitle="Not bad",
+            reviewBody="It was okay, nothing special",
+            rating=3,
+            datePosted="2023-10-01",
+            flagged=False,
         ),
         Review(
-            id= 3,
-            movieId= 2,
-            userId= 1,
-            username= "testuser",
-            reviewTitle= "Disappointed",
-            reviewBody= "Expected better from this film",
-            rating= 2,
-            flagged= False
-        )
+            id=3,
+            movieId=2,
+            userId=1,
+            reviewTitle="Disappointed",
+            reviewBody="Expected better from this film",
+            rating=2,
+            datePosted="2023-10-01",
+            flagged=False,
+        ),
     ]
+
 
 class FakeUser:
     def __init__(self, id, username, role):
@@ -80,10 +82,11 @@ class FakeUser:
 
 # INTEGRATION TESTS
 
+
 class TestReviewRouterIntegration:
     """Integration tests for review API endpoints"""
 
-    @patch('app.routers.reviewRoute.listReviews')
+    @patch("app.routers.reviewRoute.listReviews")
     def test_getAllReviewsEndpoint(self, mockList, client, sampleReviewsList):
         mockList.return_value = sampleReviewsList
 
@@ -95,7 +98,7 @@ class TestReviewRouterIntegration:
         assert data[0]["reviewTitle"] == "Great Movie!"
         assert data[1]["reviewTitle"] == "Not bad"
 
-    @patch('app.routers.reviewRoute.getReviewById')
+    @patch("app.routers.reviewRoute.getReviewById")
     def test_getReviewByIdEndpoint(self, mockGet, client, sampleReviewData):
         mockGet.return_value = sampleReviewData
 
@@ -108,7 +111,7 @@ class TestReviewRouterIntegration:
         assert data["rating"] == 5
         mockGet.assert_called_once_with(1)
 
-    @patch('app.routers.reviewRoute.getReviewById')
+    @patch("app.routers.reviewRoute.getReviewById")
     def test_getReviewByIdNotFound(self, mockGet, client):
         mockGet.side_effect = HTTPException(status_code=404, detail="Review not found")
 
@@ -117,7 +120,7 @@ class TestReviewRouterIntegration:
         assert response.status_code == 404
         assert response.json()["detail"] == "Review not found"
 
-    @patch('app.routers.reviewRoute.searchReviews')
+    @patch("app.routers.reviewRoute.searchReviews")
     def test_searchReviewsWithQuery(self, mockSearch, client, sampleReviewData):
         mockSearch.return_value = [sampleReviewData]
 
@@ -130,8 +133,10 @@ class TestReviewRouterIntegration:
         assert data[0]["reviewTitle"] == "Great Movie!"
         mockSearch.assert_called_once_with("great")
 
-    @patch('app.routers.reviewRoute.searchReviews')
-    def test_searchReviewsWithLimitAndOffset(self, mockSearch, client, sampleReviewsList):
+    @patch("app.routers.reviewRoute.searchReviews")
+    def test_searchReviewsWithLimitAndOffset(
+        self, mockSearch, client, sampleReviewsList
+    ):
         mockSearch.return_value = sampleReviewsList
 
         response = client.get("/reviews/search?query=movie&limit=2&offset=1")
@@ -141,59 +146,67 @@ class TestReviewRouterIntegration:
         assert len(data) == 2
         assert data[0]["id"] == 2  # now int, not str
 
-    @patch('app.routers.reviewRoute.createReview')
+    @patch("app.routers.reviewRoute.createReview")
     def test_createReviewEndpoint(self, mockCreate, client, sampleReviewData, app):
         """Test POST /reviews creates a new review"""
         # Arrange
         mockCreate.return_value = sampleReviewData
 
         newReview = ReviewCreate(
-            movieId= 1,
-            reviewTitle= "Great Movie!",
-            reviewBody= "This movie was amazing, highly recommend",
-            rating= 5
+            reviewTitle="Great Movie!",
+            reviewBody="This movie was amazing, highly recommend",
+            rating=5,
         )
-        
-        app.dependency_overrides[getCurrentUser] = lambda: FakeUser(id=1, username="testuser", role="user")
-        
+
+        app.dependency_overrides[getCurrentUser] = lambda: FakeUser(
+            id=1, username="testuser", role="user"
+        )
+
         # Send request with auth header
-        response = client.post("/reviews", 
-                             json=newReview.model_dump(),
-                             headers={"Authorization": "Bearer testuser"})
+        response = client.post(
+            "/reviews/1",
+            json=newReview.model_dump(),
+            headers={"Authorization": "Bearer testuser"},
+        )
 
         assert response.status_code == 201
         data = response.json()
         assert data["reviewTitle"] == "Great Movie!"
         assert data["rating"] == 5
 
-    @patch('app.routers.reviewRoute.updateReview')
-    @patch('app.routers.reviewRoute.getReviewById')
-    def test_updateReviewEndpoint(self, mockGetReview, mockUpdate, client, sampleReviewData, app):
+    @patch("app.routers.reviewRoute.updateReview")
+    @patch("app.routers.reviewRoute.getReviewById")
+    def test_updateReviewEndpoint(
+        self, mockGetReview, mockUpdate, client, sampleReviewData, app
+    ):
         """Test PUT /reviews/{id} updates a review.
         It verifies that the FastAPI route for updating a review correctly
-        updates an existing review's data and returns the modified view. 
+        updates an existing review's data and returns the modified view.
         """
         # Arrange
         # Mock getting the existing review (for ownership check)
         mockGetReview.return_value = sampleReviewData
-        
+
         # Set up expected updated review
         updatedReview = sampleReviewData.model_copy()
         updatedReview.reviewBody = "Updated review text"
         updatedReview.rating = 4
         mockUpdate.return_value = updatedReview
 
-        updateData = ReviewUpdate(
-            reviewBody= "Updated review text",
-            rating= 4
+        updateData = ReviewUpdate(reviewBody="Updated review text", rating=4)
+
+        app.dependency_overrides[getCurrentUser] = lambda: FakeUser(
+            id=1,
+            username="testuser",
+            role="user",
         )
 
-        app.dependency_overrides[getCurrentUser] = lambda: FakeUser(id=1, username="testuser", role="user")
+        response = client.put(
+            "/reviews/1",
+            json=updateData.model_dump(),
+            headers={"Authorization": "Bearer testuser"},
+        )
 
-        response = client.put("/reviews/1", 
-                            json=updateData.model_dump(),
-                            headers={"Authorization": "Bearer testuser"})
-        
         # Assert
         app.dependency_overrides = {}
 
@@ -202,10 +215,14 @@ class TestReviewRouterIntegration:
         assert data["reviewBody"] == "Updated review text"
         assert data["rating"] == 4
 
-    @patch('app.routers.reviewRoute.deleteReview')
-    @patch('app.routers.reviewRoute.getReviewById')
-    def test_deleteReviewAsAdmin(self, mockGetReview, mockDelete, client, sampleReviewData, app):
-        app.dependency_overrides[getCurrentUser] = lambda: FakeUser(id=1, username="admin", role="admin")
+    @patch("app.routers.reviewRoute.deleteReview")
+    @patch("app.routers.reviewRoute.getReviewById")
+    def test_deleteReviewAsAdmin(
+        self, mockGetReview, mockDelete, client, sampleReviewData, app
+    ):
+        app.dependency_overrides[getCurrentUser] = lambda: FakeUser(
+            id=1, username="admin", role="admin"
+        )
 
         mockGetReview.return_value = sampleReviewData
         mockDelete.return_value = None
@@ -217,9 +234,12 @@ class TestReviewRouterIntegration:
 
         app.dependency_overrides = {}
 
-    @patch('app.routers.reviewRoute.getReviewById')
+    @patch("app.routers.reviewRoute.getReviewById")
     def test_deleteReviewNotFound(self, mockGetReview, client, app):
-        app.dependency_overrides[getCurrentUser] = lambda: {"username": "admin", "role": "admin"}
+        app.dependency_overrides[getCurrentUser] = lambda: {
+            "username": "admin",
+            "role": "admin",
+        }
         mockGetReview.return_value = None
 
         response = client.delete("/reviews/999")

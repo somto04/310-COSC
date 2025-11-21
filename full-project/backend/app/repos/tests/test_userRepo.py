@@ -5,7 +5,7 @@ from app.schemas.role import Role
 
 
 def test_userLoadUsesTmp(tmp_path, monkeypatch):
-    test_file = tmp_path / "users.json"
+    testFile = tmp_path / "users.json"
 
     data = [
         {
@@ -34,10 +34,10 @@ def test_userLoadUsesTmp(tmp_path, monkeypatch):
         },
     ]
 
-    test_file.write_text(json.dumps(data))
+    testFile.write_text(json.dumps(data))
 
     # Patch the constant the functions read
-    monkeypatch.setattr(userRepo, "_USER_DATA_PATH", test_file, raising=False)
+    monkeypatch.setattr(userRepo, "_USER_DATA_PATH", testFile, raising=False)
 
     users = userRepo.loadUsers()
     assert len(users) == 2
@@ -51,8 +51,8 @@ def test_userLoadUsesTmp(tmp_path, monkeypatch):
 
 
 def test_userSaveAndVerifyContents(tmp_path, monkeypatch):
-    test_file = tmp_path / "users.json"
-    monkeypatch.setattr(userRepo, "_USER_DATA_PATH", test_file, raising=False)
+    testFile = tmp_path / "users.json"
+    monkeypatch.setattr(userRepo, "_USER_DATA_PATH", testFile, raising=False)
 
     data = [
         User(
@@ -83,7 +83,7 @@ def test_userSaveAndVerifyContents(tmp_path, monkeypatch):
 
     userRepo.saveUsers(data)
     # Now read the file back and verify contents
-    with open(test_file, "r") as file:
+    with open(testFile, "r") as file:
         saved_data = json.load(file)
     assert len(saved_data) == 2
     assert saved_data[0]["firstName"] == "Ichigo"
@@ -98,7 +98,7 @@ def test_loadUsersUsesCache(monkeypatch):
     # arrange: fake base loader & call counter
     calls = {"count": 0}
 
-    def fake_load(path):
+    def fakeLoad(path):
         calls["count"] += 1
         return [
             {
@@ -131,7 +131,7 @@ def test_loadUsersUsesCache(monkeypatch):
     userRepo._USER_CACHE = None
 
     # patch the low-level loader
-    monkeypatch.setattr(userRepo, "_base_load_all", fake_load)
+    monkeypatch.setattr(userRepo, "_baseLoadAll", fakeLoad)
 
     # act: call twice
     users1 = userRepo.loadUsers()

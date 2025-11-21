@@ -13,26 +13,26 @@ app.dependency_overrides[replyRoute.getCurrentUser] = lambda: {
 
 
 @pytest.fixture(autouse=True)
-def mock_repos(monkeypatch):
+def mockRepos(monkeypatch):
     """Prevent touching the real replies.json."""
-    fake_data = []
+    fakeData = []
 
-    def fake_load_all():
-        return fake_data
+    def fakeLoadAll():
+        return fakeData
 
-    def fake_save_all(data):
-        fake_data.clear()
-        fake_data.extend(data)
+    def fakeSaveAll(data):
+        fakeData.clear()
+        fakeData.extend(data)
         return True
 
-    monkeypatch.setattr(replyRepo, "loadAll", fake_load_all)
-    monkeypatch.setattr(replyRepo, "saveAll", fake_save_all)
+    monkeypatch.setattr(replyRepo, "loadAll", fakeLoadAll)
+    monkeypatch.setattr(replyRepo, "saveAll", fakeSaveAll)
 
 @pytest.fixture
-def client(mock_repos):
+def client(mockRepos):
     return TestClient(app)
 
-def test_get_replies(client):
+def test_getReplies(client):
     """Checks that /replies/{reviewId} returns a valid response (even if empty)."""
     response = client.get("/replies/1")
 
@@ -47,7 +47,7 @@ def test_get_replies(client):
             assert "userId" in data[0]
 
 
-def test_post_reply(client):
+def test_postReply(client):
     """Checks that /replies accepts new replies correctly."""
     payload = {
         "reviewId": 1,

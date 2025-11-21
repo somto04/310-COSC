@@ -6,11 +6,11 @@ from ..tmdbSchema import TMDbMovie, TMDbRecommendation
 
 
 @patch("app.externalAPI.tmdbService.requests.get")
-def test_get_movie_details_success(mock_get):
+def test_getMovieDetailsSuccess(mockGet):
     """getMovieDetails returns a TMDbMovie model when API returns results."""
     
     # Fake TMDb API response
-    fake_json = {
+    fakeJson = {
         "results": [
             {
                 "id": 123,
@@ -23,9 +23,9 @@ def test_get_movie_details_success(mock_get):
     }
 
     # Configure the mocked API call
-    mock_response = MagicMock()
-    mock_response.json.return_value = fake_json
-    mock_get.return_value = mock_response
+    mockResponse = MagicMock()
+    mockResponse.json.return_value = fakeJson
+    mockGet.return_value = mockResponse
 
     movie = getMovieDetails("Inception")
 
@@ -38,12 +38,12 @@ def test_get_movie_details_success(mock_get):
 
 
 @patch("app.externalAPI.tmdbService.requests.get")
-def test_get_movie_details_no_results(mock_get):
+def test_getMovieDetailsNoResults(mockGet):
     """getMovieDetails returns None when API returns no matches."""
 
-    mock_response = MagicMock()
-    mock_response.json.return_value = {"results": []}
-    mock_get.return_value = mock_response
+    mockResponse = MagicMock()
+    mockResponse.json.return_value = {"results": []}
+    mockGet.return_value = mockResponse
 
     movie = getMovieDetails("Unknown Title")
     assert movie is None
@@ -51,10 +51,10 @@ def test_get_movie_details_no_results(mock_get):
 
 
 @patch("app.externalAPI.tmdbService.requests.get")
-def test_get_recommendations(mock_get):
+def test_getRecommendations(mockGet):
     """getRecommendations returns a list of TMDbRecommendation models."""
 
-    fake_json = {
+    fakeJson = {
         "results": [
             {
                 "id": 100,
@@ -71,9 +71,9 @@ def test_get_recommendations(mock_get):
         ]
     }
 
-    mock_response = MagicMock()
-    mock_response.json.return_value = fake_json
-    mock_get.return_value = mock_response
+    mockResponse = MagicMock()
+    mockResponse.json.return_value = fakeJson
+    mockGet.return_value = mockResponse
 
     recs = getRecommendations(123)
     

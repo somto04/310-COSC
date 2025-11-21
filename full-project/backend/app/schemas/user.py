@@ -130,16 +130,16 @@ class UserCreate(BaseModel):
 
     @field_validator("age")
     @classmethod
-    def check_age(cls, user_age):
-        if user_age < MIN_AGE:
+    def checkAge(cls, userAge):
+        if userAge < MIN_AGE:
             raise ValueError(
                 f"User must be {MIN_AGE} years or older to create an account"
             )
-        return user_age
+        return userAge
 
     @field_validator("pw")
     @classmethod
-    def password_complexity(cls, pw: str):
+    def passwordComplexity(cls, pw: str):
         if not PASSWORD_RE.match(pw):
             raise ValueError("Password must contain uppercase, lowercase, and a digit")
         return pw
@@ -186,12 +186,12 @@ class UserUpdate(BaseModel):
 
     @field_validator("age")
     @classmethod
-    def check_age(cls, user_age):
-        if user_age is not None and user_age < MIN_AGE:
+    def checkAge(cls, userAge):
+        if userAge is not None and userAge < MIN_AGE:
             raise ValueError(
                 f"User must be {MIN_AGE} years or older to update an account"
             )
-        return user_age
+        return userAge
 
     @field_validator("pw")
     @classmethod

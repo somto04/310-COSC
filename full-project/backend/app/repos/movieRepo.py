@@ -1,5 +1,5 @@
 from typing import List, Dict, Any
-from .repo import baseLoadAll, baseSaveAll, DATA_DIR
+from .repo import _baseLoadAll, _baseSaveAll, DATA_DIR
 
 MOVIE_DATA_FILE = DATA_DIR / "movies.json"
 
@@ -10,7 +10,7 @@ def loadAll() -> List[Dict[str, Any]]:
     Returns:
         List[Dict[str, Any]]: A list of movie items.
     """
-    return baseLoadAll(MOVIE_DATA_FILE)
+    return _baseLoadAll(MOVIE_DATA_FILE)
 
 def saveAll(items: List[Dict[str, Any]]) -> None:
     """
@@ -19,6 +19,6 @@ def saveAll(items: List[Dict[str, Any]]) -> None:
     Args:
         items (List[Dict[str, Any]]): A list of movie items to save.
     """
-    baseSaveAll(MOVIE_DATA_FILE, items)
+    _baseSaveAll(MOVIE_DATA_FILE, items)
 
 __all__ = ["loadAll", "saveAll"]

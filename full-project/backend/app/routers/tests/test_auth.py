@@ -61,7 +61,7 @@ def fakeLoadUsers():
         )
     ]
 
-def fake_get_current_user(token=None):
+def fakeGetCurrentUser(token=None):
     return User(
         id=1,
         username="testuser",
@@ -97,16 +97,16 @@ def test_getInvalidUsernameFromJsonDB(monkeypatch):
     assert user is None
 
 
-def test_login_valid(monkeypatch):
+def test_loginValid(monkeypatch):
     """Should return success message when username and password are valid"""
     from app.routers import auth as loginRoute
     from app.utilities import security
 
-    def fake_verify_password(plain, hashed):
+    def fakeVerifyPassword(plain, hashed):
         return True
 
-    monkeypatch.setattr(loginRoute, "getUsernameFromJsonDB", fake_get_current_user)
-    monkeypatch.setattr(loginRoute, "verifyPassword", fake_verify_password)
+    monkeypatch.setattr(loginRoute, "getUsernameFromJsonDB", fakeGetCurrentUser)
+    monkeypatch.setattr(loginRoute, "verifyPassword", fakeVerifyPassword)
 
     response = client.post("/token", data={"username": "testuser", "password": "12345"})
     assert response.status_code == 200
@@ -114,27 +114,27 @@ def test_login_valid(monkeypatch):
     assert "Login successful" in body["message"]
 
 
-def test_login_invalid(monkeypatch):
+def test_loginInvalid(monkeypatch):
     """Should raise HTTP 401 when password is incorrect"""
     from app.routers import auth as loginRoute
     from app.utilities import security
 
-    def fake_verify_password(plain, hashed):
+    def fakeVerifyPassword(plain, hashed):
         return False
 
-    monkeypatch.setattr(loginRoute, "getUsernameFromJsonDB", fake_get_current_user)
-    monkeypatch.setattr(loginRoute, "verifyPassword", fake_verify_password)
+    monkeypatch.setattr(loginRoute, "getUsernameFromJsonDB", fakeGetCurrentUser)
+    monkeypatch.setattr(loginRoute, "verifyPassword", fakeVerifyPassword)
 
     response = client.post("/token", data={"username": "testuser", "password": "12345"})
     assert response.status_code == 401
     assert "Invalid username or password" in response.json()["detail"]
 
 
-def test_logout_success(monkeypatch):
+def test_logoutSuccess(monkeypatch):
     """Should return success message when logout is called by authenticated user"""
     from app.routers import auth
 
-    app.dependency_overrides[auth.getCurrentUser] = lambda token=None: fake_get_current_user()
+    app.dependency_overrides[auth.getCurrentUser] = lambda token=None: fakeGetCurrentUser()
 
     headers = {"Authorization": "Bearer tester"}
     response = client.post("/logout", headers=headers)

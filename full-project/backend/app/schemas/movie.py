@@ -49,13 +49,13 @@ class Movie(BaseModel):
 
     @model_validator(mode="before")
     @classmethod
-    def extract_year(cls, values):
-        pub_date = values.get("datePublished")
+    def extractYear(cls, values):
+        pubDate = values.get("datePublished")
         year = values.get("yearReleased")
 
         # extract year from datePublished if yearReleased not provided
-        if year is None and isinstance(pub_date, date):
-            values["yearReleased"] = pub_date.year
+        if year is None and isinstance(pubDate, date):
+            values["yearReleased"] = pubDate.year
 
         return values
 

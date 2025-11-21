@@ -1,6 +1,7 @@
 import json
 import app.repos.movieRepo as movieRepo
-from app.schemas.movie import Movie   # ← FIXED IMPORT
+from app.schemas.movie import Movie   
+from datetime import date
 
 def test_movie_load_uses_tmp(tmp_path, monkeypatch):
     test_file = tmp_path / "movies.json"
@@ -14,7 +15,7 @@ def test_movie_load_uses_tmp(tmp_path, monkeypatch):
             directors=["Hayao Miyazaki"],
             mainStars=["Rumi Hiiragi", "Miyu Irino", "Mari Natsuki"],
             description="A young girl enters a world of spirits and must save her parents.",
-            datePublished="2001-07-20",
+            datePublished=date(2001,7,20),
             duration=125,
             yearReleased=2001
         ),
@@ -26,7 +27,7 @@ def test_movie_load_uses_tmp(tmp_path, monkeypatch):
             directors=["Makoto Shinkai"],
             mainStars=["Ryunosuke Kamiki", "Mone Kamishiraishi"],
             description="Two teenagers mysteriously swap bodies and connect across time.",
-            datePublished="2016-08-26",
+            datePublished=date(2016,8-26),
             duration=112,
             yearReleased=2016
         )
@@ -63,7 +64,7 @@ def test_movie_save_and_verify_contents(tmp_path, monkeypatch):
             directors=["Tatsuya Oishi"],
             mainStars=["Hiroshi Kamiya", "Maaya Sakamoto", "Yui Horie"],
             description="A high schooler encounters a powerful vampire and becomes her unwilling servant.",
-            datePublished="2016-01-08",
+            datePublished=date(2016,1,8),
             duration=64,
             yearReleased=2016
         ),
@@ -75,7 +76,7 @@ def test_movie_save_and_verify_contents(tmp_path, monkeypatch):
             directors=["Tatsuya Oishi"],
             mainStars=["Hiroshi Kamiya", "Maaya Sakamoto", "Yui Horie"],
             description="The conclusion to Koyomi's bloody tale of redemption and loss.",
-            datePublished="2017-01-06",
+            datePublished=date(2017,1,6),
             duration=83,
             yearReleased=2017
         )

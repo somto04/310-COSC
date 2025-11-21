@@ -1,89 +1,83 @@
-import json
-import app.repos.movieRepo as movieRepo
-from ..movieRepo import Movie
+from typing import List
+from ..repo import _base_load_all, _base_save_all, DATA_DIR
+from ...schemas.movie import Movie
 
-def test_movie_load_uses_tmp(tmp_path, monkeypatch):
-    test_file = tmp_path / "movies.json"
+MOVIE_DATA_PATH = DATA_DIR / "movies.json"
 
-    data = [
-        Movie(
-            id= 1,
-            title= "Spirited Away",
-            movieIMDbRating= 8.6,
-            movieGenres= ["Animation", "Fantasy", "Adventure"],
-            directors= ["Hayao Miyazaki"],
-            mainStars= ["Rumi Hiiragi", "Miyu Irino", "Mari Natsuki"],
-            description= "A young girl enters a world of spirits and must save her parents.",
-            datePublished= "2001-07-20",
-            duration= 125,
-            yearReleased= 2001
-        ),
-        Movie(
-            id= 2,
-            title= "Your Name",
-            movieIMDbRating= 8.4,
-            movieGenres= ["Animation", "Drama", "Fantasy"],
-            directors= ["Makoto Shinkai"],
-            mainStars= ["Ryunosuke Kamiki", "Mone Kamishiraishi"],
-            description= "Two teenagers mysteriously swap bodies and connect across time.",
-            datePublished= "2016-08-26",
-            duration= 112,
-            yearReleased= 2016
-        )
-    ]
-
-    test_file.write_text(json.dumps(data))
-
-    # Patch the constant the functions read
-    monkeypatch.setattr(movieRepo, "MOVIE_DATA_FILE", test_file, raising=False)
-
-    movies = movieRepo.loadAll()
-    assert len(movies) == 2
-    assert movies[0]["id"] == 1
-    assert movies[0]["title"] == "Spirited Away"
-    assert movies[1]["movieIMDbRating"] == 8.4
-    assert movies[1]["id"] == 2
-    assert movies[1]["title"] == "Your Name"
-    assert movies[1]["directors"] == ["Makoto Shinkai"]
+# Cache + ID counter
+_MOVIE_CACHE: List[Movie] | None = None
+_NEXT_MOVIE_ID: int | None = None
 
 
-def test_movie_save_and_verify_contents(tmp_path, monkeypatch):
-    test_file = tmp_path / "movies.json"
-    monkeypatch.setattr(movieRepo, "MOVIE_DATA_FILE", test_file, raising=False)
+def getMaxMovieId(movies: List[Movie]) -> int:
+    """
+    Return the maximum Movie ID in a list of movies, or 0 if empty.
+    """
+    return max((movie.id for movie in movies), default=0)
 
-    data = [
-        Movie(
-            id= 1,
-            title= "Kizumonogatari I= Tekketsu-hen",
-            movieIMDbRating= 7.8,
-            movieGenres= ["Animation", "Action", "Supernatural"],
-            directors= ["Tatsuya Oishi"],
-            mainStars= ["Hiroshi Kamiya", "Maaya Sakamoto", "Yui Horie"],
-            description= "A high schooler encounters a powerful vampire and becomes her unwilling servant.",
-            datePublished= "2016-01-08",
-            duration= 64,
-            yearReleased= 2016
-        ),
-        Movie(
-            id= 2,
-            title= "Kizumonogatari III= Reiketsu-hen",
-            movieIMDbRating= 8.2,
-            movieGenres= ["Animation", "Drama", "Supernatural"],
-            directors= ["Tatsuya Oishi"],
-            mainStars= ["Hiroshi Kamiya", "Maaya Sakamoto", "Yui Horie"],
-            description= "The conclusion to Koyomi's bloody tale of redemption and loss.",
-            datePublished= "2017-01-06",
-            duration= 83,
-            yearReleased= 2017
-        )
-    ]
 
-    movieRepo.saveAll(data)
+def _load_movie_cache() -> List[Movie]:
+    """
+    Load movies from disk ONCE and cache them.
+    Converts raw dicts -> Movie models.
+    """
+    global _MOVIE_CACHE, _NEXT_MOVIE_ID
 
-    assert test_file.exists(), "movies.json should have been created"
-    contents = json.loads(test_file.read_text(encoding="utf-8"))
+    if _MOVIE_CACHE is None:
+        movie_dicts = _base_load_all(MOVIE_DATA_PATH)  # returns dicts
 
-    assert contents == data
-    assert len(contents) == 2
-    assert contents[0]["title"].startswith("Kizumonogatari")
-    assert all("description" in movie for movie in contents)
+        # Convert dicts -> Movie models
+        _MOVIE_CACHE = [Movie(**movie) for movie in movie_dicts]
+
+        # Initialise next ID
+        maxId = getMaxMovieId(_MOVIE_CACHE)
+        _NEXT_MOVIE_ID = maxId + 1
+
+    return _MOVIE_CACHE
+
+
+def getNextMovieId() -> int:
+    """
+    Get the next available movie ID.
+    Auto-initializes if needed.
+    """
+    global _NEXT_MOVIE_ID
+
+    if _NEXT_MOVIE_ID is None:
+        _load_movie_cache()
+
+    assert _NEXT_MOVIE_ID is not None
+
+    next_id = _NEXT_MOVIE_ID
+    _NEXT_MOVIE_ID += 1
+    return next_id
+
+
+def loadMovies() -> List[Movie]:
+    """
+    Return cached movies (as Movie models).
+    """
+    return _load_movie_cache()
+
+
+def saveMovies(movies: List[Movie]) -> None:
+    """
+    Save Movie models to disk as dicts.
+    """
+    global _MOVIE_CACHE, _NEXT_MOVIE_ID
+
+    # Update cache
+    _MOVIE_CACHE = movies
+
+    # Recalculate ID counter
+    maxId = getMaxMovieId(movies)
+    if _NEXT_MOVIE_ID is None or _NEXT_MOVIE_ID <= maxId:
+        _NEXT_MOVIE_ID = maxId + 1
+
+    # Convert models -> dicts for JSON saving
+    movie_dicts = [movie.model_dump() for movie in movies]
+
+    _base_save_all(MOVIE_DATA_PATH, movie_dicts)
+
+
+__all__ = ["loadMovies", "saveMovies", "getNextMovieId"]

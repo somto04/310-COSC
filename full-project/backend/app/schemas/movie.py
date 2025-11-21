@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field, model_validator, Field, AliasChoices
 from typing import List, Optional
 from decimal import Decimal
-from datetime import date
+from datetime import date, datetime
 
 EARLIEST_FILM_YEAR = 1888  # first known motion picture release year
 LATEST_REASONABLE_YEAR = 2100
@@ -50,12 +50,19 @@ class Movie(BaseModel):
     @model_validator(mode="before")
     @classmethod
     def extract_year(cls, values):
+        # Pydantic may pass positional args as a tuple
+        if isinstance(values, tuple):
+            values = dict(zip(cls.model_fields, values))
+
         pub_date = values.get("datePublished")
         year = values.get("yearReleased")
 
-        # extract year from datePublished if yearReleased not provided
         if year is None and isinstance(pub_date, date):
             values["yearReleased"] = pub_date.year
+        elif year is None and isinstance(pub_date, str):
+            dt = datetime.strptime(pub_date, "%Y-%m-%d").date()
+            values["datePublished"] = dt
+            values["yearReleased"] = dt.year
 
         return values
 

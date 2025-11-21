@@ -11,6 +11,7 @@ import pytest
 from fastapi.testclient import TestClient
 from fastapi import FastAPI
 from unittest.mock import patch
+from datetime import date
 from app.routers.movieRoute import router
 from app.schemas.movie import Movie, MovieCreate, MovieUpdate
 
@@ -37,7 +38,7 @@ def sample_movie_data():
         directors= ["Christopher Nolan"],
         mainStars= ["Leonardo DiCaprio", "Tom Hardy"],
         description= "A thief who steals corporate secrets",
-        datePublished= "2010-07-16",
+        datePublished= date(2010,7,16),
         duration= 148
     )
 
@@ -54,7 +55,7 @@ def sample_movies_list(sample_movie_data):
             directors= ["Lana Wachowski", "Lilly Wachowski"],
             mainStars= ["Keanu Reeves", "Laurence Fishburne"],
             description= "A hacker discovers reality is a simulation",
-            datePublished= "1999-03-31",
+            datePublished= date(1999,3,31),
             duration= 136
         ),
         Movie(
@@ -65,7 +66,7 @@ def sample_movies_list(sample_movie_data):
             directors= ["Francis Ford Coppola"],
             mainStars= ["Marlon Brando", "Al Pacino"],
             description= "A mafia family's power struggles",
-            datePublished= "1972-03-24",
+            datePublished= date(1972,3,24),
             duration= 175
         ),
         Movie(
@@ -76,7 +77,7 @@ def sample_movies_list(sample_movie_data):
             directors= ["Quentin Tarantino"],
             mainStars= ["John Travolta", "Uma Thurman"],
             description= "Interconnected crime stories",
-            datePublished= "1994-10-14",
+            datePublished= date(1994,10,14),
             duration= 154
         )
     ]
@@ -97,6 +98,7 @@ class TestMovieServiceUnit:
         assert result[0].title == "Inception"
         assert result[1].title == "The Matrix"
 
+    @patch('app.services.movieService.getNextMovieId', return_value=5)
     @patch('app.services.movieService.saveMovies')
     @patch('app.services.movieService.loadMovies')
     def test_create_movie_generates_new_id(self, mock_load, mock_save, sample_movies_list):
@@ -110,12 +112,11 @@ class TestMovieServiceUnit:
             directors=["Christopher Nolan"],
             mainStars=["Matthew McConaughey"],
             description="A wormhole journey",
-            datePublished="2014-11-07",
+            datePublished=date(2014,11,7),
             duration=169
         )
 
         result = createMovie(new_movie_data)
-
         assert result.id == 5
         assert result.title == "Interstellar"
         mock_save.assert_called_once()
@@ -222,7 +223,7 @@ class TestMovieRouterIntegration:
 
     @patch('app.routers.movieRoute.searchMovie')
     def test_search_movies_with_query(self, mock_search, client, sample_movie_data):
-        mock_search.return_value = sample_movie_data
+        mock_search.return_value = [sample_movie_data]
 
         response = client.get("/movies/search?query=inception")
         data = response.json()

@@ -74,4 +74,10 @@ def saveMovies(movies: List[Movie]) -> None:
     movie_dict = [movie.model_dump() for movie in movies]
     _base_save_all(MOVIE_DATA_PATH, movie_dict)
 
-__all__ = ["loadMovies", "saveMovies"]
+def loadAll():
+    return loadMovies()
+
+def saveAll(movies: List[Movie]):
+    return saveMovies(movies)
+
+__all__ = ["loadMovies", "saveMovies", "getNextMovieId"]

@@ -24,12 +24,12 @@ class ReviewCreate(BaseModel):
     reviewTitle: str = Field(
         min_length=MIN_REVIEW_TITLE_LENGTH,
         max_length=MAX_REVIEW_TITLE_LENGTH,
-        description=f"title of your review, must be less than {MAX_REVIEW_TITLE_LENGTH} characters",
+        description=f"title of your review, must be between {MIN_REVIEW_TITLE_LENGTH} and {MAX_REVIEW_TITLE_LENGTH} characters",
     )
     reviewBody: str = Field(
         min_length=MIN_REVIEW_BODY_LENGTH,
         max_length=MAX_REVIEW_BODY_LENGTH,
-        description=f"body of your review, must be less than {MAX_REVIEW_BODY_LENGTH} characters",
+        description=f"body of your review, must be between {MIN_REVIEW_BODY_LENGTH} and {MAX_REVIEW_BODY_LENGTH} characters",
     )
     rating: int = Field(
         ge=MIN_RATING,
@@ -43,13 +43,13 @@ class ReviewUpdate(BaseModel):
         default=None,
         min_length=MIN_REVIEW_TITLE_LENGTH,
         max_length=MAX_REVIEW_TITLE_LENGTH,
-        description=f"title of your review, must be less than {MAX_REVIEW_TITLE_LENGTH} characters",
+        description=f"title of your review, must be between {MIN_REVIEW_TITLE_LENGTH} and {MAX_REVIEW_TITLE_LENGTH} characters",
     )
     reviewBody: Optional[str] = Field(
         default=None,
         min_length=MIN_REVIEW_BODY_LENGTH,
         max_length=MAX_REVIEW_BODY_LENGTH,
-        description=f"body of your review, must be less than {MAX_REVIEW_BODY_LENGTH} characters",
+        description=f"body of your review, must be between {MIN_REVIEW_BODY_LENGTH} and {MAX_REVIEW_BODY_LENGTH} characters",
     )
     rating: Optional[int] = Field(
         default=None,

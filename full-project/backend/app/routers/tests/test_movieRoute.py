@@ -116,10 +116,10 @@ class TestMovieServiceUnit:
             duration=169
         )
 
-        result = createMovie(new_movie_data)
+        result = createMovie(newMovieData)
         assert result.id == 5
         assert result.title == "Interstellar"
-        mockSave.assert_called_once()
+        mock_save.assert_called_once()
 
     @patch('app.services.movieService.loadMovies')
     def test_get_movie_by_id_success(self, mock_load, sample_movie_data):

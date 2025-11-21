@@ -6,8 +6,6 @@ from ..schemas.role import Role
 from ..repos.userRepo import getNextUserId, loadUsers, saveUsers
 from ..utilities.security import hashPassword, verifyPassword
 
-reset_tokens = {}  # token -> {"email": str, "expires": int}
-
 
 def isUsernameTaken(
     users: List[User], username: str, *, exclude_user_id: int | None = None
@@ -100,6 +98,23 @@ def getUserById(userId: int) -> User:
     raise HTTPException(status_code=404, detail=f"User '{userId}' not found")
 
 
+def getUserByUsername(username: str) -> User | None:
+    """
+    Get a user by username
+
+    Args:
+        username (str): Username of the user to retrieve
+
+    Returns:
+        User or None if not found
+    """
+    users = loadUsers()
+    for user in users:
+        if user.username == username:
+            return user
+    return None
+
+
 def updateUser(userId: int, payload: UserUpdate) -> User:
     """
     Update user info by ID
@@ -161,7 +176,7 @@ def deleteUser(userId: int):
 def getUserByEmail(email: str) -> User | None:
     """
     Check if email exists
-    
+
     Args:
         email (str): email to check
     """
@@ -171,27 +186,3 @@ def getUserByEmail(email: str) -> User | None:
         if user.email.lower() == normalized:
             return user
     return None
-
-
-def generateResetToken(email: str) -> str:
-    """Generate a temporary reset token"""
-    token = secrets.token_hex(16)
-    expires = int(time.time()) + 900  # expires in 15 min
-    reset_tokens[token] = {"email": email.lower(), "expires": expires}
-    return token
-
-
-def resetPassword(token: str, new_password: str) -> bool:
-    """Reset password if token valid"""
-    data = reset_tokens.get(token)
-    if not data or data["expires"] < time.time():
-        return False
-
-    users = loadUsers()
-    for user in users:
-        if user.email.lower() == data["email"]:
-            user.pw = hashPassword(new_password.strip())
-            saveUsers(users)
-            del reset_tokens[token]
-            return True
-    return False

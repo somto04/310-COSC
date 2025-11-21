@@ -1,11 +1,11 @@
 import json
 from pathlib import Path
 from typing import List, Dict, Any
-from app.tools.Paths import get_project_root
+from app.tools.Paths import getProjectRoot
 
-DATA_DIR = get_project_root() / "backend" / "app" / "data"
+DATA_DIR = getProjectRoot() / "backend" / "app" / "data"
 
-def _path(name: str | Path) -> Path:
+def fullPath(name: str | Path) -> Path:
     """
     Get the full path to the data file.
 
@@ -20,7 +20,7 @@ def _path(name: str | Path) -> Path:
     else:
         return DATA_DIR / name
 
-def _ensure_file(path: Path) -> None:
+def ensureFile(path: Path) -> None:
     """
     Ensure that the specified file exists.
     
@@ -33,7 +33,7 @@ def _ensure_file(path: Path) -> None:
     if not path.exists():
         raise FileNotFoundError(f"Missing data file: {path}")
     
-def _base_load_all(datafile: str | Path) -> List[Dict[str, Any]]:
+def baseLoadAll(datafile: str | Path) -> List[Dict[str, Any]]:
     """
     Load all items from the specified data file.
     
@@ -43,12 +43,12 @@ def _base_load_all(datafile: str | Path) -> List[Dict[str, Any]]:
     Returns:
         List[Dict[str, Any]]: A list of items loaded from the data file.
     """
-    path = _path(datafile)
-    _ensure_file(path)
+    path = fullPath(datafile)
+    ensureFile(path)
     with path.open("r", encoding="utf-8") as file:
         return json.load(file)
 
-def _base_save_all(datafile: str | Path, items: List[Dict[str, Any]]) -> None:
+def baseSaveAll(datafile: str | Path, items: List[Dict[str, Any]]) -> None:
     """
     Save all items to the specified data file.
     
@@ -57,7 +57,7 @@ def _base_save_all(datafile: str | Path, items: List[Dict[str, Any]]) -> None:
         datafile (str | Path): The name of the data file or a Path object.
         items (List[Dict[str, Any]]): A list of items to save.
     """
-    path = _path(datafile)
+    path = fullPath(datafile)
     path.parent.mkdir(parents=True, exist_ok=True)
     
     temp = path.with_suffix(path.suffix + ".tmp")

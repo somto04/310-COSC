@@ -1,8 +1,8 @@
 import json
 import app.repos.movieRepo as movieRepo
 
-def test_movie_load_uses_tmp(tmp_path, monkeypatch):
-    test_file = tmp_path / "movies.json"
+def test_movieLoadUsesTmp(tmp_path, monkeypatch):
+    testFile = tmp_path / "movies.json"
 
     data = [
         {
@@ -31,10 +31,10 @@ def test_movie_load_uses_tmp(tmp_path, monkeypatch):
         }
     ]
 
-    test_file.write_text(json.dumps(data))
+    testFile.write_text(json.dumps(data))
 
     # Patch the constant the functions read
-    monkeypatch.setattr(movieRepo, "MOVIE_DATA_FILE", test_file, raising=False)
+    monkeypatch.setattr(movieRepo, "MOVIE_DATA_FILE", testFile, raising=False)
 
     items = movieRepo.loadAll()
     assert len(items) == 2
@@ -46,7 +46,7 @@ def test_movie_load_uses_tmp(tmp_path, monkeypatch):
     assert items[1]["directors"] == ["Makoto Shinkai"]
 
 
-def test_movie_save_and_verify_contents(tmp_path, monkeypatch):
+def test_movieSaveAndVerifyContents(tmp_path, monkeypatch):
     test_file = tmp_path / "movies.json"
     monkeypatch.setattr(movieRepo, "MOVIE_DATA_FILE", test_file, raising=False)
 

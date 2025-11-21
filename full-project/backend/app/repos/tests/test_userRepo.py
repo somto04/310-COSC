@@ -4,7 +4,7 @@ from app.schemas.user import User
 from app.schemas.role import Role
 
 
-def test_user_load_uses_tmp(tmp_path, monkeypatch):
+def test_userLoadUsesTmp(tmp_path, monkeypatch):
     test_file = tmp_path / "users.json"
 
     data = [
@@ -50,7 +50,7 @@ def test_user_load_uses_tmp(tmp_path, monkeypatch):
     assert users[1].isBanned is False
 
 
-def test_user_save_and_verify_contents(tmp_path, monkeypatch):
+def test_userSaveAndVerifyContents(tmp_path, monkeypatch):
     test_file = tmp_path / "users.json"
     monkeypatch.setattr(userRepo, "_USER_DATA_PATH", test_file, raising=False)
 
@@ -94,7 +94,7 @@ def test_user_save_and_verify_contents(tmp_path, monkeypatch):
     assert saved_data[1]["isBanned"] is False
 
 
-def test_load_users_uses_cache(monkeypatch):
+def test_loadUsersUsesCache(monkeypatch):
     # arrange: fake base loader & call counter
     calls = {"count": 0}
 

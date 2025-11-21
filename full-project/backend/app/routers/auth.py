@@ -1,3 +1,4 @@
+from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, status, Form
 from fastapi.security import OAuth2PasswordBearer
 
@@ -51,7 +52,10 @@ def requireAdmin(currentUser: CurrentUser = Depends(getCurrentUser)) -> CurrentU
 
 
 @router.post("/token")
-def login(username: Username = Form(...), password: Password = Form(...)):
+def login(
+    username: Annotated[Username, Form(...)],
+    password: Annotated[Password, Form(...)],
+):
     """
     Logs in user and blocks banned users before their password is validated.
     All domain auth errors are mapped to HTTP here.
@@ -97,7 +101,7 @@ def getAdminDashboard(admin: CurrentUser = Depends(requireAdmin)):
 
 
 @router.post("/forgot-password")
-def forgotPassword(email: Email = Form(...)):
+def forgotPassword(email: Annotated[Email, Form(...)]):
     """
     Simulate sending a password reset link to the user's email.
 
@@ -114,7 +118,7 @@ def forgotPassword(email: Email = Form(...)):
 
 
 @router.post("/reset-password")
-def resettingPassword(token: str = Form(...), new_password: Password = Form(...)):
+def resettingPassword(token: Annotated[str, Form(...)], new_password: Annotated[Password, Form(...)]):
     """
     Reset a user's password using the provided token.
 

@@ -49,7 +49,8 @@ class Movie(BaseModel):
 
     @model_validator(mode="before")
     @classmethod
-    def extractYear(cls, values):
+    def extract_year(cls, values):
+        # Pydantic may pass positional args as a tuple
         if isinstance(values, tuple):
             values = dict(zip(cls.model_fields, values))
 
@@ -60,6 +61,15 @@ class Movie(BaseModel):
             values["yearReleased"] = pubDate.year
         elif year is None and isinstance(pubDate, str):
             dt = datetime.strptime(pubDate, "%Y-%m-%d").date()
+            values["datePublished"] = dt
+            values["yearReleased"] = dt.year
+        pub_date = values.get("datePublished")
+        year = values.get("yearReleased")
+
+        if year is None and isinstance(pub_date, date):
+            values["yearReleased"] = pub_date.year
+        elif year is None and isinstance(pub_date, str):
+            dt = datetime.strptime(pub_date, "%Y-%m-%d").date()
             values["datePublished"] = dt
             values["yearReleased"] = dt.year
 

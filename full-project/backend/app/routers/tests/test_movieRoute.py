@@ -142,7 +142,7 @@ class TestMovieServiceUnit:
 
     @patch('app.services.movieService.saveMovies')
     @patch('app.services.movieService.loadMovies')
-    def test_update_movie_success(self, mock_load, mock_save, sample_movie_data):
+    def test_UpdateMovieSuccess(self, mock_load, mock_save, sample_movie_data):
         mock_load.return_value = [sample_movie_data]
         from app.services.movieService import updateMovie
 
@@ -156,7 +156,7 @@ class TestMovieServiceUnit:
         mock_save.assert_called_once()
 
     @patch('app.services.movieService.loadMovies')
-    def test_search_movie_by_title(self, mock_load, sample_movies_list):
+    def test_searchMovieByTitle(self, mock_load, sample_movies_list):
         mock_load.return_value = sample_movies_list
         from app.services.movieService import searchMovie
 
@@ -166,7 +166,7 @@ class TestMovieServiceUnit:
         assert results[0].title == "Inception"
 
     @patch('app.services.movieService.loadMovies')
-    def test_search_movie_by_genre(self, mock_load, sample_movies_list):
+    def test_SearchMovieByGenre(self, mock_load, sample_movies_list):
         mock_load.return_value = sample_movies_list
         from app.services.movieService import searchMovie
 
@@ -175,7 +175,7 @@ class TestMovieServiceUnit:
         assert len(results) == 2
 
     @patch('app.services.movieService.loadMovies')
-    def test_search_movie_empty_query(self, mock_load, sample_movies_list):
+    def test_searchMovieEmptyQuery(self, mock_load, sample_movies_list):
         mock_load.return_value = sample_movies_list
         from app.services.movieService import searchMovie
 
@@ -247,7 +247,7 @@ class TestMovieRouterIntegration:
 class TestMovieEdgeCases:
 
     @patch('app.services.movieService.loadMovies')
-    def test_search_case_insensitive(self, mock_load, sample_movies_list):
+    def test_searchCaseInsensitive(self, mock_load, sample_movies_list):
         mock_load.return_value = sample_movies_list
         from app.services.movieService import searchMovie
 
@@ -255,7 +255,7 @@ class TestMovieEdgeCases:
         assert len(results) == 2
 
     @patch('app.services.movieService.loadMovies')
-    def test_get_movie_id_string(self, mock_load, sample_movie_data):
+    def test_getMovieIdString(self, mock_load, sample_movie_data):
         mock_load.return_value = [sample_movie_data]
         from app.services.movieService import getMovieById
 
@@ -264,7 +264,7 @@ class TestMovieEdgeCases:
 
     @patch('app.services.movieService.saveMovies')
     @patch('app.services.movieService.loadMovies')
-    def test_partial_update(self, mock_load, mock_save, sample_movie_data):
+    def test_partialUpdate(self, mock_load, mock_save, sample_movie_data):
         mock_load.return_value = [sample_movie_data]
         from app.services.movieService import updateMovie
 

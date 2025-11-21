@@ -34,10 +34,10 @@ def test_movieLoadUsesTmp(tmp_path, monkeypatch):
     ]
 
     # Write raw JSON dicts, not Movie objects
-    test_file.write_text(json.dumps([m.model_dump() for m in data]))
+    testFile.write_text(json.dumps([m.model_dump() for m in data]))
 
     # Patch to use tmp file
-    monkeypatch.setattr(movieRepo, "MOVIE_DATA_FILE", test_file, raising=False)
+    monkeypatch.setattr(movieRepo, "MOVIE_DATA_FILE", testFile, raising=False)
 
     movies = movieRepo.loadAll()
 
@@ -50,10 +50,10 @@ def test_movieLoadUsesTmp(tmp_path, monkeypatch):
     assert movies[1]["directors"] == ["Makoto Shinkai"]
 
 
-def test_movie_save_and_verify_contents(tmp_path, monkeypatch):
-    test_file = tmp_path / "movies.json"
+def test_movieSaveAndVerifyContents(tmp_path, monkeypatch):
+    testFile = tmp_path / "movies.json"
 
-    monkeypatch.setattr(movieRepo, "MOVIE_DATA_FILE", test_file, raising=False)
+    monkeypatch.setattr(movieRepo, "MOVIE_DATA_FILE", testFile, raising=False)
 
     data = [
         Movie(
@@ -84,9 +84,9 @@ def test_movie_save_and_verify_contents(tmp_path, monkeypatch):
 
     movieRepo.saveAll(data)
 
-    assert test_file.exists(), "movies.json should have been created"
+    assert testFile.exists(), "movies.json should have been created"
 
-    contents = json.loads(test_file.read_text(encoding="utf-8"))
+    contents = json.loads(testFile.read_text(encoding="utf-8"))
 
     assert contents == [m.model_dump() for m in data]
     assert len(contents) == 2

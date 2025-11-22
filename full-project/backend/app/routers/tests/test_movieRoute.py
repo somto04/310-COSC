@@ -29,7 +29,7 @@ def client(app):
 
 
 @pytest.fixture
-def sample_movie_data():
+def sampleMovieData():
     return Movie(
         id= 1,
         title= "Inception",
@@ -46,7 +46,7 @@ def sample_movie_data():
 @pytest.fixture
 def sampleMoviesList(sampleMovieData):
     return [
-        sample_movie_data,
+        sampleMovieData,
         Movie(
             id= 2,
             title= "The Matrix",
@@ -88,8 +88,8 @@ def sampleMoviesList(sampleMovieData):
 class TestMovieServiceUnit:
 
     @patch('app.services.movieService.loadMovies')
-    def test_list_movies_returns_all_movies(self, mock_load, sample_movies_list):
-        mock_load.return_value = sample_movies_list
+    def test_list_movies_returns_all_movies(self, mockLoad, sample_movies_list):
+        mockLoad.return_value = sample_movies_list
         from app.services.movieService import listMovies
 
         result = listMovies()
@@ -101,8 +101,8 @@ class TestMovieServiceUnit:
     @patch('app.services.movieService.getNextMovieId', return_value=5)
     @patch('app.services.movieService.saveMovies')
     @patch('app.services.movieService.loadMovies')
-    def test_create_movie_generates_new_id(self, mock_load, mock_save, sample_movies_list):
-        mock_load.return_value = sample_movies_list
+    def test_create_movie_generates_new_id(self, mockLoad, mockSave, sample_movies_list):
+        mockLoad.return_value = sample_movies_list
         from app.services.movieService import createMovie
 
         newMovieData = MovieCreate(
@@ -119,11 +119,11 @@ class TestMovieServiceUnit:
         result = createMovie(newMovieData)
         assert result.id == 5
         assert result.title == "Interstellar"
-        mock_save.assert_called_once()
+        mockSave.assert_called_once()
 
     @patch('app.services.movieService.loadMovies')
-    def test_get_movie_by_id_success(self, mock_load, sample_movie_data):
-        mock_load.return_value = [sample_movie_data]
+    def test_getMovieByIdSuccess(self, mockLoad, sampleMovieData):
+        mockLoad.return_value = [sampleMovieData]
         from app.services.movieService import getMovieById
 
         result = getMovieById(1)
@@ -132,8 +132,8 @@ class TestMovieServiceUnit:
         assert result.title == "Inception"
 
     @patch('app.services.movieService.loadMovies')
-    def test_get_movie_by_id_not_found(self, mock_load, sample_movie_data):
-        mock_load.return_value = [sample_movie_data]
+    def test_getMovieByIdNotFound(self, mockLoad, sampleMovieData):
+        mockLoad.return_value = [sampleMovieData]
         from app.services.movieService import getMovieById
         from fastapi import HTTPException
 
@@ -142,8 +142,8 @@ class TestMovieServiceUnit:
 
     @patch('app.services.movieService.saveMovies')
     @patch('app.services.movieService.loadMovies')
-    def test_UpdateMovieSuccess(self, mock_load, mock_save, sample_movie_data):
-        mock_load.return_value = [sample_movie_data]
+    def test_UpdateMovieSuccess(self, mockLoad, mockSave, sampleMovieData):
+        mockLoad.return_value = [sampleMovieData]
         from app.services.movieService import updateMovie
 
         update_data = MovieUpdate(title="Inception (Director's Cut)", movieIMDbRating=9.0)
@@ -153,11 +153,11 @@ class TestMovieServiceUnit:
         assert result.title == "Inception (Director's Cut)"
         assert result.movieIMDbRating == Decimal("9.0")
         assert result.duration == 148
-        mock_save.assert_called_once()
+        mockSave.assert_called_once()
 
     @patch('app.services.movieService.loadMovies')
-    def test_searchMovieByTitle(self, mock_load, sample_movies_list):
-        mock_load.return_value = sample_movies_list
+    def test_searchMovieByTitle(self, mockLoad, sample_movies_list):
+        mockLoad.return_value = sample_movies_list
         from app.services.movieService import searchMovie
 
         results = searchMovie("inception")
@@ -166,8 +166,8 @@ class TestMovieServiceUnit:
         assert results[0].title == "Inception"
 
     @patch('app.services.movieService.loadMovies')
-    def test_SearchMovieByGenre(self, mock_load, sample_movies_list):
-        mock_load.return_value = sample_movies_list
+    def test_SearchMovieByGenre(self, mockLoad, sample_movies_list):
+        mockLoad.return_value = sample_movies_list
         from app.services.movieService import searchMovie
 
         results = searchMovie("action")
@@ -175,8 +175,8 @@ class TestMovieServiceUnit:
         assert len(results) == 2
 
     @patch('app.services.movieService.loadMovies')
-    def test_searchMovieEmptyQuery(self, mock_load, sample_movies_list):
-        mock_load.return_value = sample_movies_list
+    def test_searchMovieEmptyQuery(self, mockLoad, sample_movies_list):
+        mockLoad.return_value = sample_movies_list
         from app.services.movieService import searchMovie
 
         results = searchMovie("")
@@ -190,8 +190,8 @@ class TestMovieServiceUnit:
 class TestMovieRouterIntegration:
 
     @patch('app.routers.movieRoute.listMovies')
-    def test_get_all_movies_endpoint(self, mock_list, client, sample_movies_list):
-        mock_list.return_value = sample_movies_list
+    def test_getAllMoviesEndpoint(self, mockList, client, sampleMoviesList):
+        mockList.return_value = [Movie(**m) for m in sampleMoviesList]
 
         response = client.get("/movies")
         data = response.json()
@@ -201,8 +201,8 @@ class TestMovieRouterIntegration:
         assert data[0]["title"] == "Inception"
 
     @patch('app.routers.movieRoute.getMovieById')
-    def test_get_movie_by_id_endpoint(self, mock_get, client, sample_movie_data):
-        mock_get.return_value = sample_movie_data
+    def test_getMovieByIdEndpoint(self, mock_get, client, sampleMoviesList):
+        mock_get.return_value = sampleMoviesList
 
         response = client.get("/movies/1")
         data = response.json()
@@ -222,8 +222,8 @@ class TestMovieRouterIntegration:
         assert response.json()["detail"] == "Movie not found"
 
     @patch('app.routers.movieRoute.searchMovie')
-    def test_search_movies_with_query(self, mock_search, client, sample_movie_data):
-        mock_search.return_value = [sample_movie_data]
+    def test_searchMovieWithQuery(self, mockSearch, client, sampleMoviesList):
+        mockSearch.return_value = [sampleMoviesList]
 
         response = client.get("/movies/search?query=inception")
         data = response.json()
@@ -247,16 +247,16 @@ class TestMovieRouterIntegration:
 class TestMovieEdgeCases:
 
     @patch('app.services.movieService.loadMovies')
-    def test_searchCaseInsensitive(self, mock_load, sample_movies_list):
-        mock_load.return_value = sample_movies_list
+    def test_searchCaseInsensitive(self, mockLoad, sample_movies_list):
+        mockLoad.return_value = sample_movies_list
         from app.services.movieService import searchMovie
 
         results = searchMovie("ACTION")
         assert len(results) == 2
 
     @patch('app.services.movieService.loadMovies')
-    def test_getMovieIdString(self, mock_load, sample_movie_data):
-        mock_load.return_value = [sample_movie_data]
+    def test_getMovieIdString(self, mockLoad, sampleMovieData):
+        mockLoad.return_value = [sampleMovieData]
         from app.services.movieService import getMovieById
 
         result = getMovieById("1")
@@ -264,8 +264,8 @@ class TestMovieEdgeCases:
 
     @patch('app.services.movieService.saveMovies')
     @patch('app.services.movieService.loadMovies')
-    def test_partialUpdate(self, mock_load, mock_save, sample_movie_data):
-        mock_load.return_value = [sample_movie_data]
+    def test_partialUpdate(self, mockLoad, mockSave, sampleMovieData):
+        mockLoad.return_value = [sampleMovieData]
         from app.services.movieService import updateMovie
 
         updateData = MovieUpdate(movieIMDbRating=9.0)

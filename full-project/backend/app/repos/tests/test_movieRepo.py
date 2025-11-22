@@ -34,7 +34,8 @@ def test_movieLoadUsesTmp(tmp_path, monkeypatch):
     ]
 
     # Write raw JSON dicts, not Movie objects
-    testFile.write_text(json.dumps([m.model_dump() for m in data]))
+    testFile.write_text(json.dumps([ {**m.model_dump(), 
+                                      "movieIMDbRating": float(m.movieIMDbRating)} for m in data ]))
 
     # Patch to use tmp file
     monkeypatch.setattr(movieRepo, "MOVIE_DATA_FILE", testFile, raising=False)

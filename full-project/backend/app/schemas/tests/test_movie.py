@@ -4,7 +4,7 @@ from datetime import date
 from pydantic import ValidationError
 
 
-def test_movie_valid_input():
+def test_movieValidInput():
     movie = Movie(
         id=1,
         title="Test",
@@ -15,7 +15,7 @@ def test_movie_valid_input():
     assert movie.datePublished.year == 2020  # type: ignore
 
 
-def test_movie_invalid_date():
+def test_movieInvalidDate():
     with pytest.raises(ValidationError):
         Movie(
             id=1,
@@ -26,7 +26,7 @@ def test_movie_invalid_date():
         )
 
 
-def test_movie_aliases():
+def test_movieAliases():
     movie = Movie(
         id=1,
         movieGenre=["Action"],  # legacy key # type: ignore
@@ -36,7 +36,7 @@ def test_movie_aliases():
     assert movie.movieGenres == ["Action"]
 
 
-def test_default_factory_lists():
+def test_defaultFactoryLists():
     m1 = MovieCreate(title="Bullet Train", movieGenres=["Action"], duration=120)
     m2 = MovieCreate(title="Oppenheimer", movieGenres=["Drama"], duration=180)
 
@@ -45,7 +45,7 @@ def test_default_factory_lists():
     assert m1.directors is not m2.directors  # ensure fresh list each time
 
 
-def test_extract_year_from_date_pipeline():
+def test_extractYearFromDatePipeline():
     payload = MovieCreate(
         title="JuJutsu Kaisen 0",
         movieGenres=["Animation"],
@@ -68,12 +68,12 @@ def test_dump():
     assert dumped["movieGenres"] == ["Animation"]
 
 
-def test_update_movie_imdb_rating():
-    update_data = MovieUpdate(movieIMDbRating=8.5)  # type: ignore
-    assert update_data.movieIMDbRating == 8.5
+def test_updateMovieImdbRating():
+    updateData = MovieUpdate(movieIMDbRating=8.5)  # type: ignore
+    assert updateData.movieIMDbRating == 8.5
 
 
-def test_update_existing_movie():
+def test_updateExistingMovie():
     movie = Movie(
         id=1,
         title="Evangelion: 1.0 You Are (Not) Alone",
@@ -81,22 +81,22 @@ def test_update_existing_movie():
         duration=110,
     )
 
-    update_data = MovieUpdate(title="tee hee change the title", movieIMDbRating=9.0)  # type: ignore
-    update_data_dict = update_data.model_dump(exclude_unset=True)
-    updated_movie = movie.model_copy(update=update_data_dict)
-    assert updated_movie.title == "tee hee change the title"
-    assert updated_movie.movieIMDbRating == 9.0
-    assert updated_movie.duration == 110  # unchanged
-    assert updated_movie.movieGenres == ["Animation", "Sci-Fi"]  # unchanged
-    assert updated_movie.id == 1  # unchanged
-    assert updated_movie.mainStars == []  # default value
-    assert updated_movie.directors == []  # default value
-    assert updated_movie.description is None  # default value
-    assert updated_movie.datePublished is None  # default value
-    assert updated_movie.yearReleased is None  # default value
+    updateData = MovieUpdate(title="tee hee change the title", movieIMDbRating=9.0)  # type: ignore
+    updateDataDict = updateData.model_dump(exclude_unset=True)
+    updatedMovie = movie.model_copy(update=updateDataDict)
+    assert updatedMovie.title == "tee hee change the title"
+    assert updatedMovie.movieIMDbRating == 9.0
+    assert updatedMovie.duration == 110  # unchanged
+    assert updatedMovie.movieGenres == ["Animation", "Sci-Fi"]  # unchanged
+    assert updatedMovie.id == 1  # unchanged
+    assert updatedMovie.mainStars == []  # default value
+    assert updatedMovie.directors == []  # default value
+    assert updatedMovie.description is None  # default value
+    assert updatedMovie.datePublished is None  # default value
+    assert updatedMovie.yearReleased is None  # default value
 
 
-def test_invalid_imdb_rating():
+def test_invalidImdbRating():
     with pytest.raises(ValidationError):
         Movie(
             id=2,

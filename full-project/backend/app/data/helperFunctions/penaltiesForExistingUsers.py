@@ -20,6 +20,6 @@ for u in users:
 if modified:
     with open(path, "w", encoding="utf-8") as f:
         json.dump(users, f, indent=2)
-    print("✅ users.json updated with penaltyCount and isBanned")
+    print("users.json updated with penaltyCount and isBanned")
 else:
     print("No migration needed")

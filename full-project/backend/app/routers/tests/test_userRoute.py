@@ -136,7 +136,6 @@ def test_getUserById(mockGet, client, sampleUsers):
     assert data[0]["username"] == "alicej"
     assert data[0]["isBanned"] is False
 
-    # SafeUser check - sensitive fields should not be present
     for user in data:
         assert "email" not in user
         assert "pw" not in user

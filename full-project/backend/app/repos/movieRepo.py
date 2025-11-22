@@ -23,7 +23,7 @@ def _load_movie_cache() -> List[Movie]:
     """
     global _MOVIE_CACHE, _NEXT_MOVIE_ID
     if _MOVIE_CACHE is None:
-        movie_dicts = _base_load_all(MOVIE_DATA_PATH)
+        movie_dicts = _baseLoadAll(MOVIE_DATA_PATH)
         _MOVIE_CACHE = [Movie(**movie) for movie in movie_dicts]
 
         maxId = getMaxMovieId(_MOVIE_CACHE)

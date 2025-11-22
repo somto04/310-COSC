@@ -47,40 +47,6 @@ def sampleMovieData():
 def sampleMoviesList(sampleMovieData):
     return [
         sampleMovieData,
-        {
-            "id": 2,
-            "title": "The Matrix",
-            "movieIMDbRating": 8.7,
-            "movieGenres": ["Action", "Sci-Fi"],
-            "directors": ["Lana Wachowski", "Lilly Wachowski"],
-            "mainStars": ["Keanu Reeves", "Laurence Fishburne"],
-            "description": "A hacker discovers reality is a simulation",
-            "datePublished": "1999-03-31",
-            "duration": 136
-        },
-        {
-            "id": 3,
-            "title": "The Godfather",
-            "movieIMDbRating": 9.2,
-            "movieGenres": ["Crime", "Drama"],
-            "directors": ["Francis Ford Coppola"],
-            "mainStars": ["Marlon Brando", "Al Pacino"],
-            "description": "A mafia family's power struggles",
-            "datePublished": "1972-03-24",
-            "duration": 175
-        },
-        {
-            "id": 4,
-            "title": "Pulp Fiction",
-            "movieIMDbRating": 8.9,
-            "movieGenres": ["Crime", "Drama"],
-            "directors": ["Quentin Tarantino"],
-            "mainStars": ["John Travolta", "Uma Thurman"],
-            "description": "Interconnected crime stories",
-            "datePublished": "1994-10-14",
-            "duration": 154
-        }
-        sample_movie_data,
         Movie(
             id= 2,
             title= "The Matrix",

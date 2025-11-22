@@ -3,6 +3,7 @@ from fastapi import APIRouter, status, HTTPException, Form, Depends
 from app.routers.auth import getCurrentUser
 from ..schemas.user import User, UserCreate, UserUpdate
 from ..services.userService import listUsers, createUser, deleteUser, updateUser, getUserById
+from fastapi import Body
 
 router = APIRouter(prefix = "/users", tags = ["users"])
 
@@ -22,7 +23,16 @@ def getUsers(page: int = 1, limit: int = 25):
 
 
 @router.post("", response_model=User, status_code=201)
-def postUser(payload: UserCreate):
+def createNewUser(payload: UserCreate = Body(
+      example={
+        "username": "gamu123",
+        "firstName": "Gamu",
+        "lastName": "Mhere",
+        "age": 20,
+        "email": "gamu@example.com",
+        "pw": "MyPassword123!"
+      }
+)):
     return createUser(payload)
 
 @router.get("/{userId}", response_model = User)
@@ -30,7 +40,7 @@ def getUser(userId: int):
     return getUserById(userId)
 
 @router.put("/{userId}", response_model = User)
-def putUser(userId: int, payload: UserUpdate):
+def updatedUser(userId: int, payload: UserUpdate):
     return updateUser(userId, payload)
 
 @router.delete("/{userId}", status_code=status.HTTP_204_NO_CONTENT)

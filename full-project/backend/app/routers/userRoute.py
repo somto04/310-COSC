@@ -24,7 +24,7 @@ def getUsers(page: int = 1, limit: int = 25):
 
 @router.post("", response_model=User, status_code=201)
 def createNewUser(payload: UserCreate = Body(
-      example={
+      examples={
         "username": "username123",
         "firstName": "user",
         "lastName": "name",

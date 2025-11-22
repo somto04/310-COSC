@@ -92,8 +92,23 @@ def test_getAllUsers(mockList, client, sampleUsers):
     response = client.get("/users")
     assert response.status_code == 200
     data = response.json()
+    
     assert len(data) == 2
     assert data[0]["username"] == "alicej"
+    assert len(data) == 2
+    assert data[0]["id"] == 1
+    assert data[0]["username"] == "alicej"
+    assert data[0]["firstName"] == "Alice"
+    assert data[0]["isBanned"] is False
+
+    # SafeUser check - sensitive fields should not be present
+    for user in data:
+        assert "email" not in user
+        assert "pw" not in user
+        assert "age" not in user
+        assert "lastName" not in user
+        assert "role" not in user
+        assert "penalties" not in user
     mockList.assert_called_once()
     
 @patch("app.routers.userRoute.createUser")

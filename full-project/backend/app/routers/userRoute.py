@@ -4,6 +4,7 @@ from app.routers.auth import getCurrentUser
 from ..schemas.user import User, UserCreate, UserUpdate, SafeUser
 from ..services.userService import listUsers, createUser, deleteUser, updateUser, getUserById
 from fastapi import Body
+from ..schemas.role import Role
 
 router = APIRouter(prefix = "/users", tags = ["users"])
 
@@ -60,7 +61,7 @@ def updatedUser(userId: int, payload: UserUpdate= Body(
 @router.delete("/{userId}", status_code=status.HTTP_204_NO_CONTENT)
 def removeUser(userId: int, currentUser = Depends(getCurrentUser)):
 
-    if currentUser.role != "admin":
+    if currentUser.role != Role.ADMIN:
         raise HTTPException(status_code=403, detail="Not authorized to delete users.")
     
     deleteUser(userId)

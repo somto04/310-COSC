@@ -44,6 +44,7 @@ Username = Annotated[
         max_length=MAX_USERNAME_LENGTH,
         pattern=r"^[A-Za-z0-9_.-]+$",
     ),
+    
 ]
 Password = Annotated[
     str,
@@ -144,6 +145,7 @@ class UserCreate(BaseModel):
         ...,
         description=f"Password with at least one uppercase letter, one lowercase letter, one digit, and {MIN_PASSWORD_LENGTH}-{MAX_PASSWORD_LENGTH} characters",
     )
+    
 
     @field_validator("age")
     @classmethod
@@ -244,3 +246,9 @@ class CurrentUser(BaseModel):
     id: int
     username: Username
     role: Role
+
+class SafeUser(BaseModel):
+    id: int
+    username: str
+    firstName: str
+    isBanned: bool

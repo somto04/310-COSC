@@ -1,13 +1,13 @@
 from typing import List
 from fastapi import APIRouter, status, HTTPException, Form, Depends
 from app.routers.auth import getCurrentUser
-from ..schemas.user import User, UserCreate, UserUpdate
+from ..schemas.user import User, UserCreate, UserUpdate, SafeUser
 from ..services.userService import listUsers, createUser, deleteUser, updateUser, getUserById
 from fastapi import Body
 
 router = APIRouter(prefix = "/users", tags = ["users"])
 
-@router.get("", response_model=List[User])
+@router.get("", response_model=List[SafeUser])
 def getUsers(page: int = 1, limit: int = 25):
     if page < 1:
         page = 1
@@ -24,7 +24,7 @@ def getUsers(page: int = 1, limit: int = 25):
 
 @router.post("", response_model=User, status_code=201)
 def createNewUser(payload: UserCreate = Body(
-      examples={
+      example={
         "username": "username123",
         "firstName": "user",
         "lastName": "name",
@@ -35,12 +35,26 @@ def createNewUser(payload: UserCreate = Body(
 )):
     return createUser(payload)
 
-@router.get("/{userId}", response_model = User)
+@router.get("/{userId}", response_model = SafeUser)
 def getUser(userId: int):
     return getUserById(userId)
 
 @router.put("/{userId}", response_model = User)
-def updatedUser(userId: int, payload: UserUpdate):
+def updatedUser(userId: int, payload: UserUpdate= Body(
+      example={
+        "username": "username123",
+        "firstName": "user",
+        "lastName": "name",
+        "age": 20,
+        "email": "user@example.com",
+        "pw": "MyPassword123!"
+      }), currentUser = Depends(getCurrentUser)):
+     # Only the owner can update their own info
+    if currentUser.id != userId:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You are not allowed to update this account."
+        )
     return updateUser(userId, payload)
 
 @router.delete("/{userId}", status_code=status.HTTP_204_NO_CONTENT)

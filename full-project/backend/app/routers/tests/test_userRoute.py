@@ -138,8 +138,13 @@ def test_updateUser(mockUpdate, client, sampleUsers, updatedUserPayload):
     mockUpdate.assert_called_once_with(1, UserUpdate(**updatedUserPayload))
 
 @patch("app.routers.userRoute.deleteUser")
-def test_deleteUser(mockDelete, client):
-    """Test DELETE /users/{id} deletes a user"""
+def test_deleteUser(mockDelete, client, sampleUsers):
+    """Test DELETE /users/{id} admin only deletes a user"""
+    from app.routers.auth import getCurrentUser
+    
+    adminModel = User(**sampleUsers[1])
+    client.app.dependency_overrides[getCurrentUser] = lambda: adminModel
+
     mockDelete.return_value = None
     response = client.delete("/users/1")
     assert response.status_code == 204

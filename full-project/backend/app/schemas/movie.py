@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field, model_validator, Field, AliasChoices
 from typing import List, Optional
 from decimal import Decimal
-from datetime import date
+from datetime import date, datetime
 
 EARLIEST_FILM_YEAR = 1888  # first known motion picture release year
 LATEST_REASONABLE_YEAR = 2100

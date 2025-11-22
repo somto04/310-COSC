@@ -25,11 +25,11 @@ def getUsers(page: int = 1, limit: int = 25):
 @router.post("", response_model=User, status_code=201)
 def createNewUser(payload: UserCreate = Body(
       example={
-        "username": "gamu123",
-        "firstName": "Gamu",
-        "lastName": "Mhere",
+        "username": "username123",
+        "firstName": "user",
+        "lastName": "name",
         "age": 20,
-        "email": "gamu@example.com",
+        "email": "user@example.com",
         "pw": "MyPassword123!"
       }
 )):
@@ -44,7 +44,11 @@ def updatedUser(userId: int, payload: UserUpdate):
     return updateUser(userId, payload)
 
 @router.delete("/{userId}", status_code=status.HTTP_204_NO_CONTENT)
-def removeUser(userId: int):
+def removeUser(userId: int, currentUser = Depends(getCurrentUser)):
+
+    if currentUser.role != "admin":
+        raise HTTPException(status_code=403, detail="Not authorized to delete users.")
+    
     deleteUser(userId)
     return None
 

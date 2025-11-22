@@ -30,6 +30,7 @@ def client(app):
 
 @pytest.fixture
 def sampleMovieData():
+def sampleMovieData():
     return Movie(
         id= 1,
         title= "Inception",
@@ -88,8 +89,8 @@ def sampleMoviesList(sampleMovieData):
 class TestMovieServiceUnit:
 
     @patch('app.services.movieService.loadMovies')
-    def test_list_movies_returns_all_movies(self, mock_load, sample_movies_list):
-        mock_load.return_value = sample_movies_list
+    def test_list_movies_returns_all_movies(self, mockLoad, sample_movies_list):
+        mockLoad.return_value = sample_movies_list
         from app.services.movieService import listMovies
 
         result = listMovies()
@@ -154,7 +155,7 @@ class TestMovieServiceUnit:
         assert result.title == "Inception (Director's Cut)"
         assert result.movieIMDbRating == Decimal("9.0")
         assert result.duration == 148
-        mock_save.assert_called_once()
+        mockSave.assert_called_once()
 
     @patch('app.services.movieService.loadMovies')
     def test_searchMovieByTitle(self, mockLoad, sampleMoviesList):
@@ -223,8 +224,8 @@ class TestMovieRouterIntegration:
         assert response.json()["detail"] == "Movie not found"
 
     @patch('app.routers.movieRoute.searchMovie')
-    def test_searchMoviesWithQuery(self, mockSearch, client, sampleMovieData):
-        mockSearch.return_value = [sampleMovieData]
+    def test_searchMovieWithQuery(self, mockSearch, client, sampleMoviesList):
+        mockSearch.return_value = [sampleMoviesList]
 
         response = client.get("/movies/search?query=inception")
         data = response.json()

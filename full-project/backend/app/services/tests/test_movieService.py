@@ -32,8 +32,8 @@ sampleMovies = [
 
 @pytest.fixture(autouse=True)
 def mockRepo(monkeypatch):
-    monkeypatch.setattr(movieService, "loadMovies", lambda: [m.model_copy() for m in sampleMovies.copy()])
-    monkeypatch.setattr(movieService, "saveMovies", lambda data: None) 
+    monkeypatch.setattr(movieService, "loadMovies", lambda: [movie.model_copy() for movie in sampleMovies.copy()])
+    monkeypatch.setattr(movieService, "saveMovies", lambda data: None)
 
 
 def test_listMovies():

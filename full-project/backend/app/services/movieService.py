@@ -4,20 +4,6 @@ from ..schemas.movie import Movie, MovieUpdate, MovieCreate
 from ..repos.movieRepo import loadMovies, saveMovies, getNextMovieId
 
 
-
-# # Helpers to work with models
-# def loadMovies() -> List[Movie]:
-#     movieDataList = loadMovies()  # list of dicts from the repo
-#     movies: List[Movie] = [Movie(**movieData) for movieData in movieDataList]
-#     return movies
-
-
-# def saveMovies(movies: List[Movie]) -> None:
-#     movieDataList = [movie.model_dump() for movie in movies]
-#     saveMovies(movieDataList)
-
-
-
 def listMovies() -> List[Movie]:
     """ Lists all movies currently stored """
     return loadMovies()
@@ -99,7 +85,7 @@ def getMovieByFilter(
     return filteredMovies
 
 
-def getMovieById(movieId: int | str) -> Movie:
+def getMovieById(movieId: int) -> Movie:
     """
     Retrieves a movie by its ID.
     

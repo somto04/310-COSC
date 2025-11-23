@@ -53,8 +53,20 @@ def requireAdmin(currentUser: CurrentUser = Depends(getCurrentUser)) -> CurrentU
 
 @router.post("/token")
 def login(
-    username: Annotated[Username, Form(...)],
-    password: Annotated[Password, Form(...)],
+   username: Annotated[
+        Username,
+        Form(
+            ...,
+            examples=["testuser"]
+        )
+    ],
+    password: Annotated[
+        Password,
+        Form(
+            ...,
+            examples=["Password123!"]
+        )
+    ],
 ):
     """
     Logs in user and blocks banned users before their password is validated.

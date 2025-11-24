@@ -92,10 +92,12 @@ def markReviewInappropriate(reviewId: int, currentAdmin: CurrentUser = Depends(r
     """Mark a review as inappropriate and penalize the user."""
     reviewList, review = getReviewById(reviewId)
 
-    review.flagged = True
+    review.flagged = True   
+    deleteReview(reviewId)
     saveReviews(reviewList)
 
     updatedUser = incrementPenaltyForUser(review.userId)
+
 
     return AdminFlagResponse(
         message="Review flagged and user penalized",

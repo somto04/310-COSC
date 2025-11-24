@@ -23,7 +23,7 @@ def getFlaggedReviews() -> List[Review]:
 def getReviewById(reviewId: int):
     """Return full list and the review object for the given ID."""
     reviewList = loadReviews()
-    review = next((r for r in reviewList if r.id == reviewId), None)
+    review = next((review for review in reviewList if review.id == reviewId), None)
     if review is None:
         raise HTTPException(404, "Review not found")
     return reviewList, review

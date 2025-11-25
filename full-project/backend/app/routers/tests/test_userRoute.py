@@ -128,6 +128,9 @@ def test_updateUser(mockUpdate, client, sampleUsers, updatedUserPayload):
     updatedUser = sampleUsers[0].copy()
     updatedUser.update(updatedUserPayload)
     mockUpdate.return_value = updatedUser
+    # mock getCurrentUser to return the user being updated
+    from app.routers.auth import getCurrentUser
+    client.app.dependency_overrides[getCurrentUser] = lambda: User(**sampleUsers[0])
     response = client.put("/users/1", json=updatedUserPayload)
     assert response.status_code == 200
     data = response.json()

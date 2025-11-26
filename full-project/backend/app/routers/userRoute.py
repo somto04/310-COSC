@@ -5,7 +5,7 @@ from ..schemas.user import User, UserCreate, UserUpdate, SafeUser
 from ..services.userService import listUsers, createUser, deleteUser, updateUser, getUserById
 from fastapi import Body
 from ..schemas.role import Role
-from ..repos.movieRepo import loadAll
+from ..repos.movieRepo import loadMovies
 
 router = APIRouter(prefix = "/users", tags = ["users"])
 
@@ -95,7 +95,7 @@ def getUserWatchlist(userId: int, currentUser = Depends(getCurrentUser)):
         List of movie ids that the user has added to their watchlist
     """
     user = getUserById(userId)
-    movies = loadAll()
+    movies = loadMovies()
     if currentUser.id != userId:
         raise notOwnerError("You are not authorised to view this users watch list")
     moviesToWatch = [movies[movieId] for movieId in user["watchlist"] if movieId in movies]

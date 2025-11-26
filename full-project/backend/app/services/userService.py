@@ -106,8 +106,7 @@ def getUserById(userId: int) -> User:
     for user in users:
         if user.id == userId:
             return user
-    raise HTTPException(status_code=404, detail=f"User '{userId}' not found")
-
+    raise UserNotFoundError(f"User '{userId}' not found")
 
 def getUserByUsername(username: str) -> User | None:
     """

@@ -194,6 +194,5 @@ def test_deleteUserSuccess(mockLoad, mockSave, fakeUsers):
 @patch("app.services.userService.loadUsers")
 def test_deleteUserNotFound(mockLoad, mockSave, fakeUsers):
     mockLoad.return_value = fakeUsers
-    with pytest.raises(HTTPException) as exc:
+    with pytest.raises(userService.UserNotFoundError):
         userService.deleteUser(999)
-    assert exc.value.status_code == 404

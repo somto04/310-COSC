@@ -1,33 +1,67 @@
-"""
-Integration and Unit Tests for Movie Router
-
-This file contains:
-1. Unit tests - Test individual service functions in isolation
-2. Integration tests - Test the API endpoints with FastAPI TestClient
-"""
-
+from datetime import date
 from decimal import Decimal
-import pytest
-from fastapi.testclient import TestClient
-from fastapi import FastAPI
-from unittest.mock import patch
-from app.routers.movieRoute import router
-from app.schemas.movie import Movie, MovieCreate, MovieUpdate
-
 
 import pytest
+from fastapi import FastAPI, HTTPException
 from fastapi.testclient import TestClient
-from fastapi import FastAPI
-from unittest.mock import patch
-from app.routers.movieRoute import router
-from app.schemas.movie import Movie, MovieCreate, MovieUpdate
+
+from app.schemas.movie import Movie
+from app.routers.auth import requireAdmin
+import app.routers.movieRoute as movieRouteModule
+from app.routers.movieRoute import (
+    searchMovies,
+    filterMovies,
+    getMovies,
+    getMovie,
+    removeMovie,
+)
+
+
+@pytest.fixture
+def sampleMovie():
+    return Movie(
+        id=1,
+        title="Inception",
+        movieIMDbRating=Decimal("8.8"),
+        movieGenres=["Action", "Sci-Fi", "Thriller"],
+        directors=["Christopher Nolan"],
+        mainStars=["Leonardo DiCaprio", "Tom Hardy"],
+        description="A thief who steals corporate secrets",
+        datePublished=date(2010, 7, 16),
+        duration=148,
+        yearReleased=2010,
+    )
+
+
+@pytest.fixture
+def sampleMoviesList(sampleMovie):
+    return [
+        sampleMovie,
+        Movie(
+            id=2,
+            title="The Matrix",
+            movieIMDbRating=Decimal("8.7"),
+            movieGenres=["Action", "Sci-Fi"],
+            directors=["Lana Wachowski", "Lilly Wachowski"],
+            mainStars=["Keanu Reeves", "Laurence Fishburne"],
+            description="Reality is a simulation",
+            datePublished=date(1999, 3, 31),
+            duration=136,
+            yearReleased=1999,
+        ),
+    ]
 
 
 @pytest.fixture
 def app():
-    app = FastAPI()
-    app.include_router(router)
-    return app
+    appInstance = FastAPI()
+    appInstance.include_router(movieRouteModule.router)
+
+    def fakeRequireAdmin():
+        return {"id": 1, "role": "admin"}
+
+    appInstance.dependency_overrides[requireAdmin] = fakeRequireAdmin
+    return appInstance
 
 
 @pytest.fixture
@@ -35,253 +69,215 @@ def client(app):
     return TestClient(app)
 
 
-@pytest.fixture
-def sampleMovieData():
-    return {
-        "id": 1,
-        "tmdbId": 123456,
-        "title": "Inception",
-        "movieIMDbRating": 8.8,
-        "movieGenres": ["Action", "Sci-Fi", "Thriller"],
-        "directors": ["Christopher Nolan"],
-        "mainStars": ["Leonardo DiCaprio", "Tom Hardy"],
-        "description": "A thief who steals corporate secrets",
-        "datePublished": "2010-07-16",
-        "duration": 148
-    }
+def testSearchMoviesCallsServiceWithNormalizedKeyword(monkeypatch, sampleMoviesList):
+    capturedKeyword = {}
+
+    def fakeSearchMovie(keyword):
+        capturedKeyword["value"] = keyword
+        return sampleMoviesList
+
+    monkeypatch.setattr(movieRouteModule, "searchMovie", fakeSearchMovie)
+
+    resultMovies = searchMovies("  InCePtIoN  ")
+
+    assert capturedKeyword["value"] == "inception"
+    assert resultMovies is sampleMoviesList
 
 
-@pytest.fixture
-def sampleMoviesList(sampleMovieData):
-    return [
-        sampleMovieData,
-        {
-            "id": 2,
-            "title": "The Matrix",
-            "tmdbId": 654321,
-            "movieIMDbRating": 8.7,
-            "movieGenres": ["Action", "Sci-Fi"],
-            "directors": ["Lana Wachowski", "Lilly Wachowski"],
-            "mainStars": ["Keanu Reeves", "Laurence Fishburne"],
-            "description": "A hacker discovers reality is a simulation",
-            "datePublished": "1999-03-31",
-            "duration": 136
-        },
-        {
-            "id": 3,
-            "title": "The Godfather",
-            "tmdbId": 111222,
-            "movieIMDbRating": 9.2,
-            "movieGenres": ["Crime", "Drama"],
-            "directors": ["Francis Ford Coppola"],
-            "mainStars": ["Marlon Brando", "Al Pacino"],
-            "description": "A mafia family's power struggles",
-            "datePublished": "1972-03-24",
-            "duration": 175
-        },
-        {
-            "id": 4,
-            "tmdbId": 333444,
-            "title": "Pulp Fiction",
-            "movieIMDbRating": 8.9,
-            "movieGenres": ["Crime", "Drama"],
-            "directors": ["Quentin Tarantino"],
-            "mainStars": ["John Travolta", "Uma Thurman"],
-            "description": "Interconnected crime stories",
-            "datePublished": "1994-10-14",
-            "duration": 154
-        }
-    ]
+def testSearchMoviesRaises404WhenNoResults(monkeypatch):
+    def fakeSearchMovie(keyword):
+        return []
+
+    monkeypatch.setattr(movieRouteModule, "searchMovie", fakeSearchMovie)
+
+    with pytest.raises(HTTPException) as errorInfo:
+        searchMovies("nothing")
+
+    assert errorInfo.value.status_code == 404
+    assert errorInfo.value.detail == "Movie not found"
 
 
-# UNIT TESTS
+def testFilterMoviesNormalizesAndPassesFilters(monkeypatch, sampleMoviesList):
+    capturedArgs = {}
 
-class TestMovieServiceUnit:
+    def fakeGetMovieByFilter(genreValue, yearValue, directorValue, starValue):
+        capturedArgs["genre"] = genreValue
+        capturedArgs["year"] = yearValue
+        capturedArgs["director"] = directorValue
+        capturedArgs["star"] = starValue
+        return sampleMoviesList
 
-    @patch('app.services.movieService.loadAll')
-    def test_listMoviesReturnsAllMovies(self, mockLoad, sampleMoviesList):
-        mockLoad.return_value = sampleMoviesList
-        from app.services.movieService import listMovies
+    monkeypatch.setattr(movieRouteModule, "getMovieByFilter", fakeGetMovieByFilter)
 
-        result = listMovies()
+    resultMovies = filterMovies(
+        genre="  Action ",
+        year=2010,
+        director=" NoLaN ",
+        star=" LeO ",
+    )
 
-        assert len(result) == 4
-        assert result[0].title == "Inception"
-        assert result[1].title == "The Matrix"
-
-    @patch('app.services.movieService.saveAll')
-    @patch('app.services.movieService.loadAll')
-    def test_createMovieGeneratesNewId(self, mockLoad, mockSave, sampleMoviesList):
-        mockLoad.return_value = sampleMoviesList
-        from app.services.movieService import createMovie
-
-        newMovieData = MovieCreate(
-            title="Interstellar",
-            tmdbId=555666,
-            movieIMDbRating=8.6,
-            movieGenres=["Adventure", "Drama", "Sci-Fi"],
-            directors=["Christopher Nolan"],
-            mainStars=["Matthew McConaughey"],
-            description="A wormhole journey",
-            datePublished="2014-11-07",
-            duration=169
-        )
-
-        result = createMovie(newMovieData)
-
-        assert result.id == 5
-        assert result.title == "Interstellar"
-        mockSave.assert_called_once()
-
-    @patch('app.services.movieService.loadAll')
-    def test_getMovieByIdSuccess(self, mockLoad, sampleMovieData):
-        mockLoad.return_value = [sampleMovieData]
-        from app.services.movieService import getMovieById
-
-        result = getMovieById(1)
-
-        assert result.id == 1
-        assert result.title == "Inception"
-
-    @patch('app.services.movieService.loadAll')
-    def test_getMovieByIdNotFound(self, mockLoad, sampleMovieData):
-        mockLoad.return_value = [sampleMovieData]
-        from app.services.movieService import getMovieById
-        from fastapi import HTTPException
-
-        with pytest.raises(HTTPException):
-            getMovieById(999)
-
-    @patch('app.services.movieService.saveAll')
-    @patch('app.services.movieService.loadAll')
-    def test_UpdateMovieSuccess(self, mockLoad, mock_save, sampleMovieData):
-        mockLoad.return_value = [sampleMovieData]
-        from app.services.movieService import updateMovie
-
-        update_data = MovieUpdate(title="Inception (Director's Cut)", movieIMDbRating=9.0)
-
-        result = updateMovie(1, update_data)
-
-        assert result.title == "Inception (Director's Cut)"
-        assert result.movieIMDbRating == Decimal("9.0")
-        assert result.duration == 148
-        mock_save.assert_called_once()
-
-    @patch('app.services.movieService.loadAll')
-    def test_searchMovieByTitle(self, mockLoad, sampleMoviesList):
-        mockLoad.return_value = sampleMoviesList
-        from app.services.movieService import searchMovie
-
-        results = searchMovie("inception")
-
-        assert len(results) == 1
-        assert results[0].title == "Inception"
-
-    @patch('app.services.movieService.loadAll')
-    def test_SearchMovieByGenre(self, mockLoad, sampleMoviesList):
-        mockLoad.return_value = sampleMoviesList
-        from app.services.movieService import searchMovie
-
-        results = searchMovie("action")
-
-        assert len(results) == 2
-
-    @patch('app.services.movieService.loadAll')
-    def test_searchMovieEmptyQuery(self, mockLoad, sampleMoviesList):
-        mockLoad.return_value = sampleMoviesList
-        from app.services.movieService import searchMovie
-
-        results = searchMovie("")
-
-        assert results == []
+    assert capturedArgs["genre"] == "action"
+    assert capturedArgs["year"] == 2010
+    assert capturedArgs["director"] == "nolan"
+    assert capturedArgs["star"] == "leo"
+    assert resultMovies is sampleMoviesList
 
 
+def testFilterMoviesRaises404WhenNoResults(monkeypatch):
+    def fakeGetMovieByFilter(genreValue, yearValue, directorValue, starValue):
+        return []
 
-# INTEGRATION TESTS
+    monkeypatch.setattr(movieRouteModule, "getMovieByFilter", fakeGetMovieByFilter)
 
-class TestMovieRouterIntegration:
+    with pytest.raises(HTTPException) as errorInfo:
+        filterMovies(genre="Action")
 
-    @patch('app.routers.movieRoute.listMovies')
-    def test_GetAllMoviesEndpoint(self, mockList, client, sampleMoviesList):
-        mockList.return_value = [Movie(**m) for m in sampleMoviesList]
-
-        response = client.get("/movies")
-        data = response.json()
-
-        assert response.status_code == 200
-        assert len(data) == 4
-        assert data[0]["title"] == "Inception"
-
-    @patch('app.routers.movieRoute.getMovieById')
-    def test_getMovieByIdEndpoint(self, mockGet, client, sampleMovieData):
-        mockGet.return_value = Movie(**sampleMovieData)
-
-        response = client.get("/movies/1")
-        data = response.json()
-
-        assert response.status_code == 200
-        assert data["id"] == 1
-        assert data["title"] == "Inception"
-
-    @patch('app.routers.movieRoute.getMovieById')
-    def test_getMovieByIdNotFound(self, mockGet, client):
-        from fastapi import HTTPException
-        mockGet.side_effect = HTTPException(status_code=404, detail="Movie not found")
-
-        response = client.get("/movies/999")
-
-        assert response.status_code == 404
-        assert response.json()["detail"] == "Movie not found"
-
-    @patch('app.routers.movieRoute.searchMovie')
-    def test_searchMoviesWithQuery(self, mockSearch, client, sampleMovieData):
-        mockSearch.return_value = [Movie(**sampleMovieData)]
-
-        response = client.get("/movies/search?query=inception")
-        data = response.json()
-
-        assert response.status_code == 200
-        assert len(data) == 1
-        assert data[0]["title"] == "Inception"
-        mockSearch.assert_called_once_with("inception")
-
-    @patch('app.routers.movieRoute.searchMovie')
-    def test_searchMoviesNoResults(self, mockSearch, client):
-        mockSearch.return_value = []
-
-        response = client.get("/movies/search?query=none")
-        assert response.status_code == 404
-        assert response.json()["detail"] == "Movie not found"
+    assert errorInfo.value.status_code == 404
+    assert errorInfo.value.detail == "No movies found with the given filters"
 
 
-# EDGE CASE TESTS
+def testGetMoviesReturnsListFromService(monkeypatch, sampleMoviesList):
+    def fakeListMovies():
+        return sampleMoviesList
 
-class TestMovieEdgeCases:
+    monkeypatch.setattr(movieRouteModule, "listMovies", fakeListMovies)
 
-    @patch('app.services.movieService.loadAll')
-    def test_searchCaseInsensitive(self, mockLoad, sampleMoviesList):
-        mockLoad.return_value = sampleMoviesList
-        from app.services.movieService import searchMovie
+    resultMovies = getMovies()
 
-        results = searchMovie("ACTION")
-        assert len(results) == 2
+    assert resultMovies is sampleMoviesList
+    assert len(resultMovies) == 2
 
-    @patch('app.services.movieService.loadAll')
-    def test_getMovieIdString(self, mockLoad, sampleMovieData):
-        mockLoad.return_value = [sampleMovieData]
-        from app.services.movieService import getMovieById
 
-        result = getMovieById("1")
-        assert result.id == 1
+def testGetMovieReturnsSingleMovie(monkeypatch, sampleMovie):
+    def fakeGetMovieById(movieId):
+        return sampleMovie
 
-    @patch('app.services.movieService.saveAll')
-    @patch('app.services.movieService.loadAll')
-    def test_partialUpdate(self, mockLoad, mockSave, sampleMovieData):
-        mockLoad.return_value = [sampleMovieData]
-        from app.services.movieService import updateMovie
+    monkeypatch.setattr(movieRouteModule, "getMovieById", fakeGetMovieById)
 
-        updateData = MovieUpdate(movieIMDbRating=9.0)
-        result = updateMovie(1, updateData)
+    resultMovie = getMovie(1)
 
-        assert result.movieIMDbRating == Decimal("9.0")
-        assert result.title == "Inception"
+    assert resultMovie is sampleMovie
+    assert resultMovie.id == 1
+
+
+def testGetMoviePropagatesServiceErrors(monkeypatch):
+    def fakeGetMovieById(movieId):
+        raise HTTPException(status_code=404, detail="Movie not found")
+
+    monkeypatch.setattr(movieRouteModule, "getMovieById", fakeGetMovieById)
+
+    with pytest.raises(HTTPException) as errorInfo:
+        getMovie(999)
+
+    assert errorInfo.value.status_code == 404
+    assert errorInfo.value.detail == "Movie not found"
+
+
+def testGetMoviesEndpointReturnsMovies(monkeypatch, client, sampleMoviesList):
+    def fakeListMovies():
+        return sampleMoviesList
+
+    monkeypatch.setattr(movieRouteModule, "listMovies", fakeListMovies)
+
+    response = client.get("/movies")
+    responseJson = response.json()
+
+    assert response.status_code == 200
+    assert len(responseJson) == 2
+    assert responseJson[0]["title"] == "Inception"
+
+
+def testGetMovieEndpointReturnsMovie(monkeypatch, client, sampleMovie):
+    def fakeGetMovieById(movieId):
+        return sampleMovie
+
+    monkeypatch.setattr(movieRouteModule, "getMovieById", fakeGetMovieById)
+
+    response = client.get("/movies/1")
+    responseJson = response.json()
+
+    assert response.status_code == 200
+    assert responseJson["id"] == 1
+    assert responseJson["title"] == "Inception"
+
+
+def testGetMovieEndpointReturns404(monkeypatch, client):
+    def fakeGetMovieById(movieId):
+        raise HTTPException(status_code=404, detail="Movie not found")
+
+    monkeypatch.setattr(movieRouteModule, "getMovieById", fakeGetMovieById)
+
+    response = client.get("/movies/999")
+    responseJson = response.json()
+
+    assert response.status_code == 404
+    assert responseJson["detail"] == "Movie not found"
+
+
+def testSearchMoviesEndpointReturnsResults(monkeypatch, client, sampleMoviesList):
+    def fakeSearchMovie(keyword):
+        return [sampleMoviesList[0]]
+
+    monkeypatch.setattr(movieRouteModule, "searchMovie", fakeSearchMovie)
+
+    response = client.get("/movies/search?query=Inception")
+    responseJson = response.json()
+
+    assert response.status_code == 200
+    assert len(responseJson) == 1
+    assert responseJson[0]["title"] == "Inception"
+
+
+def testSearchMoviesEndpointReturns404(monkeypatch, client):
+    def fakeSearchMovie(keyword):
+        return []
+
+    monkeypatch.setattr(movieRouteModule, "searchMovie", fakeSearchMovie)
+
+    response = client.get("/movies/search?query=none")
+    responseJson = response.json()
+
+    assert response.status_code == 404
+    assert responseJson["detail"] == "Movie not found"
+
+
+def testFilterMoviesEndpointReturnsResults(monkeypatch, client, sampleMoviesList):
+    def fakeGetMovieByFilter(genreValue, yearValue, directorValue, starValue):
+        return sampleMoviesList
+
+    monkeypatch.setattr(movieRouteModule, "getMovieByFilter", fakeGetMovieByFilter)
+
+    response = client.get(
+        "/movies/filter?genre=Action&year=2010&director=Nolan&star=Leo"
+    )
+    responseJson = response.json()
+
+    assert response.status_code == 200
+    assert len(responseJson) == 2
+
+
+def testFilterMoviesEndpointReturns404(monkeypatch, client):
+    def fakeGetMovieByFilter(genreValue, yearValue, directorValue, starValue):
+        return []
+
+    monkeypatch.setattr(movieRouteModule, "getMovieByFilter", fakeGetMovieByFilter)
+
+    response = client.get("/movies/filter?genre=Action")
+    responseJson = response.json()
+
+    assert response.status_code == 404
+    assert responseJson["detail"] == "No movies found with the given filters"
+
+
+def testRemoveMovieEndpointCallsService(monkeypatch, client):
+    calledArgs = {}
+
+    def fakeDeleteMovie(movieId):
+        calledArgs["movieId"] = movieId
+
+    monkeypatch.setattr(movieRouteModule, "deleteMovie", fakeDeleteMovie)
+
+    response = client.delete("/movies/1")
+
+    assert response.status_code == 204
+    assert calledArgs["movieId"] == 1

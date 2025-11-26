@@ -4,6 +4,7 @@ from app.routers.auth import getCurrentUser
 from ..schemas.user import User, UserCreate, UserUpdate
 from ..services.userService import listUsers, createUser, deleteUser, updateUser, getUserById
 
+
 router = APIRouter(prefix = "/users", tags = ["users"])
 
 @router.get("", response_model=List[User])

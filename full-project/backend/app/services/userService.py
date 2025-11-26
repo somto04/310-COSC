@@ -6,6 +6,17 @@ from ..schemas.role import Role
 from ..repos.userRepo import getNextUserId, loadUsers, saveUsers
 from ..utilities.security import hashPassword, verifyPassword
 
+class UserNotFoundError(Exception):
+    pass
+
+class UsernameTakenError(Exception):
+    pass
+
+class EmailNotFoundError(Exception):
+    pass
+
+class UnauthorizedError(Exception):
+    pass
 
 def isUsernameTaken(
     users: List[User], username: str, *, exclude_user_id: int | None = None
@@ -51,7 +62,7 @@ def createUser(payload: UserCreate) -> User:
         New user (User)
 
     Raises:
-        HTTPException: username already taken
+        Username already taken exception
 
     Expects:
         payload (UserCreate): user creation data is already validated, such as username abiding by constraints
@@ -59,7 +70,7 @@ def createUser(payload: UserCreate) -> User:
     users = loadUsers()
 
     if isUsernameTaken(users, payload.username):
-        raise HTTPException(status_code=409, detail="Username already taken; retry.")
+        raise UsernameTakenError("Username already taken; retry.")
 
     hashedPw = hashPassword(payload.pw)
 
@@ -89,7 +100,7 @@ def getUserById(userId: int) -> User:
         User
 
     Raises:
-        HTTPException: user not found
+        user not found exception
     """
     users = loadUsers()
     for user in users:

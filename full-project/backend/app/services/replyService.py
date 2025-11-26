@@ -1,8 +1,15 @@
 from datetime import datetime
 from ..schemas.reply import Reply, ReplyCreate
 from ..repos.replyRepo import loadReplies, saveReplies, getNextReplyId
+from ..repos.reviewRepo import loadReviews
+from ..services.reviewService import getReviewById
+
+
 
 def listReplies(reviewId: int):
+    """ Lists all replies for a given review """
+    review = getReviewById(reviewId)
+
     replies = loadReplies()
     return [reply for reply in replies if reply.reviewId == reviewId]
 

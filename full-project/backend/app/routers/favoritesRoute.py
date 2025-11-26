@@ -1,7 +1,8 @@
-from fastapi import APIRouter, Depends
-from ..services.favoritesService import addFavorite, removeFavorite, listFavorites
+from fastapi import APIRouter, Depends, HTTPException
+from ..services.favoritesService import addFavorite, removeFavorite, listFavorites, MovieNotFoundError, FavoriteAlreadyExistsError, FavoriteNotFoundError 
 from ..schemas.user import CurrentUser
 from ..routers.authRoute import getCurrentUser
+
 
 router = APIRouter(prefix="/favorites", tags=["Favorites"])
 
@@ -11,9 +12,17 @@ def getAllFavoriteMovies(currentUser: CurrentUser = Depends(getCurrentUser)):
 
 @router.post("/{movieId}")
 def addFavoriteMovies(movieId: int, currentUser: CurrentUser = Depends(getCurrentUser)):
-    return addFavorite(currentUser.id, movieId)
+    try:
+        return addFavorite(currentUser.id, movieId)
+    except MovieNotFoundError as error:
+        raise HTTPException(status_code=404, detail=str(error))
+    except FavoriteAlreadyExistsError as error:
+        raise HTTPException(status_code=409, detail=str(error))
 
 @router.delete("/{movieId}")
 def removeFavoriteMovie(movieId: int, currentUser: CurrentUser = Depends(getCurrentUser)):
-    return removeFavorite(currentUser.id, movieId)
+    try:
+        return removeFavorite(currentUser.id, movieId)
+    except FavoriteNotFoundError as error:
+        raise HTTPException(status_code=404, detail=str(error))
 

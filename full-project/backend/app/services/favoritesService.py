@@ -4,17 +4,33 @@ from ..repos.favoritesRepo import loadFavorites, saveFavorites
 from ..repos.movieRepo import loadMovies
 from ..schemas.favorites import Favorite
 
+class FavoriteError(Exception):
+    """Base class for favorite-related errors."""
+    pass
+
+class MovieNotFoundError(FavoriteError):
+    """Raised when the movie does not exist."""
+    pass
+
+class FavoriteAlreadyExistsError(FavoriteError):
+    """Raised when adding a duplicate favorite."""
+    pass
+
+class FavoriteNotFoundError(FavoriteError):
+    """Raised when removing a favorite that doesn't exist."""
+    pass
+
 def addFavorite(userId: int, movieId: int):
     """Add a movie to user's favorites."""
     favorites = loadFavorites()
     movies = loadMovies()
 
     if not any(movie.id == movieId for movie in movies):
-        raise HTTPException(status_code=404, detail="Movie not found")
+        raise MovieNotFoundError(f"Movie '{movieId}' not found")
 
     # prevent duplicate
     if any(favorite.userId == userId and favorite.movieId == movieId for favorite in favorites):
-        return {"message": "Already favorited"}
+        raise FavoriteAlreadyExistsError(f"Movie '{movieId}' already in favorites")
 
     favorites.append(Favorite(userId=userId, movieId=movieId))
     saveFavorites(favorites)
@@ -25,7 +41,10 @@ def removeFavorite(userId: int, movieId: int):
     Remove a movie from user's favorites.
     """
     favorites = loadFavorites()
-
+    
+    if not any(f.userId == userId and f.movieId == movieId for f in favorites):
+        raise FavoriteNotFoundError(f"Favorite '{movieId}' not found for current user")
+    
     newList = [
         favorite for favorite in favorites
         if not (favorite.userId == userId and favorite.movieId == movieId)

@@ -6,7 +6,6 @@ from ..services.userService import listUsers, createUser, deleteUser, updateUser
 from fastapi import Body
 from ..schemas.role import Role
 from ..repos.movieRepo import loadAll
-from ..repos.movieRepo import loadAll
 
 router = APIRouter(prefix = "/users", tags = ["users"])
 

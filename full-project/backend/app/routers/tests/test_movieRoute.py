@@ -6,7 +6,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.testclient import TestClient
 
 from app.schemas.movie import Movie
-from app.routers.auth import requireAdmin
+from app.routers.authRoute import requireAdmin
 import app.routers.movieRoute as movieRouteModule
 from app.routers.movieRoute import (
     searchMovies,

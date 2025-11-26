@@ -8,7 +8,6 @@ from ..services.reviewService import getReviewById
 
 def listReplies(reviewId: int):
     """ Lists all replies for a given review """
-    review = getReviewById(reviewId)
 
     replies = loadReplies()
     return [reply for reply in replies if reply.reviewId == reviewId]

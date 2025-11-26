@@ -4,6 +4,8 @@ from unittest.mock import patch, MagicMock
 from app.services import reviewService
 from ...schemas.movie import Movie
 from app.schemas.review import Review, ReviewCreate, ReviewUpdate
+from app.services.reviewService import ReviewNotFoundError
+from ...repos import reviewRepo
 
 @pytest.fixture
 def fakeReviews():
@@ -44,6 +46,9 @@ def fakeMovies():
 @patch("app.services.reviewService.movieRepo.loadMovies")
 def test_searchByMovieId(mockMovieLoad, mockReviewLoad, fakeReviews, fakeMovies):
     """this test checks searching reviews by movie ID """
+    reviewRepo._REVIEW_CACHE = None
+    reviewRepo._NEXT_REVIEW_ID = None
+
     mockReviewLoad.return_value = fakeReviews
     mockMovieLoad.return_value = fakeMovies
 
@@ -102,9 +107,8 @@ def test_getReviewByIdFound(mockLoad, fakeReviews):
 def test_getReviewByIdNotFound(mockLoad):
     """this test checks handling when a review ID is not found and throws a 404 error"""
     mockLoad.return_value = []
-    with pytest.raises(HTTPException) as exc:
+    with pytest.raises(ReviewNotFoundError) as exc:
         reviewService.getReviewById(999)
-    assert exc.value.status_code == 404
 
 @patch("app.services.reviewService.saveReviews")
 @patch("app.services.reviewService.loadReviews")
@@ -136,7 +140,7 @@ def test_updateReviewNotFound(mockLoad, mockSave):
         rating=10,
     )
 
-    with pytest.raises(HTTPException):
+    with pytest.raises(ReviewNotFoundError):
         reviewService.updateReview(999, payload)
 
 
@@ -153,6 +157,5 @@ def test_deleteReviewSuccess(mockLoad, mockSave, fakeReviews):
 @patch("app.services.reviewService.loadReviews")
 def test_deleteReviewNotFound(mockLoad, mockSave, fakeReviews):
     mockLoad.return_value = fakeReviews
-    with pytest.raises(HTTPException) as exc:
+    with pytest.raises(ReviewNotFoundError) as exc:
         reviewService.deleteReview(999)
-    assert exc.value.status_code == 404

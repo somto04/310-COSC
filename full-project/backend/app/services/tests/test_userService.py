@@ -6,6 +6,7 @@ from app.services import userService
 from app.schemas.user import User, UserCreate, UserUpdate
 from app.schemas.role import Role
 from app.utilities.security import verifyPassword
+from app.services.userService import UserNotFoundError, UsernameTakenError, EmailTakenError
 
 
 # these fixtures provide mock user data for testing that follows our user schema
@@ -41,7 +42,7 @@ def test_listUsers(mockLoad, fakeUsers):
     mockLoad.return_value = fakeUsers
     result = userService.listUsers()
     assert len(result) == 2
-    assert all(isinstance(u, User) for u in result)
+    assert all(isinstance(user, User) for user in result)
 
 
 # this tests that a new user is created and saved correctly according to our schema

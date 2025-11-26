@@ -148,20 +148,6 @@ def test_getUserById(mockGet, client, sampleUsers):
     
     mockGet.assert_called_once_with(1)
 
-@patch("app.routers.userRoute.getUserById")
-def test_getUserWatchlist(mockGet, client, sampleUsers):
-    """Test GET /users/{userId}/watchlist returns the correct watchlist"""
-
-    user = sampleUsers[1]
-    mockGet.return_value = user
-    response = client.get(f"/users/{user['id']}/watchlist")
-
-    assert response.status_code == 200
-    data = response.json()
-    assert data["watchlist"] == user["watchlist"]
-
-    mockGet.assert_called_once_with(user["id"])
-
 
 @patch("app.routers.userRoute.updateUser")
 def test_updateUser(mockUpdate, client, sampleUsers, updatedUserPayload):
@@ -220,3 +206,27 @@ def test_getUserProfile(sampleUsers):
     assert data["isOwner"] is True    
 
     main_app.app.dependency_overrides = {} 
+
+@patch("app.routers.userRoute.getUserById")
+@patch("app.routers.userRoute.loadAll")
+def test_getUserWatchlist(mockLoad, mockGet, client, sampleUsers):
+    """Test GET /users/{userId}/watchlist returns the correct watchlist"""
+
+    user = sampleUsers[1]
+    mockGet.return_value = user
+
+    mockLoad.return_value = {
+        1: {"id": 1, "title": "Movie1"},
+        2: {"id": 2, "title": "Movie2"}
+    }
+
+    response = client.get(f"/users/{user['id']}/watchlist")
+
+    assert response.status_code == 200
+    data = response.json()
+    
+    expected = [mockLoad.return_value[mid] for mid in user["watchlist"]]
+    assert data["watchlist"] == expected
+
+    mockGet.assert_called_once_with(user["id"])
+    mockLoad.assert_called_once()

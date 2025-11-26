@@ -5,6 +5,7 @@ from ..schemas.user import User, UserCreate, UserUpdate, SafeUser
 from ..services.userService import listUsers, createUser, deleteUser, updateUser, getUserById
 from fastapi import Body
 from ..schemas.role import Role
+from ..repos.movieRepo import loadAll
 
 router = APIRouter(prefix = "/users", tags = ["users"])
 
@@ -91,4 +92,6 @@ def getUserWatchlist(userId: int):
         List of movie ids that the user has added to their watchlist
     """
     user = getUserById(userId)
-    return {"watchlist": user["watchlist"]}
+    movies = loadAll()
+    moviesToWatch = [movies[movieId] for movieId in user["watchlist"] if movieId in movies]
+    return {"watchlist": moviesToWatch}

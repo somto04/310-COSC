@@ -16,6 +16,7 @@ def _getMaxMovieId(movies: List[Movie]) -> int:
 def _loadMovieCache() -> List[Movie]:
     """
     Load movies from the data file into a cache.
+
     Loads the movies only once and caches them for future calls.
     Returns:
         List[Movie]: A list of movies.
@@ -32,6 +33,7 @@ def _loadMovieCache() -> List[Movie]:
 def getNextMovieId() -> int:
     """
     Get the next available movie ID.
+
     Returns:
         int: The next movie ID.
     """

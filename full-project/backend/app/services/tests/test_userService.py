@@ -120,9 +120,8 @@ def test_createUserUsernameTaken(mockLoad, fakeUsers):
         pw="SomePassword123",
     )
 
-    with pytest.raises(HTTPException) as exc:
+    with pytest.raises(userService.UsernameTakenError):
         userService.createUser(payload)
-    assert exc.value.status_code == 409
 
 
 # this tests that a user can be retrieved by their ID correctly

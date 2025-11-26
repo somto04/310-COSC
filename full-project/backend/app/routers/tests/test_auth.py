@@ -75,7 +75,7 @@ def test_loginSuccess(monkeypatch):
     """Valid username/password, non-banned user → 200 + success message."""
     user = makeUser()
 
-    monkeypatch.setattr(auth, "getUserByUsername", lambda username: user)
+    monkeypatch.setattr(authRoute, "getUserByUsername", lambda username: user)
 
     response = client.post(
         "/token",
@@ -92,7 +92,7 @@ def test_loginInvalidPassword(monkeypatch):
     """Wrong password → 401 from router validatePassword."""
     user = makeUser()
 
-    monkeypatch.setattr(auth, "getUserByUsername", lambda username: user)
+    monkeypatch.setattr(authRoute, "getUserByUsername", lambda username: user)
 
     response = client.post(
         "/token",
@@ -105,7 +105,7 @@ def test_loginInvalidPassword(monkeypatch):
 
 def test_loginUserDoesNotExist(monkeypatch):
     """No such user → 401 from ensureUserExists."""
-    monkeypatch.setattr(auth, "getUserByUsername", lambda username: None)
+    monkeypatch.setattr(authRoute, "getUserByUsername", lambda username: None)
 
     response = client.post(
         "/token",
@@ -120,7 +120,7 @@ def test_loginBannedUser(monkeypatch):
     """Banned user → 403 even if credentials are correct."""
     bannedUser = makeUser(isBanned=True)
 
-    monkeypatch.setattr(auth, "getUserByUsername", lambda username: bannedUser)
+    monkeypatch.setattr(authRoute, "getUserByUsername", lambda username: bannedUser)
 
     response = client.post(
         "/token",
@@ -172,7 +172,7 @@ def test_logoutSuccess(monkeypatch):
     user = makeUser()
     current = makeCurrentUser(user)
 
-    app.dependency_overrides[auth.getCurrentUser] = lambda: current
+    app.dependency_overrides[authRoute.getCurrentUser] = lambda: current
 
     response = client.post("/logout")
 
@@ -187,7 +187,7 @@ def test_logoutSuccess(monkeypatch):
 def test_logoutUnauthorized(monkeypatch):
     """If getCurrentUser fails (no user), logout → 401."""
     # getUserByUsername returns None, so ensureUserExists will raise HTTPException(401)
-    monkeypatch.setattr(auth, "getUserByUsername", lambda token: None)
+    monkeypatch.setattr(authRoute, "getUserByUsername", lambda token: None)
 
     response = client.post(
         "/logout",
@@ -205,7 +205,7 @@ def test_adminDashboardAllowed():
     adminUser = makeUser(role=Role.ADMIN)
     current = makeCurrentUser(adminUser)
 
-    app.dependency_overrides[auth.getCurrentUser] = lambda: current
+    app.dependency_overrides[authRoute.getCurrentUser] = lambda: current
 
     response = client.get("/adminDashboard")
 
@@ -220,7 +220,7 @@ def test_adminDashboardForbidden():
     normalUser = makeUser(role=Role.USER)
     current = makeCurrentUser(normalUser)
 
-    app.dependency_overrides[auth.getCurrentUser] = lambda: current
+    app.dependency_overrides[authRoute.getCurrentUser] = lambda: current
 
     response = client.get("/adminDashboard")
 
@@ -237,7 +237,7 @@ def test_forgotPasswordSuccess(monkeypatch):
     """Existing email → 200 + token returned."""
     user = makeUser()
 
-    monkeypatch.setattr(auth, "getUserByEmail", lambda email: user)
+    monkeypatch.setattr(authRoute, "getUserByEmail", lambda email: user)
 
     # use valid email to satisfy Email Annotated type
     response = client.post("/forgot-password", data={"email": VALID_EMAIL})
@@ -250,7 +250,7 @@ def test_forgotPasswordSuccess(monkeypatch):
 
 def test_forgotPasswordEmailNotFound(monkeypatch):
     """Unknown email → 404."""
-    monkeypatch.setattr(auth, "getUserByEmail", lambda email: None)
+    monkeypatch.setattr(authRoute, "getUserByEmail", lambda email: None)
 
     response = client.post("/forgot-password", data={"email": VALID_EMAIL})
 
@@ -270,7 +270,7 @@ def test_forgotPasswordInvalidEmailFormat():
 
 def test_resetPasswordSuccess(monkeypatch):
     """resetPassword returns True → 200."""
-    monkeypatch.setattr(auth, "resetPassword", lambda token, pw: True)
+    monkeypatch.setattr(authRoute, "resetPassword", lambda token, pw: True)
 
     response = client.post(
         "/reset-password",
@@ -283,7 +283,7 @@ def test_resetPasswordSuccess(monkeypatch):
 
 def test_resetPasswordInvalidOrExpired(monkeypatch):
     """resetPassword returns False → 400."""
-    monkeypatch.setattr(auth, "resetPassword", lambda token, pw: False)
+    monkeypatch.setattr(authRoute, "resetPassword", lambda token, pw: False)
 
     response = client.post(
         "/reset-password",

@@ -2,7 +2,7 @@ from typing import List
 from fastapi import APIRouter, status, HTTPException, Form, Depends
 from app.routers.auth import getCurrentUser
 from ..schemas.user import User, UserCreate, UserUpdate, SafeUser
-from ..services.userService import listUsers, createUser, deleteUser, updateUser, getUserById
+from ..services.userService import listUsers, createUser, deleteUser, updateUser, getUserById, UserNotFoundError, UsernameTakenError, EmailTakenError
 from fastapi import Body
 from ..schemas.role import Role
 
@@ -34,11 +34,17 @@ def createNewUser(payload: UserCreate = Body(
         "pw": "MyPassword123!"
       }
 )):
-    return createUser(payload)
+    try:
+        return createUser(payload)
+    except UsernameTakenError as e:
+        raise HTTPException(status_code=409, detail=str(e))
 
 @router.get("/{userId}", response_model = SafeUser)
 def getUser(userId: int):
-    return getUserById(userId)
+    try:
+        return getUserById(userId)
+    except UserNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
 
 @router.put("/{userId}", response_model = User)
 def updatedUser(userId: int, payload: UserUpdate= Body(
@@ -56,15 +62,23 @@ def updatedUser(userId: int, payload: UserUpdate= Body(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You are not allowed to update this account."
         )
-    return updateUser(userId, payload)
+    try:
+        return updateUser(userId, payload)
+    except UserNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except UsernameTakenError as e:
+        raise HTTPException(status_code=409, detail=str(e))
 
 @router.delete("/{userId}", status_code=status.HTTP_204_NO_CONTENT)
 def removeUser(userId: int, currentUser = Depends(getCurrentUser)):
 
     if currentUser.role != Role.ADMIN:
         raise HTTPException(status_code=403, detail="Not authorized to delete users.")
+    try:
+        deleteUser(userId)
+    except UserNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
     
-    deleteUser(userId)
     return None
 
 @router.get("/userProfile/{userId}")
@@ -76,8 +90,12 @@ def getUserProfile(userId: int, currentUser = Depends(getCurrentUser)):
         User profile.
     
     Raises:
-        HTTPException: If the user doesnt exist.
+        Exception: If the user doesnt exist.
     """
-    user = getUserById(userId)
-    isOwner = currentUser.id == userId
-    return {"user": user, "isOwner": isOwner}
+    try:
+        user = getUserById(userId)
+    except UserNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    else:       
+        isOwner = currentUser.id == userId
+        return {"user": user, "isOwner": isOwner}

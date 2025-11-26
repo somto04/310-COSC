@@ -176,9 +176,8 @@ def test_updateUserNotFound(mockLoad, mockSave):
         pw="NewP@ssw0rd",
     )
 
-    with pytest.raises(HTTPException) as exc:
+    with pytest.raises(userService.UserNotFoundError):
         userService.updateUser(999, payload)
-    assert exc.value.status_code == 404
 
 
 # this tests that a user is deleted correctly

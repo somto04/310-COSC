@@ -1,0 +1,22 @@
+[
+  {
+    "userId": 1,
+    "movieId": 7
+  },
+  {
+    "userId": 1,
+    "movieId": 10
+  },
+  {
+    "userId": 2,
+    "movieId": 4
+  },
+  {
+    "userId": 40919,
+    "movieId": 4
+  },
+  {
+    "userId": 40919,
+    "movieId": 2
+  }
+]

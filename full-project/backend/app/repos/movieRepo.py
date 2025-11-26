@@ -51,7 +51,6 @@ def getNextMovieId() -> int:
 def loadMovies() -> List[Movie]:
     """
     Load all movies from the movies data file.
-
     Returns:
         List[Movie]: A list of movie items.
     """
@@ -61,7 +60,6 @@ def loadMovies() -> List[Movie]:
 def saveMovies(movies: List[Movie]) -> None:
     """
     Save all movies to the movies data file.
-
     Args:
         movies (List[Movie]): A list of movie items to save.
     """

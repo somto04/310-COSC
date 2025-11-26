@@ -4,17 +4,11 @@ from ..repos.replyRepo import loadReplies, saveReplies, getNextReplyId
 from ..repos.reviewRepo import loadReviews
 from ..services.reviewService import getReviewById
 
-class ReviewNotFoundError(Exception):
-    pass
-
 
 
 def listReplies(reviewId: int):
     """ Lists all replies for a given review """
     review = getReviewById(reviewId)
-    if review is None:
-    
-        raise ReviewNotFoundError(f"Review with id {reviewId} not found.")
 
     replies = loadReplies()
     return [reply for reply in replies if reply.reviewId == reviewId]

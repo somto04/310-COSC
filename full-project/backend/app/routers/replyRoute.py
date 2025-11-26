@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from typing import List
 from ..schemas.reply import Reply, ReplyCreate
-from ..services.replyService import listReplies, createReply, ReviewNotFoundError
+from ..services.replyService import listReplies, createReply
 from .auth import getCurrentUser
 from ..schemas.user import CurrentUser
 
@@ -10,10 +10,8 @@ router = APIRouter(prefix="/replies", tags=["replies"])
 @router.get("/{reviewId}", response_model=List[Reply])
 def getReplies(reviewId: int):
     """ Returns all replies that match a reviewId """
-    try:
-        return listReplies(reviewId)
-    except ReviewNotFoundError as e:
-        raise HTTPException(status_code=404, detail=str(e))
+    return listReplies(reviewId)
+
 
 @router.post("", response_model=Reply)
 def postReply(payload: ReplyCreate, currentUser: CurrentUser = Depends(getCurrentUser)):

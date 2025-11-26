@@ -46,9 +46,10 @@ def test_listUsers(mockLoad, fakeUsers):
 
 
 # this tests that a new user is created and saved correctly according to our schema
+@patch("app.services.userService.getNextUserId", return_value=3)
 @patch("app.services.userService.saveUsers")
 @patch("app.services.userService.loadUsers")
-def test_createUser(mockLoad, mockSave, fakeUsers):
+def test_createUser(mockLoad, mockSave, mockGetId, fakeUsers):
     mockLoad.return_value = list(fakeUsers)
 
     payload = UserCreate(
@@ -74,6 +75,7 @@ def test_createUser(mockLoad, mockSave, fakeUsers):
     assert len(savedUsers) == 3 
     assert savedUsers[-1] == newUser
     assert isinstance(savedUsers[-1], User)
+
 
 
 @patch("app.services.userService.saveUsers")

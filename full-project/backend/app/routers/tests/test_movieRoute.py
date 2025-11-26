@@ -39,6 +39,7 @@ def client(app):
 def sampleMovieData():
     return {
         "id": 1,
+        "tmdbId": 123456,
         "title": "Inception",
         "movieIMDbRating": 8.8,
         "movieGenres": ["Action", "Sci-Fi", "Thriller"],
@@ -57,6 +58,7 @@ def sampleMoviesList(sampleMovieData):
         {
             "id": 2,
             "title": "The Matrix",
+            "tmdbId": 654321,
             "movieIMDbRating": 8.7,
             "movieGenres": ["Action", "Sci-Fi"],
             "directors": ["Lana Wachowski", "Lilly Wachowski"],
@@ -68,6 +70,7 @@ def sampleMoviesList(sampleMovieData):
         {
             "id": 3,
             "title": "The Godfather",
+            "tmdbId": 111222,
             "movieIMDbRating": 9.2,
             "movieGenres": ["Crime", "Drama"],
             "directors": ["Francis Ford Coppola"],
@@ -78,6 +81,7 @@ def sampleMoviesList(sampleMovieData):
         },
         {
             "id": 4,
+            "tmdbId": 333444,
             "title": "Pulp Fiction",
             "movieIMDbRating": 8.9,
             "movieGenres": ["Crime", "Drama"],
@@ -113,6 +117,7 @@ class TestMovieServiceUnit:
 
         newMovieData = MovieCreate(
             title="Interstellar",
+            tmdbId=555666,
             movieIMDbRating=8.6,
             movieGenres=["Adventure", "Drama", "Sci-Fi"],
             directors=["Christopher Nolan"],

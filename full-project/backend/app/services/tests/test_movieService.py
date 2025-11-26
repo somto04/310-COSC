@@ -8,6 +8,7 @@ from datetime import date
 sampleMovies = [
     {
         "id": 1,
+        "tmdbId": 123456,
         "title": "Avengers Endgame",
         "movieIMDbRating": 8.4,
         "movieGenres": ["Action", "Adventure"],
@@ -19,6 +20,7 @@ sampleMovies = [
     },
     {
         "id": 2,
+        "tmdbId": 654321,
         "title": "Inception",
         "movieIMDbRating": 8.8,
         "movieGenres": ["Sci-Fi", "Thriller"],
@@ -100,6 +102,7 @@ def test_createMovie():
     movieService.saveAll = fakeSaveAll
 
     payload = MovieCreate(
+        tmdbId=789012,
         title="Testing Movie",
         movieIMDbRating=9.0,
         movieGenres=["Action", "Test"],

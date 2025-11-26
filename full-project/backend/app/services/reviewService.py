@@ -5,6 +5,9 @@ from ..repos.reviewRepo import loadReviews, saveReviews, getNextReviewId
 from ..repos import movieRepo
 from datetime import date
 
+class ReviewNotFoundError():
+    pass
+
 def searchReviews(query: str) -> List[Review]:
     """ Searches reviews by movie title (case-insensitive) or by movie ID 
     
@@ -41,9 +44,6 @@ def createReview(movieId: int, userId: int, payload: ReviewCreate) -> Review:
 
     Returns: 
         New review
-    
-    Raises: 
-        HTTPException: id collision error if theres a duplicate
     """
     reviews = loadReviews()
 

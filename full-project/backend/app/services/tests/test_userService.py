@@ -136,9 +136,8 @@ def test_getUserByIdFound(mockLoad, fakeUsers):
 @patch("app.services.userService.loadUsers")
 def test_getUserByIdNotFound(mockLoad):
     mockLoad.return_value = []
-    with pytest.raises(HTTPException) as exc:
+    with pytest.raises(userService.UserNotFoundError):
         userService.getUserById(999)
-    assert exc.value.status_code == 404
 
 
 # this tests that a current user is updated and saved correctly according to our schema

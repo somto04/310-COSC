@@ -138,7 +138,7 @@ def updateUser(userId: int, payload: UserUpdate) -> User:
         Updated user
 
     Raises:
-        HTTPException: user not found
+        username already taken exception
     """
     users = loadUsers()
     updateData = payload.model_dump(exclude_unset=True)
@@ -146,9 +146,9 @@ def updateUser(userId: int, payload: UserUpdate) -> User:
     if "username" in updateData and updateData["username"] is not None:
         newUsername = updateData["username"]
         if isUsernameTaken(users, newUsername, exclude_user_id=userId):
-            raise HTTPException(
-                status_code=409, detail="Username already taken; retry."
-            )
+            
+            raise UsernameTakenError("Username already taken; retry.")
+
 
     if "pw" in updateData and updateData["pw"] is not None:
         updateData["pw"] = hashPassword(updateData["pw"])
@@ -160,7 +160,7 @@ def updateUser(userId: int, payload: UserUpdate) -> User:
             saveUsers(users)
             return updated_user
 
-    raise HTTPException(status_code=404, detail=f"User '{userId}' not found")
+    raise UserNotFoundError(f"User '{userId}' not found")
 
 
 def deleteUser(userId: int):

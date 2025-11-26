@@ -5,7 +5,7 @@ from ..schemas.user import User, UserCreate, UserUpdate, SafeUser
 from ..services.userService import listUsers, createUser, deleteUser, updateUser, getUserById, UserNotFoundError, UsernameTakenError, EmailTakenError
 from fastapi import Body
 from ..schemas.role import Role
-from ..repos.movieRepo import loadMovies
+from ..repos.movieRepo import loadAll
 
 router = APIRouter(prefix = "/users", tags = ["users"])
 

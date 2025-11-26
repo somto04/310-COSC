@@ -17,7 +17,6 @@ from app.schemas.user import User, UserCreate, UserUpdate
 from ..userRoute import getUserProfile
 from app.routers.authRoute import getCurrentUser
 from app.schemas.role import Role
-from ...repos.movieRepo import loadMovies
 
 
 @pytest.fixture
@@ -209,7 +208,7 @@ def test_getUserProfile(sampleUsers):
     main_app.app.dependency_overrides = {} 
 
 @patch("app.routers.userRoute.getUserById")
-@patch("app.routers.userRoute.loadMovies")
+@patch("app.routers.userRoute.loadAll")
 def test_getUserWatchlist(mockLoad, mockGet, client, sampleUsers):
     """Test GET /users/{userId}/watchlist returns the correct watchlist"""
 

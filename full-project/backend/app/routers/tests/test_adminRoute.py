@@ -56,7 +56,7 @@ def client():
 # Helper to create mock reviews
 # -----------------------------
 
-def create_review(id, movieId, userId, flagged=False):
+def createReview(id, movieId, userId, flagged=False):
     return Review(
         id=id,
         movieId=movieId,
@@ -69,7 +69,7 @@ def create_review(id, movieId, userId, flagged=False):
     )
 
 
-def create_mock_user(id, penalties=0, isBanned=False):
+def createMockUser(id, penalties=0, isBanned=False):
     return User(
         id=id,
         username=f"user{id}",

@@ -36,7 +36,7 @@ def test_movieLoadUsesTmp(tmp_path, monkeypatch):
     # Patch the constant the functions read
     monkeypatch.setattr(movieRepo, "MOVIE_DATA_FILE", testFile, raising=False)
 
-    items = movieRepo.loadAll()
+    items = movieRepo.loadMovies()
     assert len(items) == 2
     assert items[0]["id"] == 1
     assert items[0]["title"] == "Spirited Away"
@@ -77,7 +77,7 @@ def test_movieSaveAndVerifyContents(tmp_path, monkeypatch):
         }
     ]
 
-    movieRepo.saveAll(data)
+    movieRepo.saveMovies(data)
 
     assert testFile.exists(), "movies.json should have been created"
     contents = json.loads(testFile.read_text())

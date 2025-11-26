@@ -46,7 +46,8 @@ def sampleUsers():
             "pw": "SecureP@ss123",
             "role": Role.USER, 
             "penalties": 0,
-            "isBanned": False
+            "isBanned": False,
+            "watchlist": []
         },
         {
             "id": 2,
@@ -58,7 +59,8 @@ def sampleUsers():
             "pw": "passwHOrd!@#234",
             "role": Role.ADMIN,
             "penalties": 1,
-            "isBanned": False
+            "isBanned": False,
+            "watchlist": [1, 2]
         } 
     ]
 
@@ -145,6 +147,21 @@ def test_getUserById(mockGet, client, sampleUsers):
         assert "penalties" not in user
     
     mockGet.assert_called_once_with(1)
+
+@patch("app.routers.userRoute.getUserById")
+def test_getUserWatchlist(mockGet, client, sampleUsers):
+    """Test GET /users/{userId}/watchlist returns the correct watchlist"""
+
+    user = sampleUsers[1]
+    mockGet.return_value = user
+    response = client.get(f"/users/{user['id']}/watchlist")
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["watchlist"] == user["watchlist"]
+
+    mockGet.assert_called_once_with(user["id"])
+
 
 @patch("app.routers.userRoute.updateUser")
 def test_updateUser(mockUpdate, client, sampleUsers, updatedUserPayload):

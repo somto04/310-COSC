@@ -81,3 +81,14 @@ def getUserProfile(userId: int, currentUser = Depends(getCurrentUser)):
     user = getUserById(userId)
     isOwner = currentUser.id == userId
     return {"user": user, "isOwner": isOwner}
+
+@router.get("/{userId}/watchlist")
+def getUserWatchlist(userId: int):
+    """
+    Gets the user's watchlist
+
+    Returns: 
+        List of movie ids that the user has added to their watchlist
+    """
+    user = getUserById(userId)
+    return {"watchlist": user["watchlist"]}

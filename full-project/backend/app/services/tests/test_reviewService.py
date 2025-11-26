@@ -41,9 +41,8 @@ def fakeMovies():
     ]
 
 # patching the loadReviews and saveReviews methods to avoid actual file I/O during tests
-@patch("app.services.reviewService.saveReviews")
 @patch("app.services.reviewService.loadReviews")
-@patch("app.services.reviewService.movieRepo.loadMovies")
+@patch("app.services.reviewService.movieRepo.loadAll")
 def test_searchByMovieId(mockMovieLoad, mockReviewLoad, fakeReviews, fakeMovies):
     """this test checks searching reviews by movie ID """
     mockReviewLoad.return_value = fakeReviews
@@ -55,7 +54,7 @@ def test_searchByMovieId(mockMovieLoad, mockReviewLoad, fakeReviews, fakeMovies)
     assert result[0].reviewTitle == "Good movie"
 
 @patch("app.services.reviewService.loadReviews")
-@patch("app.services.reviewService.movieRepo.loadMovies")
+@patch("app.services.reviewService.movieRepo.loadAll")
 def test_searchByMovieTitle(mockMovieLoad, mockReviewLoad, fakeReviews, fakeMovies):
     """this test checks searching reviews by movie title """
     mockReviewLoad.return_value = fakeReviews

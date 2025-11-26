@@ -1,5 +1,5 @@
 from typing import List, Dict, Any
-from .repo import _base_load_all, _base_save_all, DATA_DIR
+from .repo import _baseLoadAll, _baseSaveAll, DATA_DIR
 from ..schemas.movie import Movie
 
 MOVIE_DATA_PATH = DATA_DIR / "movies.json"
@@ -23,7 +23,7 @@ def _load_movie_cache() -> List[Movie]:
     """
     global _MOVIE_CACHE, _NEXT_MOVIE_ID
     if _MOVIE_CACHE is None:
-        movie_dicts = _base_load_all(MOVIE_DATA_PATH)
+        movie_dicts = _baseLoadAll(MOVIE_DATA_PATH)
         _MOVIE_CACHE = [Movie(**movie) for movie in movie_dicts]
 
         maxId = getMaxMovieId(_MOVIE_CACHE)
@@ -72,7 +72,7 @@ def saveMovies(movies: List[Movie]) -> None:
         _NEXT_MOVIE_ID = maxId + 1
 
     movie_dict = [movie.model_dump() for movie in movies]
-    _base_save_all(MOVIE_DATA_PATH, movie_dict)
+    _baseSaveAll(MOVIE_DATA_PATH, movie_dict)
 
 def loadAll():
     return loadMovies()

@@ -5,8 +5,7 @@ import pytest
 
 import app.repos.movieRepo as movieRepoModule
 from app.repos.movieRepo import (
-    _getMaxMovieId,
-    _loadMovieCache,
+    #_loadMovieCache,
     getNextMovieId,
     loadMovies,
     saveMovies,

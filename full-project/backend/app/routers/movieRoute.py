@@ -11,7 +11,7 @@ from app.services.movieService import (
     searchMovie,
     getMovieByFilter,
 )
-
+from .authRoute import CurrentUser
 router = APIRouter(prefix="/movies", tags=["movies"])
 
 

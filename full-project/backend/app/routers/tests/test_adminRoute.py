@@ -248,8 +248,8 @@ def test_mark_inappropriate_success(client):
     mockReviews = [mockReview]
     mockUserAfterPenalty = createMockUser(5, penalties=1, isBanned=False)
 
-    with patch("app.routers.adminRoute.loadReviews", return_value=mockReviews), \
-         patch("app.routers.adminRoute.saveReviews") as mock_save, \
+    with patch("app.services.reviewService.loadReviews", return_value=mockReviews), \
+         patch("app.services.reviewService.saveReviews") as mock_save, \
          patch("app.routers.adminRoute.incrementPenaltyForUser", return_value=mockUserAfterPenalty) as mock_penalty:
         
         response = client.post("/admin/reviews/1/markInappropriate")

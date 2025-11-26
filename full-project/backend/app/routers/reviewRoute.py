@@ -9,7 +9,6 @@ from ..services.reviewService import (
     updateReview,
     getReviewById,
     searchReviews,
-    ReviewNotFoundError,
 )
 from .authRoute import getCurrentUser, requireAdmin
 from ..schemas.role import Role

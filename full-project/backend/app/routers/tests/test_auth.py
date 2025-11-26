@@ -2,7 +2,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app.app import app
-from app.routers import auth
+from app.routers import authRoute
 from app.schemas.user import (
     User,
     CurrentUser,

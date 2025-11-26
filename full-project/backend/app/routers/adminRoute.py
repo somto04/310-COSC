@@ -4,7 +4,7 @@ from ..repos.reviewRepo import loadReviews, saveReviews
 from ..services.reviewService import deleteReview
 from ..utilities.penalties import incrementPenaltyForUser
 from ..schemas.user import CurrentUser
-from .auth import requireAdmin
+from .authRoute import requireAdmin
 from ..schemas.admin import AdminFlagResponse, PaginatedFlaggedReviewsResponse
 from ..schemas.review import Review
 

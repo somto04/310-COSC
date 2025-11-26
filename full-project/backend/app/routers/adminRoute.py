@@ -23,7 +23,7 @@ def getFlaggedReviews() -> List[Review]:
 def getReviewById(reviewId: int):
     """Return full list and the review object for the given ID."""
     reviewList = loadReviews()
-    review = next((r for r in reviewList if r.id == reviewId), None)
+    review = next((review for review in reviewList if review.id == reviewId), None)
     if review is None:
         raise HTTPException(404, "Review not found")
     return reviewList, review
@@ -92,10 +92,12 @@ def markReviewInappropriate(reviewId: int, currentAdmin: CurrentUser = Depends(r
     """Mark a review as inappropriate and penalize the user."""
     reviewList, review = getReviewById(reviewId)
 
-    review.flagged = True
+    review.flagged = True   
+    deleteReview(reviewId)
     saveReviews(reviewList)
 
     updatedUser = incrementPenaltyForUser(review.userId)
+
 
     return AdminFlagResponse(
         message="Review flagged and user penalized",

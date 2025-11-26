@@ -92,8 +92,21 @@ def test_getAllUsers(mockList, client, sampleUsers):
     response = client.get("/users")
     assert response.status_code == 200
     data = response.json()
+    
     assert len(data) == 2
     assert data[0]["username"] == "alicej"
+    assert data[0]["id"] == 1
+    assert data[0]["firstName"] == "Alice"
+    assert data[0]["isBanned"] is False
+
+    # SafeUser check - sensitive fields should not be present
+    for user in data:
+        assert "email" not in user
+        assert "pw" not in user
+        assert "age" not in user
+        assert "lastName" not in user
+        assert "role" not in user
+        assert "penalties" not in user
     mockList.assert_called_once()
     
 @patch("app.routers.userRoute.createUser")
@@ -119,26 +132,45 @@ def test_getUserById(mockGet, client, sampleUsers):
     assert response.status_code == 200
     data = response.json()
     assert data["id"] == 1
+    assert data["firstName"] == "Alice"
     assert data["username"] == "alicej"
+    assert data["isBanned"] is False
+
+    for user in data:
+        assert "email" not in user
+        assert "pw" not in user
+        assert "age" not in user
+        assert "lastName" not in user
+        assert "role" not in user
+        assert "penalties" not in user
+    
     mockGet.assert_called_once_with(1)
 
 @patch("app.routers.userRoute.updateUser")
 def test_updateUser(mockUpdate, client, sampleUsers, updatedUserPayload):
     """Test PUT /users/{id} updates user info"""
+
+    #override dependency to simulate authenticated user
+    from app.routers.auth import getCurrentUser
+    client.app.dependency_overrides[getCurrentUser] = lambda: MagicMock(id=1)
+    
     updatedUser = sampleUsers[0].copy()
     updatedUser.update(updatedUserPayload)
     mockUpdate.return_value = updatedUser
-    # mock getCurrentUser to return the user being updated
-    from app.routers.auth import getCurrentUser
-    client.app.dependency_overrides[getCurrentUser] = lambda: User(**sampleUsers[0])
+
     response = client.put("/users/1", json=updatedUserPayload)
+
+    client.app.dependency_overrides = {}
+
     assert response.status_code == 200
+
     data = response.json()
     assert data["firstName"] == "AliceUpdated"
     assert data["email"] == "aliceupdated@example.com"
-    
+
     from app.schemas.user import UserUpdate
     mockUpdate.assert_called_once_with(1, UserUpdate(**updatedUserPayload))
+
 
 @patch("app.routers.userRoute.deleteUser")
 def test_deleteUser(mockDelete, client, sampleUsers):

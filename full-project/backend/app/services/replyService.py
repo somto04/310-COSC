@@ -4,9 +4,6 @@ from ..repos.replyRepo import loadReplies, saveReplies, getNextReplyId
 from ..repos.reviewRepo import loadReviews
 from ..services.reviewService import getReviewById
 
-class AuthenticationError(Exception):
-    pass
-
 class ReviewNotFoundError(Exception):
     pass
 

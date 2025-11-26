@@ -151,7 +151,7 @@ def test_updateUser(mockUpdate, client, sampleUsers, updatedUserPayload):
     """Test PUT /users/{id} updates user info"""
 
     #override dependency to simulate authenticated user
-    from app.routers.auth import getCurrentUser
+    from app.routers.authRoute import getCurrentUser
     client.app.dependency_overrides[getCurrentUser] = lambda: MagicMock(id=1)
     
     updatedUser = sampleUsers[0].copy()
@@ -175,7 +175,7 @@ def test_updateUser(mockUpdate, client, sampleUsers, updatedUserPayload):
 @patch("app.routers.userRoute.deleteUser")
 def test_deleteUser(mockDelete, client, sampleUsers):
     """Test DELETE /users/{id} admin only deletes a user"""
-    from app.routers.auth import getCurrentUser
+    from app.routers.authRoute import getCurrentUser
     
     adminModel = User(**sampleUsers[1])
     client.app.dependency_overrides[getCurrentUser] = lambda: adminModel

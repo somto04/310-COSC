@@ -4,7 +4,7 @@ from app.app import app
 from app.routers import replyRoute
 from app.repos import replyRepo
 from ...schemas.reply import Reply
-from app.routers import auth
+from app.routers import authRoute
 from app.schemas.user import CurrentUser
 from app.schemas.role import Role
 
@@ -17,7 +17,7 @@ def fakeLogin():
         username="tester",
         role=Role.ADMIN,
     )
-    app.dependency_overrides[auth.getCurrentUser] = lambda: fakeUser
+    app.dependency_overrides[authRoute.getCurrentUser] = lambda: fakeUser
     yield
     app.dependency_overrides.clear()
 

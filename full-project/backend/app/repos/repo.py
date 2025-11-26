@@ -1,10 +1,10 @@
+from datetime import date, datetime
+from decimal import Decimal
 import json
 from pathlib import Path
 from typing import List, Dict, Any
 from app.tools.Paths import getProjectRoot
-from app.tools.Paths import getProjectRoot
 
-DATA_DIR = getProjectRoot() / "backend" / "app" / "data"
 DATA_DIR = getProjectRoot() / "backend" / "app" / "data"
 
 def _fullPath (name: str | Path) -> Path:
@@ -61,10 +61,17 @@ def _baseSaveAll(datafile: str | Path, items: List[Dict[str, Any]]) -> None:
     """
     path = _fullPath(datafile)
     path.parent.mkdir(parents=True, exist_ok=True)
-    
+
     temp = path.with_suffix(path.suffix + ".tmp")
-    
+
+    def encodeValue(value):
+        if isinstance(value, Decimal):
+            return float(value)
+        if isinstance(value, (date, datetime)):
+            return value.isoformat()
+        return value
+
     with temp.open("w", encoding="utf-8") as file:
-        json.dump(items, file, indent=2, ensure_ascii=False)
-    
+        json.dump(items, file, indent=2, ensure_ascii=False, default=encodeValue)
+
     temp.replace(path)

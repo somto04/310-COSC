@@ -6,6 +6,15 @@ from ..schemas.role import Role
 from ..repos.userRepo import getNextUserId, loadUsers, saveUsers
 from ..utilities.security import hashPassword, verifyPassword
 
+class UserNotFoundError(Exception):
+    """Raised when a user is not found."""
+    pass
+class UsernameTakenError(Exception):
+    """Raised when a username is already taken."""
+    pass
+class EmailTakenError(Exception):
+    """Raised when an email is already taken."""
+    pass
 
 def isUsernameTaken(
     users: List[User], username: str, *, exclude_user_id: int | None = None

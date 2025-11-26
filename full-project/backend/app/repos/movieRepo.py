@@ -1,24 +1,22 @@
-from typing import List, Dict, Any
+from typing import List
 from .repo import _baseLoadAll, _baseSaveAll, DATA_DIR
+from ..schemas.movie import Movie
 
 MOVIE_DATA_FILE = DATA_DIR / "movies.json"
 
-def loadAll() -> List[Dict[str, Any]]:
+def loadAll() -> List[Movie]:
     """
-    Load all movies from the movies data file.
-
-    Returns:
-        List[Dict[str, Any]]: A list of movie items.
+    Load all movies as Pydantic Movie models.
     """
-    return _baseLoadAll(MOVIE_DATA_FILE)
+    raw = _baseLoadAll(MOVIE_DATA_FILE)
+    return [Movie(**movie) for movie in raw]
 
-def saveAll(items: List[Dict[str, Any]]) -> None:
+def saveAll(items: List[Movie]) -> None:
     """
     Save all movies to the movies data file.
-
-    Args:
-        items (List[Dict[str, Any]]): A list of movie items to save.
     """
-    _baseSaveAll(MOVIE_DATA_FILE, items)
+    # Convert models back to dicts before saving
+    raw = [movie.model_dump() for movie in items]
+    _baseSaveAll(MOVIE_DATA_FILE, raw)
 
 __all__ = ["loadAll", "saveAll"]

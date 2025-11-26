@@ -1,8 +1,26 @@
 from datetime import datetime
 from ..schemas.reply import Reply, ReplyCreate
 from ..repos.replyRepo import loadReplies, saveReplies, getNextReplyId
+from ..repos.reviewRepo import loadReviews
+from ..routers.reviewRoute import validateReview
+
+class AuthenticationError(Exception):
+    pass
+
+class ReviewNotFoundError(Exception):
+    pass
+
+class ReplyNotFoundError(Exception):
+    pass
+
+
 
 def listReplies(reviewId: int):
+    """ Lists all replies for a given review """
+    reviews = loadReviews()
+    if reviewId not in reviews:
+        raise ReviewNotFoundError(f"Review with id {reviewId} not found.")
+
     replies = loadReplies()
     return [reply for reply in replies if reply.reviewId == reviewId]
 

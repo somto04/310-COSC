@@ -1,5 +1,4 @@
 from typing import List
-from fastapi import HTTPException
 from ..schemas.review import Review, ReviewUpdate, ReviewCreate
 from ..repos.reviewRepo import loadReviews, saveReviews, getNextReviewId
 from ..repos import movieRepo
@@ -13,6 +12,9 @@ def searchReviews(query: str) -> List[Review]:
     
     Returns:
         Reviews that match the search
+    
+    Raises: 
+        Raises review not found error
     """
     strippedQuery = (query or "").strip().lower()
     if not strippedQuery:
@@ -70,14 +72,14 @@ def getReviewById(reviewId: int) -> Review:
         The review
     
     Raises: 
-        HTTPException: review not found
+        Raises review not found error
     """
     reviews = loadReviews()
 
     for review in reviews:
         if review.id == reviewId:
             return review
-    raise HTTPException(status_code=404, detail=f"Review '{reviewId}' not found")
+    raise ReviewNotFoundError("Review not found")
 
 def updateReview(reviewId: int, payload: ReviewUpdate) -> Review:
     """ 
@@ -87,7 +89,7 @@ def updateReview(reviewId: int, payload: ReviewUpdate) -> Review:
         The updated review
     
     Raises: 
-        HTTPException: review not found
+        raises review not found error
     """  
     reviews = loadReviews()
     for index, review in enumerate(reviews):
@@ -111,19 +113,19 @@ def updateReview(reviewId: int, payload: ReviewUpdate) -> Review:
             saveReviews(reviews)
             return updated
         
-    raise HTTPException(status_code=404, detail=f"Review '{reviewId}' not found")
+    raise ReviewNotFoundError("Review not found")
 
 def deleteReview(reviewId: int) -> None:
     """ 
     Deletes a review by its ID
 
     Raises: 
-        HTTPException: review not found
+        Raises review not found error
     """  
     reviews = loadReviews()
     newReviews = [review for review in reviews if review.id != reviewId]
 
     if len(newReviews) == len(reviews):
-        raise HTTPException(status_code=404, detail=f"Review '{reviewId}' not found")
-    
+        raise ReviewNotFoundError("Review not found")
+        
     saveReviews(newReviews)

@@ -1,17 +1,31 @@
 import pytest
 from unittest.mock import patch
 from app.services import replyService
-from app.schemas.reply import ReplyCreate, Reply
+from app.schemas.reply import Reply, ReplyCreate
+from app.schemas.review import Review
 
-# sample fake replies list
+
 fakeReplies = [
-    Reply(id=1, reviewId=1, userId=1001, replyBody="I agree", datePosted= "1 Jan 2024"),
+    Reply(id=1, reviewId=1, userId=1001, replyBody="I agree", datePosted="1 Jan 2024"),
     Reply(id=2, reviewId=2, userId=1002, replyBody="Nice point!", datePosted="2 Jan 2024")
 ]
 
+fakeReview = Review(
+    id=1,
+    movieId=10,
+    userId=999,
+    reviewTitle="Test",
+    reviewBody="Body",
+    rating=5,
+    datePosted="2024-01-01",
+    flagged=False
+)
+
+@patch("app.services.replyService.getReviewById")
 @patch("app.services.replyService.loadReplies")
-def test_listRepliesForReview(mockLoad):
-    mockLoad.return_value = fakeReplies
+def test_listRepliesForReview(mockLoadReplies, mockGetReview):
+    mockLoadReplies.return_value = fakeReplies
+    mockGetReview.return_value = fakeReview 
 
     results = replyService.listReplies(1)
 

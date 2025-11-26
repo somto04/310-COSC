@@ -21,7 +21,7 @@ def searchReviews(query: str) -> List[Review]:
         return []
 
     reviews = loadReviews()
-    movies = movieRepo.loadMovies()
+    movies = movieRepo.loadAll()
 
     # If query is a number, treat as movie ID
     if strippedQuery.isdigit():

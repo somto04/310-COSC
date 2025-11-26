@@ -30,7 +30,8 @@ def test_reviewLoadUsesTmp(tmp_path, monkeypatch):
 
     testFile.write_text(
     json.dumps([review.model_dump() for review in data], ensure_ascii=False),encoding="utf-8")   
-    monkeypatch.setattr(reviewRepo, "REVIEW_DATA_PATH", testFile, raising=False)
+    monkeypatch.setattr("app.repos.reviewRepo.REVIEW_DATA_PATH", testFile)
+
 
     reviews = reviewRepo.loadReviews()
     assert len(reviews) == 2
@@ -41,7 +42,7 @@ def test_reviewLoadUsesTmp(tmp_path, monkeypatch):
 
 def test_reviewSaveAndVerifyContents(tmp_path, monkeypatch):
     testFile = tmp_path / "reviews.json"
-    monkeypatch.setattr(reviewRepo, "REVIEW_DATA_PATH", testFile, raising=False)
+    monkeypatch.setattr("app.repos.reviewRepo.REVIEW_DATA_PATH", testFile)
 
     data = [
     Review(

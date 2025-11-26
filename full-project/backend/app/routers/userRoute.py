@@ -9,6 +9,9 @@ from ..repos.movieRepo import loadAll
 
 router = APIRouter(prefix = "/users", tags = ["users"])
 
+class notOwnerError(Exception):
+    pass
+
 @router.get("", response_model=List[SafeUser])
 def getUsers(page: int = 1, limit: int = 25):
     if page < 1:
@@ -84,7 +87,7 @@ def getUserProfile(userId: int, currentUser = Depends(getCurrentUser)):
     return {"user": user, "isOwner": isOwner}
 
 @router.get("/{userId}/watchlist")
-def getUserWatchlist(userId: int):
+def getUserWatchlist(userId: int, currentUser = Depends(getCurrentUser)):
     """
     Gets the user's watchlist
 
@@ -93,5 +96,7 @@ def getUserWatchlist(userId: int):
     """
     user = getUserById(userId)
     movies = loadAll()
+    if currentUser.id != userId:
+        raise notOwnerError("You are not authorised to view this users watch list")
     moviesToWatch = [movies[movieId] for movieId in user["watchlist"] if movieId in movies]
     return {"watchlist": moviesToWatch}

@@ -212,6 +212,8 @@ def test_getUserProfile(sampleUsers):
 def test_getUserWatchlist(mockLoad, mockGet, client, sampleUsers):
     """Test GET /users/{userId}/watchlist returns the correct watchlist"""
 
+    client.app.dependency_overrides[getCurrentUser] = lambda: MagicMock(id=2)
+
     user = sampleUsers[1]
     mockGet.return_value = user
 
@@ -224,7 +226,7 @@ def test_getUserWatchlist(mockLoad, mockGet, client, sampleUsers):
 
     assert response.status_code == 200
     data = response.json()
-    
+
     expected = [mockLoad.return_value[mid] for mid in user["watchlist"]]
     assert data["watchlist"] == expected
 

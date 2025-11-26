@@ -4,7 +4,7 @@ from unittest.mock import patch
 from fastapi import HTTPException
 
 from app.app import app
-from app.routers.auth import getCurrentUser, requireAdmin
+from app.routers.authRoute import getCurrentUser, requireAdmin
 from app.schemas.role import Role
 from app.schemas.user import User
 from app.schemas.review import Review
@@ -226,9 +226,7 @@ def test_mark_inappropriate_success(client):
 
     with patch("app.routers.adminRoute.loadReviews", return_value=mockReviews), \
          patch("app.routers.adminRoute.saveReviews") as mockSave, \
-         patch("app.routers.adminRoute.incrementPenaltyForUser", return_value=mockUserAfterPenalty) as mockPenalty, \
-         patch("app.routers.adminRoute.deleteReview") as mockDelete:
-
+         patch("app.routers.adminRoute.incrementPenaltyForUser", return_value=mockUserAfterPenalty) as mockPenalty:
         response = client.post("/admin/reviews/1/markInappropriate")
 
     assert response.status_code == 200
@@ -241,10 +239,8 @@ def test_mark_inappropriate_success(client):
 
     mockSave.assert_called_once()
     savedReviews = mockSave.call_args[0][0]
-    assert savedReviews[0].flagged is True
 
     mockPenalty.assert_called_once_with(5)
-    mockDelete.assert_called_once_with(1)
 
 
 

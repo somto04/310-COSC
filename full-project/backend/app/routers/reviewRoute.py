@@ -10,7 +10,7 @@ from ..services.reviewService import (
     getReviewById,
     searchReviews,
 )
-from .auth import getCurrentUser, requireAdmin
+from .authRoute import getCurrentUser, requireAdmin
 from ..schemas.role import Role
 
 router = APIRouter(prefix="/reviews", tags=["reviews"])

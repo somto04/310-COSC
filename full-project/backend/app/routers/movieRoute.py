@@ -1,6 +1,6 @@
 from typing import List, Optional
 from fastapi import APIRouter, HTTPException, status, Depends
-from app.routers.auth import requireAdmin
+from app.routers.authRoute import requireAdmin
 from app.schemas.movie import Movie, MovieCreate, MovieUpdate
 from app.services.movieService import (
     listMovies,

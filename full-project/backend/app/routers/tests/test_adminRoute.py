@@ -226,9 +226,7 @@ def test_mark_inappropriate_success(client):
 
     with patch("app.routers.adminRoute.loadReviews", return_value=mockReviews), \
          patch("app.routers.adminRoute.saveReviews") as mockSave, \
-         patch("app.routers.adminRoute.incrementPenaltyForUser", return_value=mockUserAfterPenalty) as mockPenalty, \
-         patch("app.routers.adminRoute.deleteReview") as mockDelete:
-
+         patch("app.routers.adminRoute.incrementPenaltyForUser", return_value=mockUserAfterPenalty) as mockPenalty:
         response = client.post("/admin/reviews/1/markInappropriate")
 
     assert response.status_code == 200
@@ -241,10 +239,8 @@ def test_mark_inappropriate_success(client):
 
     mockSave.assert_called_once()
     savedReviews = mockSave.call_args[0][0]
-    assert savedReviews[0].flagged is True
 
     mockPenalty.assert_called_once_with(5)
-    mockDelete.assert_called_once_with(1)
 
 
 

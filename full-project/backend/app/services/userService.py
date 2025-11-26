@@ -15,8 +15,6 @@ class UsernameTakenError(Exception):
 class EmailNotFoundError(Exception):
     pass
 
-class UnauthorizedError(Exception):
-    pass
 
 def isUsernameTaken(
     users: List[User], username: str, *, exclude_user_id: int | None = None

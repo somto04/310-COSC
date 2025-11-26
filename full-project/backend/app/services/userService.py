@@ -180,7 +180,7 @@ def deleteUser(userId: int):
             saveUsers(users)
             return
 
-    raise HTTPException(status_code=404, detail=f"User '{userId}' not found")
+    raise UserNotFoundError(f"User '{userId}' not found")
 
 
 def getUserByEmail(email: str) -> User | None:
@@ -195,4 +195,5 @@ def getUserByEmail(email: str) -> User | None:
     for user in loadUsers():
         if user.email.lower() == normalized:
             return user
-    return None
+        
+    raise EmailNotFoundError(f"Email '{email}' not found")

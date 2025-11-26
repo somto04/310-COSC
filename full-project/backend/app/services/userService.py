@@ -60,7 +60,7 @@ def createUser(payload: UserCreate) -> User:
         New user (User)
 
     Raises:
-        HTTPException: username already taken
+        Exception username already taken
 
     Expects:
         payload (UserCreate): user creation data is already validated, such as username abiding by constraints
@@ -68,7 +68,7 @@ def createUser(payload: UserCreate) -> User:
     users = loadUsers()
 
     if isUsernameTaken(users, payload.username):
-        raise HTTPException(status_code=409, detail="Username already taken; retry.")
+        raise UsernameTakenError("Username already taken.")
 
     hashedPw = hashPassword(payload.pw)
 
@@ -98,13 +98,13 @@ def getUserById(userId: int) -> User:
         User
 
     Raises:
-        HTTPException: user not found
+        Exception: user not found
     """
     users = loadUsers()
     for user in users:
         if user.id == userId:
             return user
-    raise HTTPException(status_code=404, detail=f"User '{userId}' not found")
+    raise UserNotFoundError(f"User '{userId}' not found.")
 
 
 def getUserByUsername(username: str) -> User | None:
@@ -137,7 +137,7 @@ def updateUser(userId: int, payload: UserUpdate) -> User:
         Updated user
 
     Raises:
-        HTTPException: user not found
+        Exception: user not found
     """
     users = loadUsers()
     updateData = payload.model_dump(exclude_unset=True)
@@ -145,9 +145,8 @@ def updateUser(userId: int, payload: UserUpdate) -> User:
     if "username" in updateData and updateData["username"] is not None:
         newUsername = updateData["username"]
         if isUsernameTaken(users, newUsername, exclude_user_id=userId):
-            raise HTTPException(
-                status_code=409, detail="Username already taken; retry."
-            )
+            raise UsernameTakenError("Username already taken.")
+
 
     if "pw" in updateData and updateData["pw"] is not None:
         updateData["pw"] = hashPassword(updateData["pw"])
@@ -159,7 +158,7 @@ def updateUser(userId: int, payload: UserUpdate) -> User:
             saveUsers(users)
             return updated_user
 
-    raise HTTPException(status_code=404, detail=f"User '{userId}' not found")
+    raise UserNotFoundError(f"User '{userId}' not found.")
 
 
 def deleteUser(userId: int):
@@ -179,7 +178,7 @@ def deleteUser(userId: int):
             saveUsers(users)
             return
 
-    raise HTTPException(status_code=404, detail=f"User '{userId}' not found")
+    raise UserNotFoundError(f"User '{userId}' not found.")
 
 
 def getUserByEmail(email: str) -> User | None:
@@ -194,4 +193,5 @@ def getUserByEmail(email: str) -> User | None:
     for user in loadUsers():
         if user.email.lower() == normalized:
             return user
-    return None
+    raise EmailTakenError(f"Email '{email}' not found.")
+

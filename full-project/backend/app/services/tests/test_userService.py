@@ -6,6 +6,7 @@ from app.services import userService
 from app.schemas.user import User, UserCreate, UserUpdate
 from app.schemas.role import Role
 from app.utilities.security import verifyPassword
+from app.services.userService import UserNotFoundError, UsernameTakenError, EmailTakenError
 
 
 # these fixtures provide mock user data for testing that follows our user schema
@@ -41,13 +42,14 @@ def test_listUsers(mockLoad, fakeUsers):
     mockLoad.return_value = fakeUsers
     result = userService.listUsers()
     assert len(result) == 2
-    assert all(isinstance(u, User) for u in result)
+    assert all(isinstance(user, User) for user in result)
 
 
 # this tests that a new user is created and saved correctly according to our schema
+@patch("app.services.userService.getNextUserId", return_value=3)
 @patch("app.services.userService.saveUsers")
 @patch("app.services.userService.loadUsers")
-def test_createUser(mockLoad, mockSave, fakeUsers):
+def test_createUser(mockLoad, mockSave, mockGetId, fakeUsers):
     mockLoad.return_value = list(fakeUsers)
 
     payload = UserCreate(
@@ -73,6 +75,7 @@ def test_createUser(mockLoad, mockSave, fakeUsers):
     assert len(savedUsers) == 3 
     assert savedUsers[-1] == newUser
     assert isinstance(savedUsers[-1], User)
+
 
 
 @patch("app.services.userService.saveUsers")
@@ -119,9 +122,8 @@ def test_createUserUsernameTaken(mockLoad, fakeUsers):
         pw="SomePassword123",
     )
 
-    with pytest.raises(HTTPException) as exc:
+    with pytest.raises(userService.UsernameTakenError):
         userService.createUser(payload)
-    assert exc.value.status_code == 409
 
 
 # this tests that a user can be retrieved by their ID correctly
@@ -136,9 +138,8 @@ def test_getUserByIdFound(mockLoad, fakeUsers):
 @patch("app.services.userService.loadUsers")
 def test_getUserByIdNotFound(mockLoad):
     mockLoad.return_value = []
-    with pytest.raises(HTTPException) as exc:
+    with pytest.raises(userService.UserNotFoundError):
         userService.getUserById(999)
-    assert exc.value.status_code == 404
 
 
 # this tests that a current user is updated and saved correctly according to our schema
@@ -177,9 +178,8 @@ def test_updateUserNotFound(mockLoad, mockSave):
         pw="NewP@ssw0rd",
     )
 
-    with pytest.raises(HTTPException) as exc:
+    with pytest.raises(userService.UserNotFoundError):
         userService.updateUser(999, payload)
-    assert exc.value.status_code == 404
 
 
 # this tests that a user is deleted correctly
@@ -196,6 +196,5 @@ def test_deleteUserSuccess(mockLoad, mockSave, fakeUsers):
 @patch("app.services.userService.loadUsers")
 def test_deleteUserNotFound(mockLoad, mockSave, fakeUsers):
     mockLoad.return_value = fakeUsers
-    with pytest.raises(HTTPException) as exc:
+    with pytest.raises(userService.UserNotFoundError):
         userService.deleteUser(999)
-    assert exc.value.status_code == 404

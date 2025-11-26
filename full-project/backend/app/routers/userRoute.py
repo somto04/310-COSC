@@ -1,6 +1,6 @@
 from typing import List
 from fastapi import APIRouter, status, HTTPException, Form, Depends
-from app.routers.auth import getCurrentUser
+from app.routers.authRoute import getCurrentUser
 from ..schemas.user import User, UserCreate, UserUpdate, SafeUser
 from ..services.userService import listUsers, createUser, deleteUser, updateUser, getUserById
 from fastapi import Body

@@ -9,8 +9,9 @@ from ..services.reviewService import (
     updateReview,
     getReviewById,
     searchReviews,
+    ReviewNotFoundError,
 )
-from .auth import getCurrentUser, requireAdmin
+from .authRoute import getCurrentUser, requireAdmin
 from ..schemas.role import Role
 
 router = APIRouter(prefix="/reviews", tags=["reviews"])

@@ -15,7 +15,7 @@ from app import app as main_app
 from app.routers.userRoute import router
 from app.schemas.user import User, UserCreate, UserUpdate
 from ..userRoute import getUserProfile
-from app.routers.auth import getCurrentUser
+from app.routers.authRoute import getCurrentUser
 from app.schemas.role import Role
 
 

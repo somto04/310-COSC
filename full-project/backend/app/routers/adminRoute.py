@@ -1,127 +1,135 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from auth import requireAdmin
+from fastapi import APIRouter, Depends, HTTPException
+from typing import List
 from ..repos.reviewRepo import loadReviews, saveReviews
+from ..services.reviewService import deleteReview
 from ..utilities.penalties import incrementPenaltyForUser
-from .reviewRoute import validateReview
 from ..schemas.user import CurrentUser
+from .auth import requireAdmin
+from ..schemas.admin import AdminFlagResponse, PaginatedFlaggedReviewsResponse
+from ..schemas.review import Review
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
 
-# Proper helper: returns BOTH review list and review object
-def getReviewById(reviewId: int):
+# ---------------------------
+# Helper functions
+# ---------------------------
+
+def getFlaggedReviews() -> List[Review]:
     reviewList = loadReviews()
-    review = next((review for review in reviewList if review.Id == reviewId), None)
+    return [review for review in reviewList if review.flagged]
+
+
+def getReviewById(reviewId: int):
+    """Return full list and the review object for the given ID."""
+    reviewList = loadReviews()
+    review = next((review for review in reviewList if review.id == reviewId), None)
+    if review is None:
+        raise HTTPException(404, "Review not found")
     return reviewList, review
 
 
-@router.post("/reviews/{reviewId}/acceptFlag")
+# ---------------------------
+# Accept flag and delete review
+# ---------------------------
+
+@router.post(
+    "/reviews/{reviewId}/acceptFlag", 
+    response_model=AdminFlagResponse
+)
 def acceptReviewFlag(reviewId: int, currentAdmin: CurrentUser = Depends(requireAdmin)):
-    """
-    Admin accepts the flag.
-    -> penalize user
-    -> unflag review
-    """
-    reviewList, review = getReviewById(reviewId)
-    validateReview(review)
+    """Accept a review flag, delete the review, and penalize the user."""
+    _, review = getReviewById(reviewId)
 
-    review.flagged = False
+    # Penalize the user
+    updatedUser = incrementPenaltyForUser(review.userId)
 
-    updatedUser = incrementPenaltyForUser(int(review.userId))
-    saveReviews(reviewList)
+    # Delete the review
+    deleteReview(reviewId)
 
-    return {
-        "message": "Review flag accepted and cleared",
-        "userId": updatedUser.id,
-        "penaltyCount": updatedUser.penalties,
-        "isBanned": updatedUser.isBanned,
-    }
+    return AdminFlagResponse(
+        message="Review flag accepted. Review deleted and user penalized.",
+        userId=updatedUser.id,
+        penaltyCount=updatedUser.penalties,
+        isBanned=updatedUser.isBanned,
+    )
 
 
-@router.post("/reviews/{reviewId}/rejectFlag")
+# ---------------------------
+# Reject flag
+# ---------------------------
+
+@router.post(
+    "/reviews/{reviewId}/rejectFlag",
+    response_model=AdminFlagResponse
+)
 def rejectReviewFlag(reviewId: int, currentAdmin: CurrentUser = Depends(requireAdmin)):
-    """
-    Admin rejects the flag.
-    -> no penalty
-    -> unflag review
-    """
+    """Reject a review flag and unflag the review."""
     reviewList, review = getReviewById(reviewId)
-    validateReview(review)
 
+    # Simply unflag the review
     review.flagged = False
     saveReviews(reviewList)
 
-    return {
-        "message": "Flag rejected. Review unflagged (no penalty applied).",
-        "reviewId": reviewId
-    }
+    # We can still return a user-like response with dummy values if needed
+    return AdminFlagResponse(
+        message="Flag rejected. Review unflagged (no penalty applied).",
+        userId=review.userId,
+        penaltyCount=0,
+        isBanned=False
+    )
 
 
-@router.post("/reviews/{reviewId}/markInappropriate")
+# ---------------------------
+# Mark review inappropriate
+# ---------------------------
+
+@router.post(
+    "/reviews/{reviewId}/markInappropriate",
+    response_model=AdminFlagResponse
+)
 def markReviewInappropriate(reviewId: int, currentAdmin: CurrentUser = Depends(requireAdmin)):
+    """Mark a review as inappropriate and penalize the user."""
     reviewList, review = getReviewById(reviewId)
-    validateReview(review)
 
-    review.flagged = True
+    review.flagged = True   
+    deleteReview(reviewId)
     saveReviews(reviewList)
 
-    updatedUser = incrementPenaltyForUser(int(review.userId))
-
-    return {
-        "message": "Review flagged and user penalized",
-        "userId": updatedUser.id,
-        "penaltyCount": updatedUser.penalties,
-        "isBanned": updatedUser.isBanned,
-    }
+    updatedUser = incrementPenaltyForUser(review.userId)
 
 
-def getFlaggedReviews():
-    """ Internal helper to get all flagged reviews """
-    reviewList = loadReviews()
-    return [review for review in reviewList if review.flagged is True]
+    return AdminFlagResponse(
+        message="Review flagged and user penalized",
+        userId=updatedUser.id,
+        penaltyCount=updatedUser.penalties,
+        isBanned=updatedUser.isBanned,
+    )
 
 
-@router.get("/reports/reviews")
+# ---------------------------
+# Paginated flagged review reports
+# ---------------------------
+
+@router.get(
+    "/reports/reviews",
+    response_model=PaginatedFlaggedReviewsResponse
+)
 def getFlaggedReviewReports(
     page: int = 1,
     pageSize: int = 20,
-    sortBy: str = "mostFlagged",
-    minFlags: int = 0,
     currentAdmin: CurrentUser = Depends(requireAdmin),
 ):
-    """
-    Admin endpoint - return flagged review reports.
-    Supports:
-      - Pagination (20 per page)
-      - Sorting ("mostFlagged")
-      - Filtering by minimum flag count
-    """
-
     flaggedReviewList = getFlaggedReviews()
 
-    # Filtering by minimum flag count
-    if minFlags > 0:
-        flaggedReviewList = [
-            review for review in flaggedReviewList if getattr(review, "flagCount", 1) >= minFlags
-        ]
-
-    # Sorting
-    if sortBy == "mostFlagged":
-        flaggedReviewList = sorted(
-            flaggedReviewList,
-            key=lambda review: getattr(review, "flagCount", 1),
-            reverse=True
-        )
-
-    # Pagination
     startIndex = (page - 1) * pageSize
     endIndex = startIndex + pageSize
     paginatedReviews = flaggedReviewList[startIndex:endIndex]
 
-    return {
-        "page": page,
-        "pageSize": pageSize,
-        "totalFlagged": len(flaggedReviewList),
-        "pageCount": (len(flaggedReviewList) + pageSize - 1) // pageSize,
-        "reviews": paginatedReviews
-    }
+    return PaginatedFlaggedReviewsResponse(
+        page=page,
+        pageSize=pageSize,
+        totalFlagged=len(flaggedReviewList),
+        pageCount=(len(flaggedReviewList) + pageSize - 1) // pageSize,
+        reviews=paginatedReviews,
+    )

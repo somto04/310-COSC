@@ -33,7 +33,7 @@ def client(app):
     return TestClient(app)
 
 @pytest.fixture
-def sample_users():
+def sampleUsers():
     """Sample user data for tests"""
     return [
         {
@@ -63,7 +63,7 @@ def sample_users():
     ]
 
 @pytest.fixture
-def new_user_payload():
+def newUserPayload():
     """Sample user payload creation"""
     return {
         "firstName": "Charlie",
@@ -75,7 +75,7 @@ def new_user_payload():
     }
     
 @pytest.fixture
-def updated_user_payload():
+def updatedUserPayload():
     """Sample update payload following UserUpdate schema"""
     return {
         "firstName": "AliceUpdated",
@@ -86,73 +86,113 @@ def updated_user_payload():
 #tests
 
 @patch("app.routers.userRoute.listUsers")
-def test_get_all_users(mock_list, client, sample_users):
+def test_getAllUsers(mockList, client, sampleUsers):
     """Test GET /users returns all users"""
-    mock_list.return_value = sample_users
+    mockList.return_value = sampleUsers
     response = client.get("/users")
     assert response.status_code == 200
     data = response.json()
+    
     assert len(data) == 2
     assert data[0]["username"] == "alicej"
-    mock_list.assert_called_once()
+    assert data[0]["id"] == 1
+    assert data[0]["firstName"] == "Alice"
+    assert data[0]["isBanned"] is False
+
+    # SafeUser check - sensitive fields should not be present
+    for user in data:
+        assert "email" not in user
+        assert "pw" not in user
+        assert "age" not in user
+        assert "lastName" not in user
+        assert "role" not in user
+        assert "penalties" not in user
+    mockList.assert_called_once()
     
 @patch("app.routers.userRoute.createUser")
-def test_create_user(mock_create, client, new_user_payload):
+def test_createUser(mockCreate, client, newUserPayload):
     """Test POST /users creates a user"""
-    mock_create.return_value = {
+    mockCreate.return_value = {
         "id": 3,
-        **new_user_payload
+        **newUserPayload
     } 
-    response = client.post("/users", json=new_user_payload)
+    response = client.post("/users", json=newUserPayload)
     assert response.status_code == 201 
     data = response.json()
     assert data["username"] == "snoopyfan123"
     assert data ["role"] == Role.USER
     assert data["age"] >= 16
-    mock_create.assert_called_once()
+    mockCreate.assert_called_once()
     
 @patch("app.routers.userRoute.getUserById")
-def test_get_user_by_id(mock_get, client, sample_users):
+def test_getUserById(mockGet, client, sampleUsers):
     """Test GET /users/{id} returns the correct user"""
-    mock_get.return_value = sample_users[0]
+    mockGet.return_value = sampleUsers[0]
     response = client.get("/users/1")
     assert response.status_code == 200
     data = response.json()
     assert data["id"] == 1
+    assert data["firstName"] == "Alice"
     assert data["username"] == "alicej"
-    mock_get.assert_called_once_with(1)
+    assert data["isBanned"] is False
+
+    for user in data:
+        assert "email" not in user
+        assert "pw" not in user
+        assert "age" not in user
+        assert "lastName" not in user
+        assert "role" not in user
+        assert "penalties" not in user
+    
+    mockGet.assert_called_once_with(1)
 
 @patch("app.routers.userRoute.updateUser")
-def test_update_user(mock_update, client, sample_users, updated_user_payload):
+def test_updateUser(mockUpdate, client, sampleUsers, updatedUserPayload):
     """Test PUT /users/{id} updates user info"""
-    updated_user = sample_users[0].copy()
-    updated_user.update(updated_user_payload)
-    mock_update.return_value = updated_user
-    response = client.put("/users/1", json=updated_user_payload)
+
+    #override dependency to simulate authenticated user
+    from app.routers.auth import getCurrentUser
+    client.app.dependency_overrides[getCurrentUser] = lambda: MagicMock(id=1)
+    
+    updatedUser = sampleUsers[0].copy()
+    updatedUser.update(updatedUserPayload)
+    mockUpdate.return_value = updatedUser
+
+    response = client.put("/users/1", json=updatedUserPayload)
+
+    client.app.dependency_overrides = {}
+
     assert response.status_code == 200
+
     data = response.json()
     assert data["firstName"] == "AliceUpdated"
     assert data["email"] == "aliceupdated@example.com"
-    
+
     from app.schemas.user import UserUpdate
-    mock_update.assert_called_once_with(1, UserUpdate(**updated_user_payload))
+    mockUpdate.assert_called_once_with(1, UserUpdate(**updatedUserPayload))
+
 
 @patch("app.routers.userRoute.deleteUser")
-def test_delete_user(mock_delete, client):
-    """Test DELETE /users/{id} deletes a user"""
-    mock_delete.return_value = None
+def test_deleteUser(mockDelete, client, sampleUsers):
+    """Test DELETE /users/{id} admin only deletes a user"""
+    from app.routers.auth import getCurrentUser
+    
+    adminModel = User(**sampleUsers[1])
+    client.app.dependency_overrides[getCurrentUser] = lambda: adminModel
+
+    mockDelete.return_value = None
     response = client.delete("/users/1")
     assert response.status_code == 204
-    mock_delete.assert_called_once_with(1)
+    mockDelete.assert_called_once_with(1)
 
-def fake_get_current_user():
+def fakeGetCurrentUser():
     return MagicMock(id=1)
 
-def test_get_user_profile(sample_users):
+def test_getUserProfile(sampleUsers):
     """Gets the user profile based on the userId given"""
-    main_app.app.dependency_overrides[getCurrentUser] = fake_get_current_user
+    main_app.app.dependency_overrides[getCurrentUser] = fakeGetCurrentUser
     client = TestClient(main_app.app)
-    with patch("app.routers.userRoute.getUserById", return_value = sample_users[0]):
+    with patch("app.routers.userRoute.getUserById", return_value = sampleUsers[0]):
         response = client.get("/users/userProfile/1")
 
     assert response.status_code == 200

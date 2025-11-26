@@ -1,83 +1,24 @@
 from typing import List, Dict, Any
-from .repo import _base_load_all, _base_save_all, DATA_DIR
-from ..schemas.movie import Movie
+from .repo import _baseLoadAll, _baseSaveAll, DATA_DIR
 
-MOVIE_DATA_PATH = DATA_DIR / "movies.json"
-_MOVIE_CACHE: List[Movie] | None = None
-_NEXT_MOVIE_ID: int | None = None
+MOVIE_DATA_FILE = DATA_DIR / "movies.json"
 
-def getMaxMovieId(movies: List[Movie]) -> int:
-    """
-    Return the maximum Movie ID in a list of movies, or 0 if empty.
-    """
-    return max((movie.id for movie in movies), default=0)
-
-
-def _load_movie_cache() -> List[Movie]:
-    """
-    Load movies from the data file into a cache.
-
-    Loads the movies only once and caches them for future calls.
-    Returns:
-        List[Movie]: A list of movies.
-    """
-    global _MOVIE_CACHE, _NEXT_MOVIE_ID
-    if _MOVIE_CACHE is None:
-        movie_dicts = _base_load_all(MOVIE_DATA_PATH)
-        _MOVIE_CACHE = [Movie(**movie) for movie in movie_dicts]
-
-        maxId = getMaxMovieId(_MOVIE_CACHE)
-        _NEXT_MOVIE_ID = maxId + 1
-    return _MOVIE_CACHE
-
-def getNextMovieId() -> int:
-    """
-    Get the next available movie ID.
-
-    Returns:
-        int: The next movie ID.
-    """
-    global _NEXT_MOVIE_ID
-    if _NEXT_MOVIE_ID is None:
-        _load_movie_cache()
-
-    assert _NEXT_MOVIE_ID is not None
-
-    next_id = _NEXT_MOVIE_ID
-    _NEXT_MOVIE_ID += 1
-    return next_id
-
-
-def loadMovies() -> List[Movie]:
+def loadAll() -> List[Dict[str, Any]]:
     """
     Load all movies from the movies data file.
 
     Returns:
-        List[Movie]: A list of movie items.
+        List[Dict[str, Any]]: A list of movie items.
     """
-    return _load_movie_cache()
-    
-def saveMovies(movies: List[Movie]) -> None:
+    return _baseLoadAll(MOVIE_DATA_FILE)
+
+def saveAll(items: List[Dict[str, Any]]) -> None:
     """
     Save all movies to the movies data file.
 
     Args:
-        movies (List[Movie]): A list of movie items to save.
+        items (List[Dict[str, Any]]): A list of movie items to save.
     """
-    global _MOVIE_CACHE, _NEXT_MOVIE_ID
-    _MOVIE_CACHE = movies
+    _baseSaveAll(MOVIE_DATA_FILE, items)
 
-    maxId = getMaxMovieId(movies)
-    if _NEXT_MOVIE_ID is None or _NEXT_MOVIE_ID <= maxId:
-        _NEXT_MOVIE_ID = maxId + 1
-
-    movie_dict = [movie.model_dump() for movie in movies]
-    _base_save_all(MOVIE_DATA_PATH, movie_dict)
-
-def loadAll():
-    return loadMovies()
-
-def saveAll(movies: List[Movie]):
-    return saveMovies(movies)
-
-__all__ = ["loadMovies", "saveMovies", "getNextMovieId"]
+__all__ = ["loadAll", "saveAll"]

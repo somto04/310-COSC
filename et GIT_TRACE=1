@@ -1,0 +1,11 @@
+[33mcommit eac9856b52360b7d803552208f864f856175510e[m
+Author: Gamu Mhere <gamu.mhere@gmail.com>
+Date:   Tue Nov 18 12:32:59 2025 -0800
+
+    docker container
+
+ docker-compose.yml                    |  17 [32m+++++++++++++++++[m
+ full-project/backend/.dockerignore    |   8 [32m++++++++[m
+ full-project/backend/Dockerfile       |  19 [32m+++++++++++++++++++[m
+ full-project/backend/requirements.txt | Bin [31m1688[m -> [32m672[m bytes
+ 4 files changed, 44 insertions(+)

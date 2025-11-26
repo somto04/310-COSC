@@ -1,6 +1,6 @@
 from pathlib import Path
 
-def get_project_root() -> Path:
+def getProjectRoot() -> Path:
     """
     Return the absolute path to the root of the project directory '.../full-project'.
 

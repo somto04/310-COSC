@@ -1,7 +1,6 @@
 from typing import List, Optional
 from fastapi import APIRouter, HTTPException, status, Depends
 from app.routers.auth import requireAdmin
-from ..schemas.user import CurrentUser
 from app.schemas.movie import Movie, MovieCreate, MovieUpdate
 from app.services.movieService import (
     listMovies,
@@ -20,7 +19,7 @@ router = APIRouter(prefix="/movies", tags=["movies"])
 def searchMovies(query: Optional[str] = None):
     keyword = (query or "").lower().strip()
 
-    results = searchMovie(keyword)
+    results = searchMovie(keyword)   # returns List[Movie]
 
     if not results:
         raise HTTPException(status_code=404, detail="Movie not found")
@@ -61,17 +60,17 @@ def getMovie(movieId: int):
 
 # ADMIN ONLY #
 
-@router.post("", response_model=Movie, status_code=status.HTTP_201_CREATED)
-def postMovie(payload: MovieCreate, admin: CurrentUser = Depends(requireAdmin)):
-    return createMovie(payload)
+#@router.post("", response_model=Movie, status_code=status.HTTP_201_CREATED)
+#def postMovie(payload: MovieCreate, admin: dict = Depends(requireAdmin)):
+   # return createMovie(payload)
 
 
 @router.put("/{movieId}", response_model=Movie)
-def putMovie(movieId: int, payload: MovieUpdate, admin: CurrentUser = Depends(requireAdmin)):
+def updateMovie(movieId: int, payload: MovieUpdate, admin: dict = Depends(requireAdmin)):
     return updateMovie(movieId, payload)
 
 
 @router.delete("/{movieId}", status_code=status.HTTP_204_NO_CONTENT)
-def removeMovie(movieId: int, admin: CurrentUser = Depends(requireAdmin)):
+def removeMovie(movieId: int, admin: dict = Depends(requireAdmin)):
     deleteMovie(movieId)
     return None

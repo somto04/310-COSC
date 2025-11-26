@@ -1,7 +1,7 @@
 # services/favoriteService.py
 from fastapi import HTTPException
 from ..repos.favoritesRepo import loadFavorites, saveFavorites
-from ..repos.movieRepo import loadAll as loadMovies
+from ..repos.movieRepo import loadMovies
 from ..schemas.favorites import Favorite
 
 def addFavorite(userId: int, movieId: int):

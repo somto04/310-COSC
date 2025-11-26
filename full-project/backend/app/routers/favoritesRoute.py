@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from ..services.favoritesService import addFavorite, removeFavorite, listFavorites
 from ..schemas.user import CurrentUser
-from ..routers.auth import getCurrentUser
+from ..routers.authRoute import getCurrentUser
 
 router = APIRouter(prefix="/favorites", tags=["Favorites"])
 

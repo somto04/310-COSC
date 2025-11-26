@@ -1,31 +1,26 @@
 from typing import List, Dict, Any
 from fastapi import HTTPException
 from ..schemas.movie import Movie, MovieUpdate, MovieCreate
-from ..repos.movieRepo import loadAll, saveAll
+from ..repos.movieRepo import loadMovies, saveMovies, getNextMovieId
 
 
 
-# Helpers to work with models
-def loadMovies() -> List[Movie]:
-    movieDataList = loadAll()  # list of dicts from the repo
-    movies: List[Movie] = [Movie(**movieData) for movieData in movieDataList]
-    return movies
+# # Helpers to work with models
+# def loadMovies() -> List[Movie]:
+#     movieDataList = loadMovies()  # list of dicts from the repo
+#     movies: List[Movie] = [Movie(**movieData) for movieData in movieDataList]
+#     return movies
 
 
-def saveMovies(movies: List[Movie]) -> None:
-    movieDataList = [movie.model_dump() for movie in movies]
-    saveAll(movieDataList)
+# def saveMovies(movies: List[Movie]) -> None:
+#     movieDataList = [movie.model_dump() for movie in movies]
+#     saveMovies(movieDataList)
 
 
 
 def listMovies() -> List[Movie]:
-    """ 
-    Lists all movies from the movies JSON.
-    
-    """
-    movies = loadMovies()
-    print("Loaded", len(movies), "movies")
-    return movies
+    """ Lists all movies currently stored """
+    return loadMovies()
 
 
 def createMovie(payload: MovieCreate) -> Movie:
@@ -37,12 +32,19 @@ def createMovie(payload: MovieCreate) -> Movie:
     """
     movies = loadMovies()
 
-    existingIds = [movie.id for movie in movies if isinstance(movie.id, int)]
-    newId = max(existingIds, default=0) + 1
+    newMovie = Movie(
+        id=getNextMovieId(), 
+        title=payload.title,
+        movieGenres=payload.movieGenres,
+        directors=payload.directors,
+        mainStars=payload.mainStars,
+        description=payload.description,
+        datePublished=payload.datePublished,
+        duration=payload.duration,
+        yearReleased=payload.yearReleased
+    )
 
-    newMovie = Movie(id=newId, **payload.model_dump())
     movies.append(newMovie)
-
     saveMovies(movies)
     return newMovie
 
@@ -97,15 +99,16 @@ def getMovieByFilter(
     return filteredMovies
 
 
-def getMovieById(movieId: int) -> Movie:
+def getMovieById(movieId: int | str) -> Movie:
     """
     Retrieves a movie by its ID.
     
     """
+    movieId = int(movieId)
     movies = loadMovies()
 
     for movie in movies:
-        if int(movie.id) == int(movieId):
+        if movie.id == movieId:
             return movie
 
     raise HTTPException(status_code=404, detail="Movie not found")
@@ -120,7 +123,7 @@ def updateMovie(movieId: int, payload: MovieUpdate) -> Movie:
     updateFields = payload.model_dump(exclude_unset=True)
 
     for movieIndex, movie in enumerate(movies):
-        if int(movie.id) == int(movieId):
+        if movie.id == movieId:
             updatedMovie = movie.model_copy(update=updateFields)
             movies[movieIndex] = updatedMovie
             saveMovies(movies)

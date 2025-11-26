@@ -91,10 +91,10 @@ def createMockUser(id, penalties=0, isBanned=False):
 def test_get_flagged_reviews(client):
     """Test getting paginated flagged reviews"""
     mockReviews = [
-        create_review(1, 100, 10, flagged=True),
-        create_review(2, 101, 11, flagged=False),
-        create_review(3, 102, 12, flagged=True),
-        create_review(4, 103, 13, flagged=True),
+        createReview(1, 100, 10, flagged=True),
+        createReview(2, 101, 11, flagged=False),
+        createReview(3, 102, 12, flagged=True),
+        createReview(4, 103, 13, flagged=True),
     ]
 
     # Patch where loadReviews is used in adminRoute
@@ -112,7 +112,7 @@ def test_get_flagged_reviews(client):
 
 def test_get_flagged_reviews_pagination(client):
     """Test pagination of flagged reviews"""
-    mockReviews = [create_review(i, 100 + i, 10, flagged=True) for i in range(1, 26)]
+    mockReviews = [createReview(i, 100 + i, 10, flagged=True) for i in range(1, 26)]
 
     with patch("app.routers.adminRoute.loadReviews", return_value=mockReviews):
         response = client.get("/admin/reports/reviews?page=2&pageSize=10")
@@ -130,8 +130,8 @@ def test_get_flagged_reviews_pagination(client):
 def test_get_flagged_reviews_empty(client):
     """Test when there are no flagged reviews"""
     mockReviews = [
-        create_review(1, 100, 10, flagged=False),
-        create_review(2, 101, 11, flagged=False),
+        createReview(1, 100, 10, flagged=False),
+        createReview(2, 101, 11, flagged=False),
     ]
 
     with patch("app.routers.adminRoute.loadReviews", return_value=mockReviews):
@@ -150,9 +150,9 @@ def test_get_flagged_reviews_empty(client):
 
 def test_accept_flag_success(client):
     """Test accepting a flag - should delete review and penalize user"""
-    mockReview = create_review(1, 100, 5, flagged=True)
+    mockReview = createReview(1, 100, 5, flagged=True)
     mockReviews = [mockReview]
-    mockUserAfterPenalty = create_mock_user(5, penalties=1, isBanned=False)
+    mockUserAfterPenalty = createMockUser(5, penalties=1, isBanned=False)
 
     with patch("app.routers.adminRoute.loadReviews", return_value=mockReviews), \
          patch("app.routers.adminRoute.deleteReview") as mock_delete, \
@@ -175,9 +175,9 @@ def test_accept_flag_success(client):
 
 def test_accept_flag_user_banned(client):
     """Test accepting a flag when user reaches max penalties"""
-    mockReview = create_review(1, 100, 5, flagged=True)
+    mockReview = createReview(1, 100, 5, flagged=True)
     mockReviews = [mockReview]
-    mockUserAfterPenalty = create_mock_user(5, penalties=3, isBanned=True)
+    mockUserAfterPenalty = createMockUser(5, penalties=3, isBanned=True)
 
     with patch("app.routers.adminRoute.loadReviews", return_value=mockReviews), \
          patch("app.routers.adminRoute.deleteReview"), \
@@ -208,7 +208,7 @@ def test_accept_flag_review_not_found(client):
 
 def test_reject_flag_success(client):
     """Test rejecting a flag - should unflag the review"""
-    mockReview = create_review(1, 100, 5, flagged=True)
+    mockReview = createReview(1, 100, 5, flagged=True)
     mockReviews = [mockReview]
 
     with patch("app.routers.adminRoute.loadReviews", return_value=mockReviews), \
@@ -244,9 +244,9 @@ def test_reject_flag_review_not_found(client):
 
 def test_mark_inappropriate_success(client):
     """Test marking a review as inappropriate"""
-    mockReview = create_review(1, 100, 5, flagged=False)
+    mockReview = createReview(1, 100, 5, flagged=False)
     mockReviews = [mockReview]
-    mockUserAfterPenalty = create_mock_user(5, penalties=1, isBanned=False)
+    mockUserAfterPenalty = createMockUser(5, penalties=1, isBanned=False)
 
     with patch("app.routers.adminRoute.loadReviews", return_value=mockReviews), \
          patch("app.routers.adminRoute.saveReviews") as mock_save, \

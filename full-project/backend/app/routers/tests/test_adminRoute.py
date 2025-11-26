@@ -4,7 +4,7 @@ from unittest.mock import patch
 from fastapi import HTTPException
 
 from app.app import app
-from app.routers.auth import getCurrentUser, requireAdmin
+from app.routers.authRoute import getCurrentUser, requireAdmin
 from app.schemas.role import Role
 from app.schemas.user import User
 from app.schemas.review import Review

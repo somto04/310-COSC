@@ -4,7 +4,7 @@ from ..repos.reviewRepo import loadReviews, saveReviews, getNextReviewId
 from ..repos import movieRepo
 from datetime import date
 
-class ReviewNotFoundError():
+class ReviewNotFoundError(Exception):
     pass
 
 def searchReviews(query: str) -> List[Review]:

@@ -92,8 +92,7 @@ def markReviewInappropriate(reviewId: int, currentAdmin: CurrentUser = Depends(r
     """Mark a review as inappropriate and penalize the user."""
     reviewList, review = getReviewById(reviewId)
 
-    review.flagged = True   
-    deleteReview(reviewId)
+    reviewList = [review for review in reviewList if review.id != reviewId]
     saveReviews(reviewList)
 
     updatedUser = incrementPenaltyForUser(review.userId)

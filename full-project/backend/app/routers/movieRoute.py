@@ -3,6 +3,7 @@ from fastapi import APIRouter, HTTPException, status, Depends
 from app.routers.authRoute import requireAdmin
 from app.schemas.movie import Movie, MovieCreate, MovieUpdate
 from app.services.movieService import (
+    MovieNotFoundError,
     listMovies,
     createMovie,
     getMovieById,
@@ -19,12 +20,12 @@ router = APIRouter(prefix="/movies", tags=["movies"])
 def searchMovies(query: Optional[str] = None):
     keyword = (query or "").lower().strip()
 
-    results = searchMovie(keyword)   # returns List[Movie]
+    results = searchMovie(keyword)  # returns List[Movie]
 
     if not results:
         raise HTTPException(status_code=404, detail="Movie not found")
 
-    return results 
+    return results
 
 
 @router.get("/filter", response_model=List[Movie])
@@ -42,7 +43,9 @@ def filterMovies(
     results = getMovieByFilter(genreQuery, year, directorQuery, starQuery)
 
     if not results:
-        raise HTTPException(status_code=404, detail="No movies found with the given filters")
+        raise HTTPException(
+            status_code=404, detail="No movies found with the given filters"
+        )
 
     return results
 
@@ -54,23 +57,33 @@ def getMovies():
 
 @router.get("/{movieId}", response_model=Movie)
 def getMovie(movieId: int):
-    return getMovieById(movieId)
-
+    try:
+        return getMovieById(movieId)
+    except MovieNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
 
 
 # ADMIN ONLY #
 
-#@router.post("", response_model=Movie, status_code=status.HTTP_201_CREATED)
-#def postMovie(payload: MovieCreate, admin: dict = Depends(requireAdmin)):
-   # return createMovie(payload)
+
+@router.post("", response_model=Movie, status_code=status.HTTP_201_CREATED)
+def addMovie(payload: MovieCreate, admin: dict = Depends(requireAdmin)):
+    return createMovie(payload)
 
 
 @router.put("/{movieId}", response_model=Movie)
-def updateMovie(movieId: int, payload: MovieUpdate, admin: dict = Depends(requireAdmin)):
-    return updateMovie(movieId, payload)
+def modifyMovieDetails(
+    movieId: int, payload: MovieUpdate, admin: dict = Depends(requireAdmin)
+):
+    try:
+        return updateMovie(movieId, payload)
+    except MovieNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
 
 
 @router.delete("/{movieId}", status_code=status.HTTP_204_NO_CONTENT)
 def removeMovie(movieId: int, admin: dict = Depends(requireAdmin)):
-    deleteMovie(movieId)
-    return None
+    try:
+        deleteMovie(movieId)
+    except MovieNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))

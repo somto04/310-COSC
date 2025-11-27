@@ -1,25 +1,21 @@
 from typing import List, Dict, Any
-from fastapi import HTTPException
 from ..schemas.movie import Movie, MovieUpdate, MovieCreate
 from ..repos.movieRepo import loadMovies, saveMovies, getNextMovieId
 
 
-
-# # Helpers to work with models
-# def loadMovies() -> List[Movie]:
-#     movieDataList = loadMovies()  # list of dicts from the repo
-#     movies: List[Movie] = [Movie(**movieData) for movieData in movieDataList]
-#     return movies
+class MovieError(Exception):
+    """Base class for all movie-related domain errors."""
+    pass
 
 
-# def saveMovies(movies: List[Movie]) -> None:
-#     movieDataList = [movie.model_dump() for movie in movies]
-#     saveMovies(movieDataList)
+class MovieNotFoundError(MovieError):
+    def __init__(self, message: str = "Movie not found"):
+        super().__init__(message)
 
 
 
 def listMovies() -> List[Movie]:
-    """ Lists all movies currently stored """
+    """Lists all movies currently stored"""
     return loadMovies()
 
 
@@ -33,7 +29,7 @@ def createMovie(payload: MovieCreate) -> Movie:
     movies = loadMovies()
 
     newMovie = Movie(
-        id=getNextMovieId(), 
+        id=getNextMovieId(),
         title=payload.title,
         movieGenres=payload.movieGenres,
         directors=payload.directors,
@@ -41,7 +37,7 @@ def createMovie(payload: MovieCreate) -> Movie:
         description=payload.description,
         datePublished=payload.datePublished,
         duration=payload.duration,
-        yearReleased=payload.yearReleased
+        yearReleased=payload.yearReleased,
     )
 
     movies.append(newMovie)
@@ -74,7 +70,9 @@ def getMovieByFilter(
 
         # Genre filter
         if genreQuery:
-            loweredGenres = [genreItem.lower().strip() for genreItem in movie.movieGenres]
+            loweredGenres = [
+                genreItem.lower().strip() for genreItem in movie.movieGenres
+            ]
             if not any(genreQuery in loweredGenre for loweredGenre in loweredGenres):
                 continue
 
@@ -84,8 +82,12 @@ def getMovieByFilter(
 
         # Director filter
         if directorQuery:
-            loweredDirectors = [directorItem.lower().strip() for directorItem in movie.directors]
-            if not any(directorQuery in loweredDirector for loweredDirector in loweredDirectors):
+            loweredDirectors = [
+                directorItem.lower().strip() for directorItem in movie.directors
+            ]
+            if not any(
+                directorQuery in loweredDirector for loweredDirector in loweredDirectors
+            ):
                 continue
 
         # Star filter
@@ -102,7 +104,7 @@ def getMovieByFilter(
 def getMovieById(movieId: int | str) -> Movie:
     """
     Retrieves a movie by its ID.
-    
+
     """
     movieId = int(movieId)
     movies = loadMovies()
@@ -111,11 +113,11 @@ def getMovieById(movieId: int | str) -> Movie:
         if movie.id == movieId:
             return movie
 
-    raise HTTPException(status_code=404, detail="Movie not found")
+    raise MovieNotFoundError()
 
 
 def updateMovie(movieId: int, payload: MovieUpdate) -> Movie:
-    """ 
+    """
     Updates a movie by its ID with the provided fields.
 
     """
@@ -129,22 +131,28 @@ def updateMovie(movieId: int, payload: MovieUpdate) -> Movie:
             saveMovies(movies)
             return updatedMovie
 
-    raise HTTPException(status_code=404, detail="Movie not found")
+    raise MovieNotFoundError()
 
 
 def deleteMovie(movieId: int) -> None:
-    """ 
+    """
     Deletes a movie by its ID.
-    
+
     """
     movies = loadMovies()
-    filteredMovies = [movie for movie in movies if int(movie.id) != int(movieId)]
+    deleted = False
+    result = []
 
-    if len(filteredMovies) == len(movies):
-        raise HTTPException(status_code=404, detail="Movie not found")
+    for movie in movies:
+        if int(movie.id) == int(movieId):
+            deleted = True
+            continue
+        result.append(movie)
 
-    saveMovies(filteredMovies)
+    if not deleted:
+        raise MovieNotFoundError()
 
+    saveMovies(result)
 
 
 def searchViaFilters(filters: Dict[str, Any]) -> List[Movie]:
@@ -187,11 +195,12 @@ def searchViaFilters(filters: Dict[str, Any]) -> List[Movie]:
     return matchedMovies
 
 
-
 def searchMovie(query: str) -> List[Movie]:
     """
-      Searches movies based on a query string across multiple fields.
-    
+    Searches movies based on a query string across multiple fields.
+
+    Returns:
+        List of Movie models that match the search query.
     """
     cleanedQuery = (query or "").lower().strip()
     if not cleanedQuery:
@@ -210,7 +219,13 @@ def searchMovie(query: str) -> List[Movie]:
 
         if any(
             cleanedQuery in fieldText
-            for fieldText in [titleText, descriptionText, genreText, starText, directorText]
+            for fieldText in [
+                titleText,
+                descriptionText,
+                genreText,
+                starText,
+                directorText,
+            ]
         ):
             matchedMovies.append(movie)
 

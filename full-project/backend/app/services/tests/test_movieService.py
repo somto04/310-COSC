@@ -2,10 +2,10 @@ from decimal import Decimal
 from datetime import date
 
 import pytest
-from fastapi import HTTPException
 
 from app.schemas.movie import Movie, MovieCreate, MovieUpdate
 from app.services.movieService import (
+    MovieNotFoundError,
     listMovies,
     createMovie,
     getMovieByFilter,
@@ -118,11 +118,10 @@ def testGetMovieByIdRaisesWhenNotFound(monkeypatch, sampleMovieList):
 
     monkeypatch.setattr(movieServiceModule, "loadMovies", fakeLoadMovies)
 
-    with pytest.raises(HTTPException) as errorInfo:
+    with pytest.raises(MovieNotFoundError) as errorInfo:
         getMovieById(999)
 
-    assert errorInfo.value.status_code == 404
-    assert "Movie not found" in errorInfo.value.detail
+    assert "Movie not found" in str(errorInfo.value)
 
 
 def testUpdateMovieUpdatesFieldsAndSaves(monkeypatch, sampleMovieList):
@@ -165,11 +164,10 @@ def testUpdateMovieRaisesWhenNotFound(monkeypatch, sampleMovieList):
 
     payload = MovieUpdate(title="Should Not Save")
 
-    with pytest.raises(HTTPException) as errorInfo:
+    with pytest.raises(MovieNotFoundError) as errorInfo:
         updateMovie(999, payload)
 
-    assert errorInfo.value.status_code == 404
-    assert "Movie not found" in errorInfo.value.detail
+    assert "Movie not found" in str(errorInfo.value)
     assert savedMovies == []
 
 
@@ -205,11 +203,10 @@ def testDeleteMovieRaisesWhenNotFound(monkeypatch, sampleMovieList):
     monkeypatch.setattr(movieServiceModule, "loadMovies", fakeLoadMovies)
     monkeypatch.setattr(movieServiceModule, "saveMovies", fakeSaveMovies)
 
-    with pytest.raises(HTTPException) as errorInfo:
+    with pytest.raises(MovieNotFoundError) as errorInfo:
         deleteMovie(999)
 
-    assert errorInfo.value.status_code == 404
-    assert "Movie not found" in errorInfo.value.detail
+    assert "Movie not found" in str(errorInfo.value)
     assert savedMovies == []
 
 

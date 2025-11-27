@@ -7,6 +7,7 @@ from pydantic import ValidationError
 def test_movieValidInput():
     movie = Movie(
         id=1,
+        tmdbId=123456,
         title="Test",
         movieGenres=["Drama"],
         datePublished="2020-01-01",  # type: ignore
@@ -19,6 +20,7 @@ def test_movieInvalidDate():
     with pytest.raises(ValidationError):
         Movie(
             id=1,
+            tmdbId=123456,
             title="Test",
             movieGenres=["Drama"],
             datePublished="invalid-date",  # type: ignore
@@ -29,6 +31,7 @@ def test_movieInvalidDate():
 def test_movieAliases():
     movie = Movie(
         id=1,
+        tmdbId=654321,
         movieGenre=["Action"],  # legacy key # type: ignore
         movieName="Thing",  # type: ignore
         duration=100,
@@ -37,8 +40,8 @@ def test_movieAliases():
 
 
 def test_defaultFactoryLists():
-    m1 = MovieCreate(title="Bullet Train", movieGenres=["Action"], duration=120)
-    m2 = MovieCreate(title="Oppenheimer", movieGenres=["Drama"], duration=180)
+    m1 = MovieCreate(tmdbId=0, title="Bullet Train", movieGenres=["Action"], duration=120)
+    m2 = MovieCreate(tmdbId=1, title="Oppenheimer", movieGenres=["Drama"], duration=180)
 
     assert m1.directors == []
     assert m2.directors == []
@@ -47,6 +50,7 @@ def test_defaultFactoryLists():
 
 def test_extractYearFromDatePipeline():
     payload = MovieCreate(
+        tmdbId=789012,
         title="JuJutsu Kaisen 0",
         movieGenres=["Animation"],
         datePublished="2021-12-24",  # type: ignore
@@ -61,7 +65,7 @@ def test_extractYearFromDatePipeline():
 
 
 def test_dump():
-    movie = Movie(id=1, title="Ponyo", movieGenres=["Animation"], duration=103)
+    movie = Movie(id=1,tmdbId=2344, title="Ponyo", movieGenres=["Animation"], duration=103)
     dumped = movie.model_dump()
     assert dumped["duration"] == 103
     assert dumped["title"] == "Ponyo"
@@ -76,6 +80,7 @@ def test_updateMovieImdbRating():
 def test_updateExistingMovie():
     movie = Movie(
         id=1,
+        tmdbId=5678,
         title="Evangelion: 1.0 You Are (Not) Alone",
         movieGenres=["Animation", "Sci-Fi"],
         duration=110,
@@ -100,6 +105,7 @@ def test_invalidImdbRating():
     with pytest.raises(ValidationError):
         Movie(
             id=2,
+            tmdbId=999999,
             title="Bad Movie",
             movieGenres=["Drama"],
             duration=90,

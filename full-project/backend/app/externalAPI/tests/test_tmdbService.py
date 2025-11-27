@@ -1,15 +1,16 @@
 import pytest
 from unittest.mock import patch, MagicMock
 
-from ..tmdbService import getMovieDetails, getRecommendations
+from ..tmdbService import (
+    getMovieDetailsByName,
+    getMovieDetailsById,
+    getRecommendationsById,
+    getRecommendationsByName
+)
 from ..tmdbSchema import TMDbMovie, TMDbRecommendation
 
-
 @patch("app.externalAPI.tmdbService.requests.get")
-def test_getMovieDetailsSuccess(mockGet):
-    """getMovieDetails returns a TMDbMovie model when API returns results."""
-    
-    # Fake TMDb API response
+def test_getMovieDetailsByNameSuccess(mockGet):
     fakeJson = {
         "results": [
             {
@@ -22,12 +23,11 @@ def test_getMovieDetailsSuccess(mockGet):
         ]
     }
 
-    # Configure the mocked API call
     mockResponse = MagicMock()
     mockResponse.json.return_value = fakeJson
     mockGet.return_value = mockResponse
 
-    movie = getMovieDetails("Inception")
+    movie = getMovieDetailsByName("Inception")
 
     assert isinstance(movie, TMDbMovie)
     assert movie.id == 123
@@ -36,24 +36,39 @@ def test_getMovieDetailsSuccess(mockGet):
     assert movie.overview == "A dream within a dream."
     assert movie.rating == 8.8
 
-
 @patch("app.externalAPI.tmdbService.requests.get")
-def test_getMovieDetailsNoResults(mockGet):
-    """getMovieDetails returns None when API returns no matches."""
-
+def test_getMovieDetailsByNameNoResults(mockGet):
     mockResponse = MagicMock()
     mockResponse.json.return_value = {"results": []}
     mockGet.return_value = mockResponse
 
-    movie = getMovieDetails("Unknown Title")
+    movie = getMovieDetailsByName("Unknown Title")
     assert movie is None
 
+@patch("app.externalAPI.tmdbService.requests.get")
+def test_getMovieDetailsByIdSuccess(mockGet):
+    fakeJson = {
+        "id": 999,
+        "title": "Avatar",
+        "poster_path": "/avatar.jpg",
+        "overview": "Space people go blue.",
+        "vote_average": 7.8
+    }
 
+    mockResponse = MagicMock()
+    mockResponse.json.return_value = fakeJson
+    mockGet.return_value = mockResponse
+
+    movie = getMovieDetailsById(999)
+
+    assert isinstance(movie, TMDbMovie)
+    assert movie.id == 999
+    assert movie.title == "Avatar"
+    assert movie.poster.endswith("/avatar.jpg")
+    assert movie.rating == 7.8
 
 @patch("app.externalAPI.tmdbService.requests.get")
-def test_getRecommendations(mockGet):
-    """getRecommendations returns a list of TMDbRecommendation models."""
-
+def test_getRecommendationsIdSuccess(mockGet):
     fakeJson = {
         "results": [
             {
@@ -75,11 +90,43 @@ def test_getRecommendations(mockGet):
     mockResponse.json.return_value = fakeJson
     mockGet.return_value = mockResponse
 
-    recs = getRecommendations(123)
-    
+    recs = getRecommendationsById(123)
+
     assert len(recs) == 2
     assert isinstance(recs[0], TMDbRecommendation)
     assert recs[0].title == "Dunkirk"
     assert recs[1].title == "Tenet"
     assert recs[0].rating == 7.9
     assert recs[1].poster.endswith("/tenet.jpg")
+
+@patch("app.externalAPI.tmdbService.requests.get")
+def test_getRecommendationsByName_success(mockGet):
+    
+    fakeSearchJson = {
+        "results": [
+            {"id": 500} 
+        ]
+    }
+
+   
+    fakeRecJson = {
+        "results": [
+            {
+                "id": 700,
+                "title": "Interstellar",
+                "poster_path": "/interstellar.jpg",
+                "vote_average": 8.6
+            }
+        ]
+    }
+
+    mockResponse = MagicMock()
+    mockResponse.json.side_effect = [fakeSearchJson, fakeRecJson]  
+    mockGet.return_value = mockResponse
+
+    recs = getRecommendationsByName("Inception")
+
+    assert len(recs) == 1
+    assert recs[0].title == "Interstellar"
+    assert recs[0].poster.endswith("/interstellar.jpg")
+    assert recs[0].rating == 8.6

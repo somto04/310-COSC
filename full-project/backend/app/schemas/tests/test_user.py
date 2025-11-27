@@ -16,6 +16,7 @@ def test_user_valid_input():
         role=Role.USER,
         penalties=0,
         isBanned=False,
+        watchlist=[],
     )
     assert user.username == "testuser"
     assert user.age == 20
@@ -112,10 +113,11 @@ def test_userupdate_partial_update():
         role=Role.USER,
         penalties=0,
         isBanned=False,
+        watchlist=[],
     )
 
     update_data = UserUpdate(
-        firstName="NewFirst", email="new@example.com"
+        firstName="NewFirst", email="new@example.com", watchlist=[2]
     )  # type: ignore[call-arg]
 
     update_dict = update_data.model_dump(exclude_unset=True)
@@ -123,6 +125,7 @@ def test_userupdate_partial_update():
 
     assert updated.firstName == "NewFirst"
     assert updated.email == "new@example.com"
+    assert updated.watchlist[0] == 2
 
     # unchanged
     assert updated.lastName == "Name"

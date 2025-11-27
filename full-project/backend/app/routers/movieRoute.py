@@ -65,13 +65,14 @@ def getMovie(movieId: int):
 
 # ADMIN ONLY #
 
-# @router.post("", response_model=Movie, status_code=status.HTTP_201_CREATED)
-# def postMovie(payload: MovieCreate, admin: dict = Depends(requireAdmin)):
-# return createMovie(payload)
+
+@router.post("", response_model=Movie, status_code=status.HTTP_201_CREATED)
+def addMovie(payload: MovieCreate, admin: dict = Depends(requireAdmin)):
+    return createMovie(payload)
 
 
 @router.put("/{movieId}", response_model=Movie)
-def updateMovie(
+def modifyMovieDetails(
     movieId: int, payload: MovieUpdate, admin: dict = Depends(requireAdmin)
 ):
     try:

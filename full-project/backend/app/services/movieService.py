@@ -1,5 +1,4 @@
 from typing import List, Dict, Any
-from fastapi import HTTPException
 from ..schemas.movie import Movie, MovieUpdate, MovieCreate
 from ..repos.movieRepo import loadMovies, saveMovies, getNextMovieId
 

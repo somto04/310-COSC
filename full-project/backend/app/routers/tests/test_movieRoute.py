@@ -69,6 +69,9 @@ def client(app):
     return TestClient(app)
 
 
+# ---------- Unit-style route tests ----------
+
+
 def testSearchMoviesCallsServiceWithNormalizedKeyword(monkeypatch, sampleMoviesList):
     capturedKeyword = {}
 
@@ -161,8 +164,9 @@ def testGetMovieReturnsSingleMovie(monkeypatch, sampleMovie):
 
 
 def testGetMoviePropagatesServiceErrors(monkeypatch):
+    # Service raises domain exception; route should translate to HTTPException
     def fakeGetMovieById(movieId):
-        raise HTTPException(status_code=404, detail="Movie not found")
+        raise movieRouteModule.MovieNotFoundError("Movie not found")
 
     monkeypatch.setattr(movieRouteModule, "getMovieById", fakeGetMovieById)
 
@@ -171,6 +175,9 @@ def testGetMoviePropagatesServiceErrors(monkeypatch):
 
     assert errorInfo.value.status_code == 404
     assert errorInfo.value.detail == "Movie not found"
+
+
+# ---------- Integration tests (TestClient) ----------
 
 
 def testGetMoviesEndpointReturnsMovies(monkeypatch, client, sampleMoviesList):
@@ -203,7 +210,7 @@ def testGetMovieEndpointReturnsMovie(monkeypatch, client, sampleMovie):
 
 def testGetMovieEndpointReturns404(monkeypatch, client):
     def fakeGetMovieById(movieId):
-        raise HTTPException(status_code=404, detail="Movie not found")
+        raise movieRouteModule.MovieNotFoundError("Movie not found")
 
     monkeypatch.setattr(movieRouteModule, "getMovieById", fakeGetMovieById)
 
@@ -281,3 +288,93 @@ def testRemoveMovieEndpointCallsService(monkeypatch, client):
 
     assert response.status_code == 204
     assert calledArgs["movieId"] == 1
+
+
+def testRemoveMovieEndpointReturns404(monkeypatch, client):
+    def fakeDeleteMovie(movieId):
+        raise movieRouteModule.MovieNotFoundError("Movie not found")
+
+    monkeypatch.setattr(movieRouteModule, "deleteMovie", fakeDeleteMovie)
+
+    response = client.delete("/movies/999")
+    responseJson = response.json()
+
+    assert response.status_code == 404
+    assert responseJson["detail"] == "Movie not found"
+
+
+def testAddMovieEndpointCreatesMovie(monkeypatch, client, sampleMovie):
+    calledPayload = {}
+
+    def fakeCreateMovie(payload):
+        calledPayload["payload"] = payload
+        return sampleMovie
+
+    monkeypatch.setattr(movieRouteModule, "createMovie", fakeCreateMovie)
+
+    requestBody = {
+        "title": "New Movie",
+        "movieIMDbRating": "7.5",
+        "movieGenres": ["Action"],
+        "directors": ["Some Director"],
+        "mainStars": ["Some Star"],
+        "description": "Test description",
+        "datePublished": "2020-01-01",
+        "duration": 120,
+        "yearReleased": 2020,
+    }
+
+    response = client.post("/movies", json=requestBody)
+    responseJson = response.json()
+
+    assert response.status_code == 201
+    # ensure service was called with a Pydantic model
+    assert hasattr(calledPayload["payload"], "title")
+    assert calledPayload["payload"].title == "New Movie"
+    # response is whatever fakeCreateMovie returned
+    assert responseJson["title"] == "Inception"
+    assert responseJson["id"] == 1
+
+
+def testModifyMovieDetailsEndpointUpdatesMovie(monkeypatch, client, sampleMovie):
+    calledArgs = {}
+
+    def fakeUpdateMovie(movieId, payload):
+        calledArgs["movieId"] = movieId
+        calledArgs["payload"] = payload
+        return sampleMovie
+
+    monkeypatch.setattr(movieRouteModule, "updateMovie", fakeUpdateMovie)
+
+    requestBody = {
+        "title": "Updated Title",
+        "description": "Updated description",
+    }
+
+    response = client.put("/movies/1", json=requestBody)
+    responseJson = response.json()
+
+    assert response.status_code == 200
+    assert responseJson["id"] == 1
+    assert calledArgs["movieId"] == 1
+    assert hasattr(calledArgs["payload"], "title")
+    assert calledArgs["payload"].title == "Updated Title"
+
+
+def testModifyMovieDetailsEndpointReturns404(monkeypatch, client):
+    def fakeUpdateMovie(movieId, payload):
+        raise movieRouteModule.MovieNotFoundError("Movie not found")
+
+    monkeypatch.setattr(movieRouteModule, "updateMovie", fakeUpdateMovie)
+
+    requestBody = {
+        "title": "Does Not Matter",
+        "description": "Still not found",
+    }
+
+    response = client.put("/movies/999", json=requestBody)
+    responseJson = response.json()
+
+    assert response.status_code == 404
+    assert responseJson["detail"] == "Movie not found"
+

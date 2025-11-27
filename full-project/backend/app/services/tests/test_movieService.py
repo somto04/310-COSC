@@ -210,6 +210,9 @@ def testDeleteMovieRaisesWhenNotFound(monkeypatch, sampleMovieList):
     assert savedMovies == []
 
 
+# ---------- getMovieByFilter ----------
+
+
 def testGetMovieByFilterFiltersByGenre(monkeypatch, sampleMovieList):
     def fakeLoadMovies():
         return sampleMovieList
@@ -258,6 +261,35 @@ def testGetMovieByFilterFiltersByStar(monkeypatch, sampleMovieList):
     assert resultMovies[0].title == "Avengers Endgame"
 
 
+def testGetMovieByFilterNoFiltersReturnsAll(monkeypatch, sampleMovieList):
+    """Covers branch where all filter params are None."""
+    def fakeLoadMovies():
+        return sampleMovieList
+
+    monkeypatch.setattr(movieServiceModule, "loadMovies", fakeLoadMovies)
+
+    resultMovies = getMovieByFilter()
+
+    assert len(resultMovies) == 2
+    titles = {m.title for m in resultMovies}
+    assert titles == {"Avengers Endgame", "Inception"}
+
+
+def testGetMovieByFilterReturnsEmptyWhenNoMatch(monkeypatch, sampleMovieList):
+    """Covers the case where filters produce no results."""
+    def fakeLoadMovies():
+        return sampleMovieList
+
+    monkeypatch.setattr(movieServiceModule, "loadMovies", fakeLoadMovies)
+
+    resultMovies = getMovieByFilter(genre="Comedy")
+
+    assert resultMovies == []
+
+
+# ---------- searchViaFilters ----------
+
+
 def testSearchViaFiltersMatchesStringAndList(monkeypatch, sampleMovieList):
     def fakeLoadMovies():
         return sampleMovieList
@@ -286,6 +318,38 @@ def testSearchViaFiltersReturnsEmptyWhenNoMatch(monkeypatch, sampleMovieList):
     resultMovies = searchViaFilters(filters)
 
     assert resultMovies == []
+
+
+def testSearchViaFiltersSupportsNumericField(monkeypatch, sampleMovieList):
+    """Covers the int/float filter branch."""
+    def fakeLoadMovies():
+        return sampleMovieList
+
+    monkeypatch.setattr(movieServiceModule, "loadMovies", fakeLoadMovies)
+
+    filters = {"duration": 148}  # Inception
+
+    resultMovies = searchViaFilters(filters)
+
+    assert len(resultMovies) == 1
+    assert resultMovies[0].title == "Inception"
+
+
+def testSearchViaFiltersReturnsEmptyWhenKeyMissing(monkeypatch, sampleMovieList):
+    """Covers the branch where filterKey is not in movieDict."""
+    def fakeLoadMovies():
+        return sampleMovieList
+
+    monkeypatch.setattr(movieServiceModule, "loadMovies", fakeLoadMovies)
+
+    filters = {"nonexistentField": "whatever"}
+
+    resultMovies = searchViaFilters(filters)
+
+    assert resultMovies == []
+
+
+# ---------- searchMovie ----------
 
 
 def testSearchMovieFindsByTitle(monkeypatch, sampleMovieList):
@@ -324,6 +388,42 @@ def testSearchMovieFindsByGenre(monkeypatch, sampleMovieList):
     assert resultMovies[0].title == "Inception"
 
 
+def testSearchMovieFindsByDirector(monkeypatch, sampleMovieList):
+    def fakeLoadMovies():
+        return sampleMovieList
+
+    monkeypatch.setattr(movieServiceModule, "loadMovies", fakeLoadMovies)
+
+    resultMovies = searchMovie("Nolan")
+
+    assert len(resultMovies) == 1
+    assert resultMovies[0].title == "Inception"
+
+
+def testSearchMovieFindsByStar(monkeypatch, sampleMovieList):
+    def fakeLoadMovies():
+        return sampleMovieList
+
+    monkeypatch.setattr(movieServiceModule, "loadMovies", fakeLoadMovies)
+
+    resultMovies = searchMovie("Leonardo")
+
+    assert len(resultMovies) == 1
+    assert resultMovies[0].title == "Inception"
+
+
+def testSearchMovieReturnsEmptyWhenNoMatch(monkeypatch, sampleMovieList):
+    """Non-blank query that finds nothing."""
+    def fakeLoadMovies():
+        return sampleMovieList
+
+    monkeypatch.setattr(movieServiceModule, "loadMovies", fakeLoadMovies)
+
+    resultMovies = searchMovie("Some Random Trash")
+
+    assert resultMovies == []
+
+
 def testSearchMovieReturnsEmptyForBlankQuery(monkeypatch, sampleMovieList):
     def fakeLoadMovies():
         return sampleMovieList
@@ -331,5 +431,34 @@ def testSearchMovieReturnsEmptyForBlankQuery(monkeypatch, sampleMovieList):
     monkeypatch.setattr(movieServiceModule, "loadMovies", fakeLoadMovies)
 
     resultMovies = searchMovie("   ")
+
+    assert resultMovies == []
+
+def testSearchViaFiltersNumericFilterNoMatch(monkeypatch, sampleMovieList):
+    """Covers the numeric != branch (isMatch = False for int/float)."""
+    def fakeLoadMovies():
+        return sampleMovieList
+
+    monkeypatch.setattr(movieServiceModule, "loadMovies", fakeLoadMovies)
+
+    # No movie has duration 999
+    filters = {"duration": 999}
+
+    resultMovies = searchViaFilters(filters)
+
+    assert resultMovies == []
+
+
+def testSearchViaFiltersListFilterNoMatch(monkeypatch, sampleMovieList):
+    """Covers the list branch where not all filter items are present."""
+    def fakeLoadMovies():
+        return sampleMovieList
+
+    monkeypatch.setattr(movieServiceModule, "loadMovies", fakeLoadMovies)
+
+    # No movie has genre "Romance"
+    filters = {"movieGenres": ["Romance"]}
+
+    resultMovies = searchViaFilters(filters)
 
     assert resultMovies == []

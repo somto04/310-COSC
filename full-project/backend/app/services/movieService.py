@@ -4,6 +4,8 @@ from ..schemas.movie import Movie, MovieUpdate, MovieCreate
 from ..repos.movieRepo import loadMovies, saveMovies, getNextMovieId
 
 
+class MovieNotFoundError(Exception):
+    pass
 
 # # Helpers to work with models
 # def loadMovies() -> List[Movie]:

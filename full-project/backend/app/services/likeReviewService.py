@@ -1,4 +1,3 @@
-from HTTP import HTTPException
 from ..repos.likeReviewRepo import loadLikedReviews, saveLikedReviews
 from ..repos.reviewRepo import loadReviews
 from ..schemas.likedReviews import LikedReview

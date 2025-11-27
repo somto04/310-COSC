@@ -5,8 +5,12 @@ from ..schemas.user import User, UserCreate, UserUpdate, SafeUser
 from ..services.userService import listUsers, createUser, deleteUser, updateUser, getUserById, UserNotFoundError, UsernameTakenError, EmailTakenError
 from fastapi import Body
 from ..schemas.role import Role
+from ..repos.movieRepo import loadMovies
 
 router = APIRouter(prefix = "/users", tags = ["users"])
+
+class notOwnerError(Exception):
+    pass
 
 @router.get("", response_model=List[SafeUser])
 def getUsers(page: int = 1, limit: int = 25):
@@ -99,3 +103,16 @@ def getUserProfile(userId: int, currentUser = Depends(getCurrentUser)):
     else:       
         isOwner = currentUser.id == userId
         return {"user": user, "isOwner": isOwner}
+    
+@router.get("/{userId}/watchlist")
+def getUserWatchlist(userId: int, currentUser = Depends(getCurrentUser)):
+    """
+    Gets the user's watchlist
+	@@ -93,5 +96,7 @@ def getUserWatchlist(userId: int):
+    """
+    user = getUserById(userId)
+    movies = loadMovies()
+    if currentUser.id != userId:
+        raise notOwnerError("You are not authorised to view this users watch list")
+    moviesToWatch = [movies[movieId] for movieId in user["watchlist"] if movieId in movies]
+    return {"watchlist": moviesToWatch}

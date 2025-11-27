@@ -271,7 +271,7 @@ def testGetMovieByFilterNoFiltersReturnsAll(monkeypatch, sampleMovieList):
     resultMovies = getMovieByFilter()
 
     assert len(resultMovies) == 2
-    titles = {m.title for m in resultMovies}
+    titles = {movie.title for movie in resultMovies}
     assert titles == {"Avengers Endgame", "Inception"}
 
 

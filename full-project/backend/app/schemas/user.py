@@ -105,6 +105,7 @@ class User(BaseModel):
         default=0, validation_alias=AliasChoices("penaltyCount", "penalties")
     )
     isBanned: bool = False
+    likedReviews: Optional[list[int]] = []
 
 
 class UserCreate(BaseModel):

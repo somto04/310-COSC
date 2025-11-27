@@ -5,7 +5,7 @@ from pydantic import (
     StringConstraints,
     AliasChoices,
 )
-from typing import Annotated, Optional
+from typing import Annotated, Optional, List
 from .role import Role
 import re
 from pydantic.functional_validators import AfterValidator
@@ -105,6 +105,7 @@ class User(BaseModel):
         default=0, validation_alias=AliasChoices("penaltyCount", "penalties")
     )
     isBanned: bool = False
+    watchlist: List[int] = []
 
 
 class UserCreate(BaseModel):
@@ -195,6 +196,7 @@ class UserUpdate(BaseModel):
         default=None,
         description=f"Password with at least one uppercase letter, one lowercase letter, one digit, and {MIN_PASSWORD_LENGTH}-{MAX_PASSWORD_LENGTH} characters",
     )
+    watchlist: Optional[List[int]] = Field(default=None, description="User's watch list")
 
     @field_validator("age")
     @classmethod
@@ -252,3 +254,4 @@ class SafeUser(BaseModel):
     username: str
     firstName: str
     isBanned: bool
+    watchlist: List[int]

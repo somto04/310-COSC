@@ -46,7 +46,8 @@ def sampleUsers():
             "pw": "SecureP@ss123",
             "role": Role.USER, 
             "penalties": 0,
-            "isBanned": False
+            "isBanned": False,         
+            "watchlist": []
         },
         {
             "id": 2,
@@ -58,7 +59,9 @@ def sampleUsers():
             "pw": "passwHOrd!@#234",
             "role": Role.ADMIN,
             "penalties": 1,
-            "isBanned": False
+            "isBanned": False,
+            "watchlist": [1, 2]
+
         } 
     ]
 
@@ -203,3 +206,29 @@ def test_getUserProfile(sampleUsers):
     assert data["isOwner"] is True    
 
     main_app.app.dependency_overrides = {} 
+
+@patch("app.routers.userRoute.getUserById")
+@patch("app.routers.userRoute.loadMovies")
+def test_getUserWatchlist(mockLoad, mockGet, client, sampleUsers):
+    """Test GET /users/{userId}/watchlist returns the correct watchlist"""
+
+    client.app.dependency_overrides[getCurrentUser] = lambda: MagicMock(id=2)
+
+    user = sampleUsers[1]
+    mockGet.return_value = user
+
+    mockLoad.return_value = {
+        1: {"id": 1, "title": "Movie1"},
+        2: {"id": 2, "title": "Movie2"}
+    }
+
+    response = client.get(f"/users/{user['id']}/watchlist")
+
+    assert response.status_code == 200
+    data = response.json()
+
+    expected = [mockLoad.return_value[mid] for mid in user["watchlist"]]
+    assert data["watchlist"] == expected
+
+    mockGet.assert_called_once_with(user["id"])
+    mockLoad.assert_called_once()

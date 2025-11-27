@@ -3,9 +3,15 @@ from ..schemas.movie import Movie, MovieUpdate, MovieCreate
 from ..repos.movieRepo import loadMovies, saveMovies, getNextMovieId
 
 
-class MovieNotFoundError(Exception):
+class MovieError(Exception):
+    """Base class for all movie-related domain errors."""
+    pass
+
+
+class MovieNotFoundError(MovieError):
     def __init__(self, message: str = "Movie not found"):
         super().__init__(message)
+
 
 
 def listMovies() -> List[Movie]:

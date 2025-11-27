@@ -147,12 +147,20 @@ def deleteMovie(movieId: int) -> None:
 
     """
     movies = loadMovies()
-    filteredMovies = [movie for movie in movies if int(movie.id) != int(movieId)]
+    deleted = False
+    result = []
 
-    if len(filteredMovies) == len(movies):
+    for movie in movies:
+        if int(movie.id) == int(movieId):
+            deleted = True
+            continue
+        result.append(movie)
+
+    if not deleted:
         raise MovieNotFoundError()
 
-    saveMovies(filteredMovies)
+    saveMovies(result)
+
 
 
 def searchViaFilters(filters: Dict[str, Any]) -> List[Movie]:

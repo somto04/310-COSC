@@ -76,11 +76,14 @@ def test_listReviews(mockLoad, fakeReviews):
     assert len(result) == 2
     assert all(isinstance(review, Review) for review in result)
 
-@patch("app.services.reviewService.saveReviews")
+@patch("app.services.reviewService.getNextReviewId")
 @patch("app.services.reviewService.loadReviews")
-def test_createReview(mockLoad, mockSave, fakeReviews):
+@patch("app.services.reviewService.saveReviews")
+def test_createReview(mockSave, mockLoad, mockNextId, fakeReviews):
+
     """this test checks creating a new review according to our review schema"""
     mockLoad.return_value = fakeReviews
+    mockNextId.return_value = 100
 
     payload = ReviewCreate(
         reviewTitle="New Review",
@@ -92,6 +95,7 @@ def test_createReview(mockLoad, mockSave, fakeReviews):
 
     assert newReview.movieId == 12
     assert newReview.reviewTitle == "New Review"
+    assert newReview.id == 100
     mockSave.assert_called_once()
 
 

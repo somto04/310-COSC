@@ -19,6 +19,7 @@ class Movie(BaseModel):
     """
 
     id: int = Field(validation_alias=AliasChoices("id", "movieId"))
+    tmdbId: Optional[int] = Field(default = None)
     title: str = Field(validation_alias=AliasChoices("title", "movieName"))
     movieIMDbRating: Optional[Decimal] = Field(
         default=None,
@@ -67,6 +68,7 @@ class MovieCreate(BaseModel):
     Only description, datePublished, and yearReleased are optional.
     """
 
+    tmdbId: Optional[int] = Field(default = None)
     title: str = Field(validation_alias=AliasChoices("title", "movieName"))
     movieGenres: List[str] = Field(
         validation_alias=AliasChoices("movieGenre", "movieGenres")
@@ -94,7 +96,7 @@ class MovieUpdate(BaseModel):
 
     All fields are optional to allow partial updates.
     """
-
+    tmdbId: Optional[int] = Field(default = None)
     title: Optional[str] = Field(
         default=None, validation_alias=AliasChoices("title", "movieName")
     )
@@ -112,7 +114,7 @@ class MovieUpdate(BaseModel):
     directors: Optional[List[str]] = None
     mainStars: Optional[List[str]] = Field(
         default=None, validation_alias=AliasChoices("mainstars", "mainStars")
-    )
+    )  
     description: Optional[str] = None
     datePublished: Optional[date] = None  # ISO date string
     duration: Optional[int] = Field(

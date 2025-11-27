@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from auth import requireAdmin
+from authRoute import requireAdmin
 from ..repos.reviewRepo import loadReviews as loadReviews, saveReviews as saveReviews
 from ..utilities.penalties import incrementPenaltyForUser
 from .reviewRoute import validateReview

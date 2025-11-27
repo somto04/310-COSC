@@ -37,6 +37,14 @@ def sampleReviews():
         ),
     ]
 
+    testFile.write_text(
+    json.dumps([review.model_dump() for review in data], ensure_ascii=False),encoding="utf-8")   
+    
+    monkeypatch.setattr(reviewRepo, "REVIEW_DATA_PATH", testFile)
+    monkeypatch.setattr(reviewRepo, "_REVIEW_CACHE", None)
+    monkeypatch.setattr(reviewRepo, "_NEXT_REVIEW_ID", None)
+
+
 
 def testReviewLoadReadsJsonAndReturnsModels(reviewDataPath, sampleReviews):
     initialJson = [review.model_dump(mode="json") for review in sampleReviews]
@@ -48,6 +56,12 @@ def testReviewLoadReadsJsonAndReturnsModels(reviewDataPath, sampleReviews):
     assert loadedReviews[0].id == 1
     assert loadedReviews[0].movieId == 101
     assert loadedReviews[1].flagged is True
+
+def test_reviewSaveAndVerifyContents(tmp_path, monkeypatch):
+    testFile = tmp_path / "reviews.json"
+    monkeypatch.setattr(reviewRepo, "REVIEW_DATA_PATH", testFile)
+    monkeypatch.setattr(reviewRepo, "_REVIEW_CACHE", None)
+    monkeypatch.setattr(reviewRepo, "_NEXT_REVIEW_ID", None)
 
 
 def testReviewSaveWritesJsonCorrectly(reviewDataPath, sampleReviews):

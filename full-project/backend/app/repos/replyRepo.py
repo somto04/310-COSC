@@ -52,7 +52,7 @@ def loadReplies() -> List[Reply]:
     Returns:
         List[Reply]: A list of reply items.
     """
-    return _loadReplyCache
+    return _loadReplyCache()
     
 def saveReplies(replies: List[Reply]) -> None: 
     """
@@ -66,4 +66,4 @@ def saveReplies(replies: List[Reply]) -> None:
     reply_dict = [reply.model_dump() for reply in replies]
     _baseSaveAll(_REPLY_DATA_PATH, reply_dict)
 
-__all__ = ["loadAll", "saveAll"]
+__all__ = ["loadReplies", "saveReplies", "getNextReplyId"]

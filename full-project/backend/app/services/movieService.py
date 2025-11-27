@@ -9,18 +9,6 @@ class MovieNotFoundError(Exception):
         super().__init__(message)
 
 
-# # Helpers to work with models
-# def loadMovies() -> List[Movie]:
-#     movieDataList = loadMovies()  # list of dicts from the repo
-#     movies: List[Movie] = [Movie(**movieData) for movieData in movieDataList]
-#     return movies
-
-
-# def saveMovies(movies: List[Movie]) -> None:
-#     movieDataList = [movie.model_dump() for movie in movies]
-#     saveMovies(movieDataList)
-
-
 def listMovies() -> List[Movie]:
     """Lists all movies currently stored"""
     return loadMovies()
@@ -160,7 +148,6 @@ def deleteMovie(movieId: int) -> None:
         raise MovieNotFoundError()
 
     saveMovies(result)
-
 
 
 def searchViaFilters(filters: Dict[str, Any]) -> List[Movie]:

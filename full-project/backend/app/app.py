@@ -1,8 +1,17 @@
 from fastapi import FastAPI
 from app.routers import movieRoute, reviewRoute, userRoute, replyRoute, adminRoute, favoritesRoute, authRoute
 from app.externalAPI import tmdbRouter
+from fastapi.middleware.cors import CORSMiddleware
+
 # Create FastAPI instance w the name of our project
 app = FastAPI(title = "SpoilerAlert API")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],  # React development server
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Include routers for different modules
 app.include_router(movieRoute.router)

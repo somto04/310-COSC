@@ -6,6 +6,7 @@ from ..services.userService import listUsers, createUser, deleteUser, updateUser
 from fastapi import Body
 from ..schemas.role import Role
 from ..repos.movieRepo import loadMovies
+from ..repos.userRepo import loadUsers
 
 router = APIRouter(prefix = "/users", tags = ["users"])
 
@@ -108,7 +109,6 @@ def getUserProfile(userId: int, currentUser = Depends(getCurrentUser)):
 def getUserWatchlist(userId: int, currentUser = Depends(getCurrentUser)):
     """
     Gets the user's watchlist
-	@@ -93,5 +96,7 @@ def getUserWatchlist(userId: int):
     """
     user = getUserById(userId)
     movies = loadMovies()

@@ -208,7 +208,7 @@ def test_getUserProfile(sampleUsers):
     main_app.app.dependency_overrides = {} 
 
 @patch("app.routers.userRoute.getUserById")
-@patch("app.routers.userRoute.loadUsers")
+@patch("app.routers.userRoute.loadMovies")
 def test_getUserWatchlist(mockLoad, mockGet, client, sampleUsers):
     """Test GET /users/{userId}/watchlist returns the correct watchlist"""
 

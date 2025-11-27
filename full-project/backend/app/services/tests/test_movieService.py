@@ -79,6 +79,7 @@ def testCreateMovieAddsMovieAndUsesNextId(monkeypatch, sampleMovieList):
     monkeypatch.setattr(movieServiceModule, "getNextMovieId", fakeGetNextMovieId)
 
     payload = MovieCreate(
+        tmdbId=789012,
         title="Testing Movie",
         movieGenres=["Action", "Test"],
         directors=["Test Director"],

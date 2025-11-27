@@ -8,5 +8,5 @@ def loadLikeReviews() -> List[LikeReview]:
     return [LikeReview(**like) for like in raw]
 
 def saveLikeReviews(likes: List[LikeReview]):
-    raw = [l.model_dump() for l in likes]
+    raw = [like.model_dump() for like in likes]
     _baseSaveAll(FILE, raw)

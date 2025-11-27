@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.routers import movieRoute, reviewRoute, userRoute, replyRoute, adminRoute, favoritesRoute, authRoute
+from app.routers import movieRoute, reviewRoute, userRoute, replyRoute, adminRoute, favoritesRoute, authRoute, likeReviewRoute
 from app.externalAPI import tmdbRouter
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -18,6 +18,7 @@ app.include_router(movieRoute.router)
 app.include_router(reviewRoute.router)
 app.include_router(userRoute.router)
 app.include_router(favoritesRoute.router)
+app.include_router(likeReviewRoute.router)
 app.include_router(authRoute.router)
 app.include_router(adminRoute.router)
 app.include_router(replyRoute.router)

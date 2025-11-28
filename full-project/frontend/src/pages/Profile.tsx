@@ -2,6 +2,12 @@ import { useState, useEffect } from "react";
 
 export default function Profile() {
 
+  type FavoriteMovie = {
+  id: number;
+  title: string;
+  poster?: string | null; // optional
+};
+  const [favorites, setFavorites] = useState<FavoriteMovie[]>([]);
   const [user, setUser] = useState<{ username: string; email: string } | null>(null);
 
   const [reviews, setReviews] = useState([
@@ -9,18 +15,14 @@ export default function Profile() {
     { id: 2, movie: "Avengers Endgame", username: "marvelh8r4eva", content: "Marvel movies can suck my a***." },
   ]);
 
-  const [favorites, setFavorites] = useState([
-    { id: 10, title: "Interstellar" },
-    { id: 11, title: "The Dark Knight" },
-  ]);
+
 
   const [showForm, setShowForm] = useState(false);
   const [editUsername, setEditUsername] = useState("");
   const [editEmail, setEditEmail] = useState("");
 
-  // --------------------------
+
   // LOAD REAL USER FROM BACKEND
-  // --------------------------
   useEffect(() => {
     const userId = localStorage.getItem("userId");
     const token = localStorage.getItem("token");
@@ -28,7 +30,7 @@ export default function Profile() {
 
     fetch(`http://localhost:8000/users/userProfile/${userId}`, {
       headers: {
-        "Authorization": `Bearer ${token}`,   // <-- THIS WAS MISSING
+        "Authorization": `Bearer ${token}`,  
       },
     })
       .then((res) => res.json())
@@ -43,6 +45,43 @@ export default function Profile() {
       })
       .catch((err) => console.error("Error loading user:", err));
   }, []);
+
+  
+// LOAD REAL FAVORITES + POSTERS
+useEffect(() => {
+  const token = localStorage.getItem("token");
+  if (!token) return;
+
+  fetch("http://localhost:8000/favorites/", {
+    headers: {
+      "Authorization": `Bearer ${token}`,
+    },
+  })
+    .then((res) => res.json())
+    .then(async (movies) => {
+      const moviesWithPosters = await Promise.all(
+        movies.map(async (movie: any) => {
+          const tmdbRes = await fetch(`http://localhost:8000/tmdb/details/${movie.id}`);
+          const tmdbData = await tmdbRes.json();
+          console.log("TMDB DATA for:", movie.title, tmdbData);
+
+          const posterPath = tmdbData.poster
+            ? `https://image.tmdb.org/t/p/w500${tmdbData.poster}`
+            : null;
+
+          return {
+            id: movie.id,
+            title: movie.title,
+            poster: posterPath,
+          };
+        })
+      );
+
+      setFavorites(moviesWithPosters);
+    })
+    .catch((err) => console.error("Error loading favorites:", err));
+}, []);
+
 
   return (
     <div style={{ padding: "2rem", maxWidth: "700px", margin: "0 auto" }}>
@@ -168,26 +207,62 @@ export default function Profile() {
         ) : (
           <ul style={{ paddingLeft: "1rem" }}>
             {favorites.map((f) => (
-              <li key={f.id} style={{ marginBottom: "0.5rem" }}>
-                {f.title}
+  <li 
+    key={f.id} 
+    style={{ 
+      display: "flex", 
+      alignItems: "center", 
+      gap: "1rem", 
+      marginBottom: "1rem" 
+    }}
+  >
+    {/* Poster */}
+    {f.poster && (
+      <img
+        src={f.poster}
+        alt={f.title}
+        style={{
+          width: "60px",
+          height: "90px",
+          objectFit: "cover",
+          border: "1px solid black",
+        }}
+      />
+    )}
 
-                <button
-                  onClick={() =>
-                    setFavorites(favorites.filter((mov) => mov.id !== f.id))
-                  }
-                  style={{
-                    marginLeft: "1rem",
-                    padding: "0.3rem 0.8rem",
-                    border: "1px solid black",
-                    background: "black",
-                    color: "white",
-                    cursor: "pointer",
-                  }}
-                >
-                  Remove
-                </button>
-              </li>
-            ))}
+    {/* Title */}
+    <span>{f.title}</span>
+
+    {/* Remove Button */}
+    <button
+      onClick={() => {
+        const token = localStorage.getItem("token");
+
+        fetch(`http://localhost:8000/favorites/${f.id}`, {
+          method: "DELETE",
+          headers: {
+            "Authorization": `Bearer ${token}`,
+          },
+        })
+          .then(() => {
+            setFavorites(favorites.filter((mov) => mov.id !== f.id));
+          })
+          .catch((err) => console.error("Error removing favorite:", err));
+      }}
+      style={{
+        marginLeft: "auto",
+        padding: "0.3rem 0.8rem",
+        border: "1px solid black",
+        background: "black",
+        color: "white",
+        cursor: "pointer",
+      }}
+    >
+      Remove
+    </button>
+  </li>
+))}
+
           </ul>
         )}
       </section>

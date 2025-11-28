@@ -36,7 +36,7 @@ const [reviews, setReviews] = useState<LikedReviewFull[]>([]);
   const [editEmail, setEditEmail] = useState("");
 
 
-  //load logg in user info
+  //load logged in user info
   useEffect(() => {
     const userId = localStorage.getItem("userId");
     const token = localStorage.getItem("token");
@@ -61,7 +61,7 @@ const [reviews, setReviews] = useState<LikedReviewFull[]>([]);
   }, []);
 
   
-//load logged in user's favorites _ posters from TMDB
+//load logged in user's favorites posters from TMDB
 useEffect(() => {
   const token = localStorage.getItem("token");
   if (!token) return;
@@ -119,6 +119,35 @@ useEffect(() => {
   return (
     <div style={{ padding: "2rem", maxWidth: "700px", margin: "0 auto" }}>
       <h1 style={{ marginBottom: "1rem" }}>Profile</h1>
+<button
+  onClick={() => {
+    const token = localStorage.getItem("token");
+
+    // hit backend logout (optional but nice)
+    fetch("http://localhost:8000/default/logout", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+      },
+    }).catch(() => {});
+
+    // clear stored login info
+    localStorage.removeItem("token");
+    localStorage.removeItem("userId");
+
+    // redirect to login
+    window.location.href = "/temp-login";
+  }}
+  style={{
+    padding: "0.5rem 1rem",
+    border: "1px solid black",
+    background: "red",
+    cursor: "pointer",
+    marginTop: "1rem",
+  }}
+>
+  Logout
+</button>
 
       {/* USER INFO */}
       {user ? (

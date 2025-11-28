@@ -1,59 +1,87 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function Profile() {
-  const [user, setUser] = useState({
-    username: "gamurrrrr",
-    email: "gamu@example.com",
-  });
+
+  const [user, setUser] = useState<{ username: string; email: string } | null>(null);
 
   const [reviews, setReviews] = useState([
     { id: 1, movie: "Inception", username: "nolanloverboy68", content: "Loved it, Nolan is goated as always." },
     { id: 2, movie: "Avengers Endgame", username: "marvelh8r4eva", content: "Marvel movies can suck my a***." },
   ]);
 
-  const [showForm, setShowForm] = useState(false);
-  const [editUsername, setEditUsername] = useState(user.username);
-  const [editEmail, setEditEmail] = useState(user.email);
-
   const [favorites, setFavorites] = useState([
     { id: 10, title: "Interstellar" },
     { id: 11, title: "The Dark Knight" },
   ]);
 
+  const [showForm, setShowForm] = useState(false);
+  const [editUsername, setEditUsername] = useState("");
+  const [editEmail, setEditEmail] = useState("");
+
+  // --------------------------
+  // LOAD REAL USER FROM BACKEND
+  // --------------------------
+  useEffect(() => {
+    const userId = localStorage.getItem("userId");
+    const token = localStorage.getItem("token");
+    if (!userId || !token) return;
+
+    fetch(`http://localhost:8000/users/userProfile/${userId}`, {
+      headers: {
+        "Authorization": `Bearer ${token}`,   // <-- THIS WAS MISSING
+      },
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        console.log("LOADED USER:", data);
+        setUser({
+          username: data.user.username,
+          email: data.user.email,
+        });
+        setEditUsername(data.user.username);
+        setEditEmail(data.user.email);
+      })
+      .catch((err) => console.error("Error loading user:", err));
+  }, []);
+
   return (
     <div style={{ padding: "2rem", maxWidth: "700px", margin: "0 auto" }}>
       <h1 style={{ marginBottom: "1rem" }}>Profile</h1>
 
-      {/* User Info */}
-      <section style={{ marginBottom: "2rem" }}>
-        <h2>User Info</h2>
-        <p><strong>Username:</strong> {user.username}</p>
-        <p><strong>Email:</strong> {user.email}</p>
-      </section>
+      {/* USER INFO */}
+      {user ? (
+        <section style={{ marginBottom: "2rem" }}>
+          <h2>User Info</h2>
+          <p><strong>Username:</strong> {user.username}</p>
+          <p><strong>Email:</strong> {user.email}</p>
+        </section>
+      ) : (
+        <p>Loading user...</p>
+      )}
 
-      {/* Update Account Button */}
-      <button 
+      {/* UPDATE ACCOUNT BUTTON */}
+      <button
         onClick={() => setShowForm(!showForm)}
-        style={{ 
+        style={{
           padding: "0.5rem 1rem",
           border: "1px solid black",
           background: "black",
           color: "white",
           cursor: "pointer",
-          marginTop: "1rem"
+          marginTop: "1rem",
         }}
       >
         Update Account
       </button>
 
-      {/* Update Form */}
+      {/* UPDATE FORM */}
       {showForm && (
-        <form 
-          style={{ 
+        <form
+          style={{
             marginTop: "1rem",
             display: "flex",
             flexDirection: "column",
-            gap: "0.5rem"
+            gap: "0.5rem",
           }}
           onSubmit={(e) => {
             e.preventDefault();
@@ -63,7 +91,7 @@ export default function Profile() {
         >
           <label>
             Username:
-            <input 
+            <input
               type="text"
               value={editUsername}
               onChange={(e) => setEditUsername(e.target.value)}
@@ -73,7 +101,7 @@ export default function Profile() {
 
           <label>
             Email:
-            <input 
+            <input
               type="email"
               value={editEmail}
               onChange={(e) => setEditEmail(e.target.value)}
@@ -81,7 +109,7 @@ export default function Profile() {
             />
           </label>
 
-          <button 
+          <button
             type="submit"
             style={{
               padding: "0.5rem 1rem",
@@ -89,7 +117,7 @@ export default function Profile() {
               background: "black",
               color: "white",
               cursor: "pointer",
-              marginTop: "0.5rem"
+              marginTop: "0.5rem",
             }}
           >
             Save Changes
@@ -97,7 +125,7 @@ export default function Profile() {
         </form>
       )}
 
-      {/* Liked Reviews */}
+      {/* LIKED REVIEWS */}
       <section style={{ marginTop: "2rem" }}>
         <h2>Liked Reviews</h2>
 
@@ -118,6 +146,7 @@ export default function Profile() {
                     padding: "0.3rem 0.8rem",
                     border: "1px solid black",
                     background: "black",
+                    color: "white",
                     cursor: "pointer",
                     marginTop: "0.3rem",
                   }}
@@ -130,7 +159,7 @@ export default function Profile() {
         )}
       </section>
 
-      {/* Favorite Movies */}
+      {/* FAVORITE MOVIES */}
       <section style={{ marginTop: "2rem" }}>
         <h2>Favorite Movies</h2>
 
@@ -143,14 +172,15 @@ export default function Profile() {
                 {f.title}
 
                 <button
-                  onClick={() => {
-                    setFavorites(favorites.filter((mov) => mov.id !== f.id));
-                  }}
+                  onClick={() =>
+                    setFavorites(favorites.filter((mov) => mov.id !== f.id))
+                  }
                   style={{
                     marginLeft: "1rem",
                     padding: "0.3rem 0.8rem",
                     border: "1px solid black",
                     background: "black",
+                    color: "white",
                     cursor: "pointer",
                   }}
                 >

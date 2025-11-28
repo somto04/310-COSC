@@ -5,7 +5,7 @@ import Profile from "./pages/Profile";
 function App() {
   return (
     <BrowserRouter>
-      <h1>Sample homepage</h1>
+      <h1></h1>
       <Routes>
         <Route path="/" element={<h1>Home Page Placeholder</h1>} />
         <Route path="/temp-login" element={<TempLogin />} />

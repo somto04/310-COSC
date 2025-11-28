@@ -6,14 +6,28 @@ export default function Profile() {
   id: number;
   title: string;
   poster?: string | null; // optional
+  };
+
+  type LikedReviewFull = {
+  id: number;
+  movieId: number;
+  movieTitle: string;
+  username: string;
+  reviewTitle: string;
+  reviewBody: string;
+  rating?: number;
+  datePosted?: string;
+  flagged?: boolean;
+  poster?: string | null;
 };
+
+
+
   const [favorites, setFavorites] = useState<FavoriteMovie[]>([]);
   const [user, setUser] = useState<{ username: string; email: string } | null>(null);
 
-  const [reviews, setReviews] = useState([
-    { id: 1, movie: "Inception", username: "nolanloverboy68", content: "Loved it, Nolan is goated as always." },
-    { id: 2, movie: "Avengers Endgame", username: "marvelh8r4eva", content: "Marvel movies can suck my a***." },
-  ]);
+const [reviews, setReviews] = useState<LikedReviewFull[]>([]);
+
 
 
 
@@ -22,7 +36,7 @@ export default function Profile() {
   const [editEmail, setEditEmail] = useState("");
 
 
-  // LOAD REAL USER FROM BACKEND
+  //load logg in user info
   useEffect(() => {
     const userId = localStorage.getItem("userId");
     const token = localStorage.getItem("token");
@@ -47,7 +61,7 @@ export default function Profile() {
   }, []);
 
   
-// LOAD REAL FAVORITES + POSTERS
+//load logged in user's favorites _ posters from TMDB
 useEffect(() => {
   const token = localStorage.getItem("token");
   if (!token) return;
@@ -65,9 +79,7 @@ useEffect(() => {
           const tmdbData = await tmdbRes.json();
           console.log("TMDB DATA for:", movie.title, tmdbData);
 
-          const posterPath = tmdbData.poster
-            ? `https://image.tmdb.org/t/p/w500${tmdbData.poster}`
-            : null;
+          const posterPath = tmdbData.poster || null;
 
           return {
             id: movie.id,
@@ -81,6 +93,27 @@ useEffect(() => {
     })
     .catch((err) => console.error("Error loading favorites:", err));
 }, []);
+
+
+// Load liked reviews from database
+useEffect(() => {
+  const token = localStorage.getItem("token");
+  if (!token) return;
+
+  fetch("http://localhost:8000/likeReview/", {
+    headers: {
+      "Authorization": `Bearer ${token}`,
+    },
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      console.log("LIKED REVIEWS:", data);
+      setReviews(data);
+    })
+    .catch((err) => console.error("Error loading liked reviews:", err));
+}, []);
+
+
 
 
   return (
@@ -171,30 +204,85 @@ useEffect(() => {
         {reviews.length === 0 ? (
           <p>You haven't liked any reviews yet.</p>
         ) : (
-          <ul style={{ paddingLeft: "1rem" }}>
-            {reviews.map((r) => (
-              <li key={r.id} style={{ marginBottom: "1rem" }}>
-                <strong>{r.movie}</strong>
-                <p>{r.username} : {r.content}</p>
+         <ul style={{ paddingLeft: "1rem" }}>
+  {reviews.map((r) => (
+    <li 
+      key={r.id} 
+      style={{ 
+        marginBottom: "1.5rem",
+        display: "flex",
+        gap: "1rem",
+        alignItems: "flex-start"
+      }}
+    >
+      {/* Poster */}
+      {r.poster && (
+        <img 
+          src={r.poster} 
+          alt={r.movieTitle}
+          style={{
+            width: "60px",
+            height: "90px",
+            objectFit: "cover",
+            border: "1px solid black"
+          }}
+        />
+      )}
 
-                <button
-                  onClick={() => {
-                    setReviews(reviews.filter((rev) => rev.id !== r.id));
-                  }}
-                  style={{
-                    padding: "0.3rem 0.8rem",
-                    border: "1px solid black",
-                    background: "black",
-                    color: "white",
-                    cursor: "pointer",
-                    marginTop: "0.3rem",
-                  }}
-                >
-                  Remove
-                </button>
-              </li>
-            ))}
-          </ul>
+      <div style={{ flex: 1 }}>
+        {/* Movie Title */}
+        <p style={{ fontWeight: "bold", fontSize: "1rem" }}>
+          {r.movieTitle}
+        </p>
+
+        {/* Review Title */}
+        <p style={{ fontStyle: "italic", margin: "0.2rem 0" }}>
+          "{r.reviewTitle}"
+        </p>
+
+        {/* Reviewer Username */}
+        <p style={{ margin: "0.2rem 0" }}>
+          <strong>User: {r.username}</strong>
+        </p>
+
+        {/* Review Body */}
+        <p style={{ margin: "0.2rem 0" }}>
+          {r.reviewBody}
+        </p>
+
+        {/* Remove Button */}
+        <button
+          onClick={() => {
+            const token = localStorage.getItem("token");
+
+            fetch(`http://localhost:8000/likeReview/${r.id}`, {
+              method: "DELETE",
+              headers: {
+                "Authorization": `Bearer ${token}`,
+              },
+            })
+              .then(() => {
+                setReviews(reviews.filter((rev) => rev.id !== r.id));
+              })
+              .catch((err) => console.error("Error unliking review:", err));
+          }}
+          style={{
+            padding: "0.3rem 0.8rem",
+            border: "1px solid black",
+            background: "black",
+            color: "white",
+            cursor: "pointer",
+            marginTop: "0.3rem",
+          }}
+        >
+          Remove
+        </button>
+      </div>
+    </li>
+  ))}
+</ul>
+
+
         )}
       </section>
 

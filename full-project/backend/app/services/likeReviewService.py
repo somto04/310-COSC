@@ -1,6 +1,9 @@
 from ..repos.likeReviewRepo import loadLikedReviews, saveLikedReviews
 from ..repos.reviewRepo import loadReviews
-from ..schemas.likedReviews import LikedReview
+from ..schemas.likedReviews import LikedReview, LikedReviewFull
+from ..services.userService import getUserById
+from ..services.movieService import getMovieById
+from ..externalAPI.tmdbService import getMovieDetailsById
 
 
 class ReviewNotFoundError(Exception):
@@ -51,10 +54,33 @@ def unlikeReview(userId: int, reviewId: int):
 
 def listLikedReviews(userId: int):
     """List all liked reviews for a user."""
-    likedReviews = loadLikedReviews()  # FIX: renamed variable
+    likedReviews = loadLikedReviews()  #renamed variable
     reviews = loadReviews()
 
     likedReviewIds = [liked.reviewId for liked in likedReviews if liked.userId == userId]
-    likedReviewsFull = [review for review in reviews if review.id in likedReviewIds]
 
-    return likedReviewsFull
+    result = []
+
+    for review in reviews:
+        if review.id in likedReviewIds:
+
+            
+            user = getUserById(review.userId)
+
+            movie = getMovieById(review.movieId)
+
+            tmdbDetails = getMovieDetailsById(movie.tmdbId)
+            poster_url = tmdbDetails.poster if hasattr(tmdbDetails, "poster") else None
+
+            result.append(
+                LikedReviewFull(
+                    id=review.id,
+                    movieId=review.movieId,
+                    movieTitle=movie.title,
+                    username=user.username,
+                    reviewTitle=review.reviewTitle,
+                    poster=poster_url,
+                )
+            )
+
+    return result

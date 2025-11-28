@@ -113,7 +113,7 @@ def getUserWatchlist(currentUser = Depends(getCurrentUser)):
     """
     user = getUserById(currentUser.id)
     movies = loadMovies()
-    moviesToWatch = [movies[movieId] for movieId in user["watchlist"] if movieId in movies]
+    moviesToWatch = [movies[movieId] for movieId in user.watchlist if movieId in movies]
     return {"watchlist": moviesToWatch}
 
 @router.post("/watchlist/{movieId}")
@@ -127,10 +127,10 @@ def addMovieToWatchlist(movieId: int, currentUser = Depends(getCurrentUser)):
     if movieId not in movies:
         raise MovieNotFoundError("This movie does not exist")
     
-    if movieId in user["watchlist"]:
-        return {"watchlist": user["watchlist"]}
+    if movieId in user.watchlist:
+        return {"watchlist": user.watchlist}
 
-    updatedWatchlist = user["watchlist"] + [movieId]
+    updatedWatchlist = user.watchlist + [movieId]
     updateUser(currentUser.id, UserUpdate(watchlist=updatedWatchlist))
     return {"watchlist": updatedWatchlist}
 
@@ -145,10 +145,10 @@ def removeMovieFromWatchlist(movieId: int, currentUser = Depends(getCurrentUser)
     if movieId not in movies:
         raise MovieNotFoundError("This movie does not exist")
     
-    if movieId not in user["watchlist"]:
+    if movieId not in user.watchlist:
         return {"message": "Movie not in watchlist"}
 
-    updatedWatchlist = [movie for movie in user["watchlist"] if movie != movieId]
+    updatedWatchlist = [movie for movie in user.watchlist if movie != movieId]
     updateUser(currentUser.id, UserUpdate(watchlist=updatedWatchlist))
     return {"message": "movie removed", "watchlist": updatedWatchlist}
 

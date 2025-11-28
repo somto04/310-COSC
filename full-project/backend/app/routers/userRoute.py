@@ -7,6 +7,7 @@ from fastapi import Body
 from ..schemas.role import Role
 from ..repos.movieRepo import loadMovies
 from ..repos.userRepo import loadUsers
+from ..services.favoritesService import MovieNotFoundError
 
 router = APIRouter(prefix = "/users", tags = ["users"])
 
@@ -106,13 +107,28 @@ def getUserProfile(userId: int, currentUser = Depends(getCurrentUser)):
         return {"user": user, "isOwner": isOwner}
     
 @router.get("/{userId}/watchlist")
-def getUserWatchlist(userId: int, currentUser = Depends(getCurrentUser)):
+def getUserWatchlist(currentUser = Depends(getCurrentUser)):
     """
     Gets the user's watchlist
     """
-    user = getUserById(userId)
+    user = getUserById(currentUser.id)
     movies = loadMovies()
-    if currentUser.id != userId:
-        raise notOwnerError("You are not authorised to view this users watch list")
     moviesToWatch = [movies[movieId] for movieId in user["watchlist"] if movieId in movies]
     return {"watchlist": moviesToWatch}
+
+@router.post("/watchlist/{movieId}")
+def addMovieToWatchlist(movieId: int, currentUser = Depends(getCurrentUser)):
+    """
+    Adds a movie to the users watchlist
+    """
+    movies = loadMovies()
+    user = getUserById(currentUser.id)
+
+    if movieId not in movies:
+        raise MovieNotFoundError("This movie does not exist")
+    
+    if movieId not in user["watchlist"]:
+        updatedWatchlist = user["watchlist"] + [movieId]
+
+        updateUser(currentUser.id, UserUpdate(watchlist=updatedWatchlist))
+    return {"watchlist": updatedWatchlist}

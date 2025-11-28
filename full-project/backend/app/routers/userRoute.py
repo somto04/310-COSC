@@ -127,10 +127,11 @@ def addMovieToWatchlist(movieId: int, currentUser = Depends(getCurrentUser)):
     if movieId not in movies:
         raise MovieNotFoundError("This movie does not exist")
     
-    if movieId not in user["watchlist"]:
-        updatedWatchlist = user["watchlist"] + [movieId]
+    if movieId in user["watchlist"]:
+        return {"watchlist": user["watchlist"]}
 
-        updateUser(currentUser.id, UserUpdate(watchlist=updatedWatchlist))
+    updatedWatchlist = user["watchlist"] + [movieId]
+    updateUser(currentUser.id, UserUpdate(watchlist=updatedWatchlist))
     return {"watchlist": updatedWatchlist}
 
 @router.delete("/watchlist/{movieId}")

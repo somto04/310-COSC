@@ -227,8 +227,58 @@ def test_getUserWatchlist(mockLoad, mockGet, client, sampleUsers):
     assert response.status_code == 200
     data = response.json()
 
-    expected = [mockLoad.return_value[mid] for mid in user["watchlist"]]
+    expected = [mockLoad.return_value[movieId] for movieId in user["watchlist"]]
     assert data["watchlist"] == expected
 
     mockGet.assert_called_once_with(user["id"])
     mockLoad.assert_called_once()
+
+@patch("app.routers.userRoute.getUserById")
+@patch("app.routers.userRoute.loadMovies")
+@patch("app.routers.userRoute.updateUser")
+def test_addMovieToWatchlist(mockUpdate, mockLoad, mockGet, client, sampleUsers):
+    client.app.dependency_overrides[getCurrentUser] = lambda: MagicMock(id=1)
+
+    user = sampleUsers[0]
+    mockGet.return_value = user
+
+    mockLoad.return_value = {
+        1: {"id": 1, "title": "Movie1"},
+        2: {"id": 2, "title": "Movie2"},
+    }
+
+    movieId = 2
+    response = client.post(f"/users/watchlist/{movieId}")
+    assert response.status_code == 200
+
+    updatedList = user["watchlist"] + [movieId]
+    mockUpdate.assert_called_once_with(
+        1,
+        UserUpdate(watchlist=updatedList)
+    )
+    
+@patch("app.routers.userRoute.getUserById")
+@patch("app.routers.userRoute.loadMovies")
+@patch("app.routers.userRoute.updateUser")
+def test_removeMovieFromWatchlist(mockUpdate, mockLoad, mockGet, client, sampleUsers):
+    client.app.dependency_overrides[getCurrentUser] = lambda: MagicMock(id=2)
+
+    user = sampleUsers[1]
+    user["watchlist"] = [1, 2]
+    mockGet.return_value = user
+
+    mockLoad.return_value = {
+        1: {"id": 1, "title": "Movie1"},
+        2: {"id": 2, "title": "Movie2"},
+    }
+
+    movieIdToRemove = 2
+    response = client.delete(f"/users/watchlist/{movieIdToRemove}")
+    assert response.status_code == 200
+
+    expectedUpdatedList = [1]
+    mockUpdate.assert_called_once_with(
+        2,
+        UserUpdate(watchlist=expectedUpdatedList)
+    )
+    assert response.json()["watchlist"] == expectedUpdatedList

@@ -3,40 +3,40 @@ import { useState, useEffect } from "react";
 export default function Profile() {
 
   type FavoriteMovie = {
-  id: number;
-  title: string;
-  poster?: string | null; // optional
+    id: number;
+    title: string;
+    poster?: string | null;
   };
 
   type LikedReviewFull = {
-  id: number;
-  movieId: number;
-  movieTitle: string;
-  username: string;
-  reviewTitle: string;
-  reviewBody: string;
-  rating?: number;
-  datePosted?: string;
-  flagged?: boolean;
-  poster?: string | null;
-};
-
-
+    id: number;
+    movieId: number;
+    movieTitle: string;
+    username: string;
+    reviewTitle: string;
+    poster?: string | null;
+  };
 
   const [favorites, setFavorites] = useState<FavoriteMovie[]>([]);
-  const [user, setUser] = useState<{ username: string; email: string } | null>(null);
+  const [reviews, setReviews] = useState<LikedReviewFull[]>([]);
 
-const [reviews, setReviews] = useState<LikedReviewFull[]>([]);
-
-
-
+  const [user, setUser] = useState<{
+    username: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    age: number;
+    pw: string;
+  } | null>(null);
 
   const [showForm, setShowForm] = useState(false);
   const [editUsername, setEditUsername] = useState("");
+  const [editFirstName, setEditFirstName] = useState("");
+  const [editLastName, setEditLastName] = useState("");
   const [editEmail, setEditEmail] = useState("");
 
 
-  //load logged in user info
+  // LOAD LOGGED-IN USER INFO
   useEffect(() => {
     const userId = localStorage.getItem("userId");
     const token = localStorage.getItem("token");
@@ -44,116 +44,111 @@ const [reviews, setReviews] = useState<LikedReviewFull[]>([]);
 
     fetch(`http://localhost:8000/users/userProfile/${userId}`, {
       headers: {
-        "Authorization": `Bearer ${token}`,  
+        Authorization: `Bearer ${token}`,
       },
     })
       .then((res) => res.json())
       .then((data) => {
-        console.log("LOADED USER:", data);
         setUser({
           username: data.user.username,
+          firstName: data.user.firstName,
+          lastName: data.user.lastName,
           email: data.user.email,
+          age: data.user.age,
+          pw: data.user.pw,
         });
+
         setEditUsername(data.user.username);
+        setEditFirstName(data.user.firstName);
+        setEditLastName(data.user.lastName);
         setEditEmail(data.user.email);
       })
       .catch((err) => console.error("Error loading user:", err));
   }, []);
 
-  
-//load logged in user's favorites posters from TMDB
-useEffect(() => {
-  const token = localStorage.getItem("token");
-  if (!token) return;
 
-  fetch("http://localhost:8000/favorites/", {
-    headers: {
-      "Authorization": `Bearer ${token}`,
-    },
-  })
-    .then((res) => res.json())
-    .then(async (movies) => {
-      const moviesWithPosters = await Promise.all(
-        movies.map(async (movie: any) => {
-          const tmdbRes = await fetch(`http://localhost:8000/tmdb/details/${movie.id}`);
-          const tmdbData = await tmdbRes.json();
-          console.log("TMDB DATA for:", movie.title, tmdbData);
+  // LOAD FAVORITE MOVIES W/ POSTERS
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
 
-          const posterPath = tmdbData.poster || null;
-
-          return {
-            id: movie.id,
-            title: movie.title,
-            poster: posterPath,
-          };
-        })
-      );
-
-      setFavorites(moviesWithPosters);
+    fetch("http://localhost:8000/favorites/", {
+      headers: { Authorization: `Bearer ${token}` },
     })
-    .catch((err) => console.error("Error loading favorites:", err));
-}, []);
+      .then((res) => res.json())
+      .then(async (movies) => {
+        const moviesWithPosters = await Promise.all(
+          movies.map(async (movie: any) => {
+            const tmdbRes = await fetch(
+              `http://localhost:8000/tmdb/details/${movie.id}`
+            );
+            const tmdbData = await tmdbRes.json();
+
+            return {
+              id: movie.id,
+              title: movie.title,
+              poster: tmdbData.poster || null,
+            };
+          })
+        );
+
+        setFavorites(moviesWithPosters);
+      })
+      .catch((err) => console.error("Error loading favorites:", err));
+  }, []);
 
 
-// Load liked reviews from database
-useEffect(() => {
-  const token = localStorage.getItem("token");
-  if (!token) return;
+  // LOAD LIKED REVIEWS
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
 
-  fetch("http://localhost:8000/likeReview/", {
-    headers: {
-      "Authorization": `Bearer ${token}`,
-    },
-  })
-    .then((res) => res.json())
-    .then((data) => {
-      console.log("LIKED REVIEWS:", data);
-      setReviews(data);
+    fetch("http://localhost:8000/likeReview/", {
+      headers: { Authorization: `Bearer ${token}` },
     })
-    .catch((err) => console.error("Error loading liked reviews:", err));
-}, []);
-
+      .then((res) => res.json())
+      .then((data) => {
+        setReviews(data);
+      })
+      .catch((err) => console.error("Error loading liked reviews:", err));
+  }, []);
 
 
 
   return (
     <div style={{ padding: "2rem", maxWidth: "700px", margin: "0 auto" }}>
       <h1 style={{ marginBottom: "1rem" }}>Profile</h1>
-<button
-  onClick={() => {
-    const token = localStorage.getItem("token");
 
-    // hit backend logout (optional but nice)
-    fetch("http://localhost:8000/default/logout", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${token}`,
-      },
-    }).catch(() => {});
+      {/* LOGOUT BUTTON */}
+      <button
+        onClick={() => {
+          const token = localStorage.getItem("token");
+          fetch("http://localhost:8000/default/logout", {
+            method: "POST",
+            headers: { Authorization: `Bearer ${token}` },
+          }).catch(() => {});
 
-    // clear stored login info
-    localStorage.removeItem("token");
-    localStorage.removeItem("userId");
-
-    // redirect to login
-    window.location.href = "/temp-login";
-  }}
-  style={{
-    padding: "0.5rem 1rem",
-    border: "1px solid black",
-    background: "red",
-    cursor: "pointer",
-    marginTop: "1rem",
-  }}
->
-  Logout
-</button>
+          localStorage.removeItem("token");
+          localStorage.removeItem("userId");
+          window.location.href = "/temp-login";
+        }}
+        style={{
+          padding: "0.5rem 1rem",
+          border: "1px solid black",
+          background: "red",
+          cursor: "pointer",
+          marginTop: "1rem",
+        }}
+      >
+        Logout
+      </button>
 
       {/* USER INFO */}
       {user ? (
         <section style={{ marginBottom: "2rem" }}>
           <h2>User Info</h2>
           <p><strong>Username:</strong> {user.username}</p>
+          <p><strong>Name:</strong> {user.firstName} {user.lastName}</p>
           <p><strong>Email:</strong> {user.email}</p>
         </section>
       ) : (
@@ -176,7 +171,7 @@ useEffect(() => {
       </button>
 
       {/* UPDATE FORM */}
-      {showForm && (
+      {showForm && user && (
         <form
           style={{
             marginTop: "1rem",
@@ -186,10 +181,79 @@ useEffect(() => {
           }}
           onSubmit={(e) => {
             e.preventDefault();
-            setUser({ username: editUsername, email: editEmail });
-            setShowForm(false);
+
+            const token = localStorage.getItem("token");
+            const userId = localStorage.getItem("userId");
+
+            fetch(`http://localhost:8000/users/${userId}`, {
+              method: "PUT",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({
+                username: editUsername,
+                firstName: editFirstName,
+                lastName: editLastName,
+                email: editEmail,
+                age: user.age,
+                pw: user.pw, // required by backend
+              }),
+            })
+              .then((res) => res.json())
+              .then(() => {
+  // After update, reload user profile
+  const token = localStorage.getItem("token");
+  const userId = localStorage.getItem("userId");
+
+  fetch(`http://localhost:8000/users/userProfile/${userId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      setUser({
+        username: data.user.username,
+        firstName: data.user.firstName,
+        lastName: data.user.lastName,
+        email: data.user.email,
+        age: data.user.age,
+        pw: data.user.pw,
+      });
+
+      setEditUsername(data.user.username);
+      setEditFirstName(data.user.firstName);
+      setEditLastName(data.user.lastName);
+      setEditEmail(data.user.email);
+
+      setShowForm(false);
+    });
+})
+
+              .catch((err) => console.error("Update failed:", err));
           }}
         >
+          <label>
+            First Name:
+            <input
+              type="text"
+              value={editFirstName}
+              onChange={(e) => setEditFirstName(e.target.value)}
+              style={{ padding: "0.3rem", border: "1px solid black" }}
+            />
+          </label>
+
+          <label>
+            Last Name:
+            <input
+              type="text"
+              value={editLastName}
+              onChange={(e) => setEditLastName(e.target.value)}
+              style={{ padding: "0.3rem", border: "1px solid black" }}
+            />
+          </label>
+
           <label>
             Username:
             <input
@@ -233,85 +297,72 @@ useEffect(() => {
         {reviews.length === 0 ? (
           <p>You haven't liked any reviews yet.</p>
         ) : (
-         <ul style={{ paddingLeft: "1rem" }}>
-  {reviews.map((r) => (
-    <li 
-      key={r.id} 
-      style={{ 
-        marginBottom: "1.5rem",
-        display: "flex",
-        gap: "1rem",
-        alignItems: "flex-start"
-      }}
-    >
-      {/* Poster */}
-      {r.poster && (
-        <img 
-          src={r.poster} 
-          alt={r.movieTitle}
-          style={{
-            width: "60px",
-            height: "90px",
-            objectFit: "cover",
-            border: "1px solid black"
-          }}
-        />
-      )}
+          <ul style={{ paddingLeft: "1rem" }}>
+            {reviews.map((r) => (
+              <li
+                key={r.id}
+                style={{
+                  marginBottom: "1.5rem",
+                  display: "flex",
+                  gap: "1rem",
+                  alignItems: "flex-start",
+                }}
+              >
+                {r.poster && (
+                  <img
+                    src={r.poster}
+                    alt={r.movieTitle}
+                    style={{
+                      width: "60px",
+                      height: "90px",
+                      objectFit: "cover",
+                      border: "1px solid black",
+                    }}
+                  />
+                )}
 
-      <div style={{ flex: 1 }}>
-        {/* Movie Title */}
-        <p style={{ fontWeight: "bold", fontSize: "1rem" }}>
-          {r.movieTitle}
-        </p>
+                <div style={{ flex: 1 }}>
+                  <p style={{ fontWeight: "bold" }}>{r.movieTitle}</p>
 
-        {/* Review Title */}
-        <p style={{ fontStyle: "italic", margin: "0.2rem 0" }}>
-          "{r.reviewTitle}"
-        </p>
+                  <p style={{ fontStyle: "italic", margin: "0.2rem 0" }}>
+                    "{r.reviewTitle}"
+                  </p>
 
-        {/* Reviewer Username */}
-        <p style={{ margin: "0.2rem 0" }}>
-          <strong>User: {r.username}</strong>
-        </p>
+                  <p style={{ margin: "0.2rem 0" }}>
+                    <strong>User: {r.username}</strong>
+                  </p>
+                </div>
 
-        {/* Review Body */}
-        <p style={{ margin: "0.2rem 0" }}>
-          {r.reviewBody}
-        </p>
+                <button
+                  onClick={() => {
+                    const token = localStorage.getItem("token");
 
-        {/* Remove Button */}
-        <button
-          onClick={() => {
-            const token = localStorage.getItem("token");
-
-            fetch(`http://localhost:8000/likeReview/${r.id}`, {
-              method: "DELETE",
-              headers: {
-                "Authorization": `Bearer ${token}`,
-              },
-            })
-              .then(() => {
-                setReviews(reviews.filter((rev) => rev.id !== r.id));
-              })
-              .catch((err) => console.error("Error unliking review:", err));
-          }}
-          style={{
-            padding: "0.3rem 0.8rem",
-            border: "1px solid black",
-            background: "black",
-            color: "white",
-            cursor: "pointer",
-            marginTop: "0.3rem",
-          }}
-        >
-          Remove
-        </button>
-      </div>
-    </li>
-  ))}
-</ul>
-
-
+                    fetch(`http://localhost:8000/likeReview/${r.id}`, {
+                      method: "DELETE",
+                      headers: {
+                        Authorization: `Bearer ${token}`,
+                      },
+                    })
+                      .then(() => {
+                        setReviews(reviews.filter((rev) => rev.id !== r.id));
+                      })
+                      .catch((err) =>
+                        console.error("Error unliking review:", err)
+                      );
+                  }}
+                  style={{
+                    padding: "0.3rem 0.8rem",
+                    border: "1px solid black",
+                    background: "black",
+                    color: "white",
+                    cursor: "pointer",
+                  }}
+                >
+                  Remove
+                </button>
+              </li>
+            ))}
+          </ul>
         )}
       </section>
 
@@ -324,62 +375,58 @@ useEffect(() => {
         ) : (
           <ul style={{ paddingLeft: "1rem" }}>
             {favorites.map((f) => (
-  <li 
-    key={f.id} 
-    style={{ 
-      display: "flex", 
-      alignItems: "center", 
-      gap: "1rem", 
-      marginBottom: "1rem" 
-    }}
-  >
-    {/* Poster */}
-    {f.poster && (
-      <img
-        src={f.poster}
-        alt={f.title}
-        style={{
-          width: "60px",
-          height: "90px",
-          objectFit: "cover",
-          border: "1px solid black",
-        }}
-      />
-    )}
+              <li
+                key={f.id}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "1rem",
+                  marginBottom: "1rem",
+                }}
+              >
+                {f.poster && (
+                  <img
+                    src={f.poster}
+                    alt={f.title}
+                    style={{
+                      width: "60px",
+                      height: "90px",
+                      objectFit: "cover",
+                      border: "1px solid black",
+                    }}
+                  />
+                )}
 
-    {/* Title */}
-    <span>{f.title}</span>
+                <span>{f.title}</span>
 
-    {/* Remove Button */}
-    <button
-      onClick={() => {
-        const token = localStorage.getItem("token");
+                <button
+                  onClick={() => {
+                    const token = localStorage.getItem("token");
 
-        fetch(`http://localhost:8000/favorites/${f.id}`, {
-          method: "DELETE",
-          headers: {
-            "Authorization": `Bearer ${token}`,
-          },
-        })
-          .then(() => {
-            setFavorites(favorites.filter((mov) => mov.id !== f.id));
-          })
-          .catch((err) => console.error("Error removing favorite:", err));
-      }}
-      style={{
-        marginLeft: "auto",
-        padding: "0.3rem 0.8rem",
-        border: "1px solid black",
-        background: "black",
-        color: "white",
-        cursor: "pointer",
-      }}
-    >
-      Remove
-    </button>
-  </li>
-))}
-
+                    fetch(`http://localhost:8000/favorites/${f.id}`, {
+                      method: "DELETE",
+                      headers: { Authorization: `Bearer ${token}` },
+                    })
+                      .then(() => {
+                        setFavorites(favorites.filter((mov) => mov.id !== f.id));
+                      })
+                      .catch((err) =>
+                        console.error("Error removing favorite:", err)
+                      );
+                  }}
+                  style={{
+                    marginLeft: "auto",
+                    padding: "0.3rem 0.8rem",
+                    border: "1px solid black",
+                    background: "black",
+                    color: "white",
+                    cursor: "pointer",
+                  }}
+                >
+                  Remove
+                </button>
+              </li>
+            ))}
           </ul>
         )}
       </section>

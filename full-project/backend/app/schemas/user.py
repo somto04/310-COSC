@@ -197,7 +197,7 @@ class UserUpdate(BaseModel):
         default=None,
         description=f"Password with at least one uppercase letter, one lowercase letter, one digit, and {MIN_PASSWORD_LENGTH}-{MAX_PASSWORD_LENGTH} characters",
     )
-    watchlist: Optional[List[int]] = Field(default=None, description="User's watch list")
+    watchlist: Optional[List[int]] = Field(default_factory=list, description="User's watch list")
 
     @field_validator("age")
     @classmethod

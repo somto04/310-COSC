@@ -17,6 +17,7 @@ from app.schemas.user import User, UserCreate, UserUpdate
 from ..userRoute import getUserProfile
 from app.routers.authRoute import getCurrentUser
 from app.schemas.role import Role
+from app.schemas.movie import Movie
 
 
 @pytest.fixture
@@ -29,8 +30,39 @@ def app():
 @pytest.fixture
 def client(app):
     """Create a test client for making HTTP requests"""
-    app.include_router(router)
+    #app.include_router(router)
     return TestClient(app)
+
+@pytest.fixture
+def sampleUsersPydantic():
+    return [
+        User(
+            id=1,
+            username='alicej',
+            firstName='Alice',
+            lastName='Johnson',
+            age=25,
+            email='alice@example.com',
+            pw='SecureP@ss123',
+            role=Role.USER,
+            penalties=0,
+            isBanned=False,
+            watchlist=[]
+        ),
+        User(
+            id=2,
+            username='bobsmith',
+            firstName='Bob',
+            lastName='Smith',
+            age=30,
+            email='bob@example.com',
+            pw='passwHOrd!@#234',
+            role=Role.ADMIN,
+            penalties=1,
+            isBanned=False,
+            watchlist=[1, 2]
+        )
+    ]
 
 @pytest.fixture
 def sampleUsers():
@@ -188,15 +220,13 @@ def test_deleteUser(mockDelete, client, sampleUsers):
     assert response.status_code == 204
     mockDelete.assert_called_once_with(1)
 
-def fakeGetCurrentUser():
-    return MagicMock(id=1)
-
-def test_getUserProfile(sampleUsers):
+def test_getUserProfile(sampleUsersPydantic):
     """Gets the user profile based on the userId given"""
-    main_app.app.dependency_overrides[getCurrentUser] = fakeGetCurrentUser
+    main_app.app.dependency_overrides[getCurrentUser] = lambda: sampleUsersPydantic[0]
     client = TestClient(main_app.app)
-    with patch("app.routers.userRoute.getUserById", return_value = sampleUsers[0]):
-        response = client.get("/users/userProfile/1")
+
+    with patch("app.routers.userRoute.getUserById", return_value = sampleUsersPydantic[0]):
+        response = client.get("/users/userProfile", params={"userId": 1})
 
     assert response.status_code == 200
     data = response.json()
@@ -206,29 +236,127 @@ def test_getUserProfile(sampleUsers):
     assert data["isOwner"] is True    
 
     main_app.app.dependency_overrides = {} 
+def test_getUserWatchlist(sampleUsersPydantic):
+    main_app.app.dependency_overrides[getCurrentUser] = lambda: sampleUsersPydantic[1]
+    client = TestClient(main_app.app)
 
-@patch("app.routers.userRoute.getUserById")
-@patch("app.routers.userRoute.loadMovies")
-def test_getUserWatchlist(mockLoad, mockGet, client, sampleUsers):
-    """Test GET /users/{userId}/watchlist returns the correct watchlist"""
-
-    client.app.dependency_overrides[getCurrentUser] = lambda: MagicMock(id=2)
-
-    user = sampleUsers[1]
-    mockGet.return_value = user
-
-    mockLoad.return_value = {
-        1: {"id": 1, "title": "Movie1"},
-        2: {"id": 2, "title": "Movie2"}
-    }
-
-    response = client.get(f"/users/{user['id']}/watchlist")
+    with patch("app.routers.userRoute.getUserById", return_value=sampleUsersPydantic[1]):
+        with patch("app.routers.userRoute.loadMovies", return_value=[
+            Movie(id=1, 
+                  title="Movie1", 
+                  movieIMDb=8.0, 
+                  movieGenre=["Action"], 
+                  directors=["Director1"], 
+                  mainstars=["Star1"], 
+                  description="Desc1", 
+                  datePublished="2020-01-01", 
+                  duration=120),
+            Movie(id=2, 
+                  title="Movie2", 
+                  movieIMDb=7.5, 
+                  movieGenre=["Drama"], 
+                  directors=["Director2"], 
+                  mainstars=["Star2"], 
+                  description="Desc2", 
+                  datePublished="2021-01-01", 
+                  duration=130)
+                ]):
+            response = client.get("/users/watchlist")
 
     assert response.status_code == 200
     data = response.json()
+    assert [{"id": movie["id"], "title": movie["title"]} for movie in data["watchlist"]] == [
+        {"id": 1, "title": "Movie1"},
+        {"id": 2, "title": "Movie2"}
+    ]
+    main_app.app.dependency_overrides = {}
 
-    expected = [mockLoad.return_value[mid] for mid in user["watchlist"]]
-    assert data["watchlist"] == expected
+@patch("app.routers.userRoute.getUserById")
+@patch("app.routers.userRoute.loadMovies")
+@patch("app.routers.userRoute.updateUser")
+def test_addMovieToWatchlist(mockUpdate, mockLoad, mockGet, client, sampleUsersPydantic):
+    client.app.dependency_overrides[getCurrentUser] = lambda: MagicMock(id=1)
 
-    mockGet.assert_called_once_with(user["id"])
-    mockLoad.assert_called_once()
+    user = sampleUsersPydantic[0]
+    mockGet.return_value = user
+
+    mockLoad.return_value = [
+        Movie(
+            id=1,
+            title="Movie1",
+            movieIMDb=8.0,
+            movieGenre=["Action"],
+            directors=["Director1"],
+            mainstars=["Star1"],
+            description="Desc1",
+            datePublished="2020-01-01",
+            duration=120
+        ),
+        Movie(
+            id=2,
+            title="Movie2",
+            movieIMDb=7.5,
+            movieGenre=["Drama"],
+            directors=["Director2"],
+            mainstars=["Star2"],
+            description="Desc2",
+            datePublished="2021-01-01",
+            duration=130
+        )
+    ]
+
+    movieId = 2
+    response = client.post(f"/users/watchlist/{movieId}")
+    assert response.status_code == 200
+
+    updatedList = user.watchlist + [movieId]
+    mockUpdate.assert_called_once_with(
+        1,
+        UserUpdate(watchlist=updatedList)
+    )
+    
+@patch("app.routers.userRoute.getUserById")
+@patch("app.routers.userRoute.loadMovies")
+@patch("app.routers.userRoute.updateUser")
+def test_removeMovieFromWatchlist(mockUpdate, mockLoad, mockGet, client, sampleUsers):
+    client.app.dependency_overrides[getCurrentUser] = lambda: MagicMock(id=2, role="USER")
+
+    user = sampleUsers[1]
+    user["watchlist"] = [1, 2]
+    mockGet.return_value = user
+
+    mockLoad.return_value = [
+        Movie(
+            id=1,
+            title="Movie1",
+            movieIMDb=8.0,
+            movieGenre=["Action"],
+            directors=["Director1"],
+            mainstars=["Star1"],
+            description="Desc1",
+            datePublished="2020-01-01",
+            duration=120
+        ),
+        Movie(
+            id=2,
+            title="Movie2",
+            movieIMDb=7.5,
+            movieGenre=["Drama"],
+            directors=["Director2"],
+            mainstars=["Star2"],
+            description="Desc2",
+            datePublished="2021-01-01",
+            duration=130
+        )
+    ]
+
+    movieIdToRemove = 2
+    response = client.delete(f"/users/watchlist/{movieIdToRemove}")
+    assert response.status_code == 200
+
+    expectedUpdatedList = [1]
+    mockUpdate.assert_called_once_with(
+        2,
+        UserUpdate(watchlist=expectedUpdatedList)
+    )
+    assert response.json()["watchlist"] == expectedUpdatedList

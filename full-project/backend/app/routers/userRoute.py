@@ -7,6 +7,7 @@ from fastapi import Body
 from ..schemas.role import Role
 from ..repos.movieRepo import loadMovies
 from ..repos.userRepo import loadUsers
+from ..services.favoritesService import MovieNotFoundError
 
 router = APIRouter(prefix = "/users", tags = ["users"])
 
@@ -43,6 +44,38 @@ def createNewUser(payload: UserCreate = Body(
         return createUser(payload)
     except UsernameTakenError as e:
         raise HTTPException(status_code=409, detail=str(e))
+
+
+@router.get("/userProfile")
+def getUserProfile(userId: int, currentUser = Depends(getCurrentUser)):
+    """
+    Gets the user profile of either the owner or another reviewer
+
+    Returns:
+        User profile.
+    
+    Raises:
+        Exception: If the user doesnt exist.
+    """
+    try:
+        user = getUserById(userId)
+    except UserNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    else:       
+        isOwner = currentUser.id == userId
+        return {"user": user, "isOwner": isOwner}
+    
+@router.get("/watchlist")
+def getUserWatchlist(currentUser = Depends(getCurrentUser)):
+    """
+    Gets the user's watchlist
+    """
+    user = getUserById(currentUser.id)
+    movies = {movie.id: movie for movie in loadMovies()}  # dict keyed by ID
+    watchlistIds = getWatchlist(user)
+
+    moviesToWatch = [movies[movieId] for movieId in watchlistIds if movieId in movies]
+    return {"watchlist": moviesToWatch}
 
 @router.get("/{userId}", response_model = SafeUser)
 def getUser(userId: int):
@@ -86,33 +119,44 @@ def removeUser(userId: int, currentUser = Depends(getCurrentUser)):
     
     return None
 
-@router.get("/userProfile/{userId}")
-def getUserProfile(userId: int, currentUser = Depends(getCurrentUser)):
+@router.post("/watchlist/{movieId}")
+def addMovieToWatchlist(movieId: int, currentUser = Depends(getCurrentUser)):
     """
-    Gets the user profile of either the owner or another reviewer
+    Adds a movie to the user's watchlist
+    """
+    movies = {movie.id: movie for movie in loadMovies()}
+    user = getUserById(currentUser.id)
+    watchlist = getWatchlist(user)
 
-    Returns:
-        User profile.
+    if movieId not in movies:
+        raise MovieNotFoundError("This movie does not exist")
     
-    Raises:
-        Exception: If the user doesnt exist.
+    if movieId in watchlist:
+        return {"watchlist": watchlist}
+
+    updatedWatchlist = watchlist + [movieId]
+    updatedUser = updateUser(currentUser.id, UserUpdate(watchlist=updatedWatchlist))
+
+    return {"watchlist": updatedWatchlist}
+
+@router.delete("/watchlist/{movieId}")
+def removeMovieFromWatchlist(movieId: int, currentUser = Depends(getCurrentUser)):
     """
-    try:
-        user = getUserById(userId)
-    except UserNotFoundError as e:
-        raise HTTPException(status_code=404, detail=str(e))
-    else:       
-        isOwner = currentUser.id == userId
-        return {"user": user, "isOwner": isOwner}
+    Adds a movie to the users watchlist
+    """
+    movies = {movie.id: movie for movie in loadMovies()}
+    user = getUserById(currentUser.id)
+    watchlist = getWatchlist(user)
+
+    if movieId not in movies:
+        raise MovieNotFoundError("This movie does not exist")
     
-@router.get("/{userId}/watchlist")
-def getUserWatchlist(userId: int, currentUser = Depends(getCurrentUser)):
-    """
-    Gets the user's watchlist
-    """
-    user = getUserById(userId)
-    movies = loadMovies()
-    if currentUser.id != userId:
-        raise notOwnerError("You are not authorised to view this users watch list")
-    moviesToWatch = [movies[movieId] for movieId in user["watchlist"] if movieId in movies]
-    return {"watchlist": moviesToWatch}
+    if movieId not in watchlist:
+        return {"message": "Movie not in watchlist"}
+
+    updatedWatchlist = [movie for movie in watchlist if movie != movieId]
+    updateUser(currentUser.id, UserUpdate(watchlist=updatedWatchlist))
+    return {"message": "movie removed", "watchlist": updatedWatchlist}
+
+def getWatchlist(user):
+    return user.watchlist if hasattr(user, "watchlist") else user["watchlist"]

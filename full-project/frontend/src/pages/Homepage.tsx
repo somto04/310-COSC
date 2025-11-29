@@ -70,10 +70,11 @@ export default function Homepage() {
                         "10s": 2010,
                         "20s": 2020,
                     };
-                    params.append("year", String(decadeMap[filterYear]));
+                    const yearValue = decadeMap[filterYear];
+                    if (yearValue) params.append("year", String(yearValue));
                 }
-                if (filterDirector) params.append("genre", filterDirector);
-                if (filterStar) params.append("genre", filterStar);
+                if (filterDirector) params.append("director", filterDirector);
+                if (filterStar) params.append("star", filterStar);
 
                 const res = await fetch(url + params.toString());
 
@@ -83,8 +84,11 @@ export default function Homepage() {
                 }
                 
                 const data = await res.json();
+                if (!Array.isArray(data)) {
+                    setMovies([]);
+                    return;
+                }
                 const moviesWithPosters = await fetchMoviesWithPosters(data);
-
                 setMovies(moviesWithPosters);
             }
             catch (err) {
@@ -95,11 +99,11 @@ export default function Homepage() {
 }, [searchTerm, filterDirector, filterStar, filterGenre, filterYear]);
 
  return (
-    <div style={{ padding: "2rem", maxWidth: "700px", margin: "0 auto" }}>
+    <div style={{ padding: "2rem", margin: "0 auto" }}>
       <h1 style={{ marginBottom: "1rem" }}>Movies</h1>
 
       {/* SEARCH BOX */}
-      <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1rem" }}>
+      <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1rem", height: "50px" }}>
       <input
         type="text"
         placeholder="Search movies..."
@@ -116,7 +120,7 @@ export default function Homepage() {
       <select
       value={filterGenre}
       onChange={(e) => setFilterGenre(e.target.value)}
-      style={{ padding: "0.5rem", fontSize: "1rem" }}
+      style={{ padding: "0.5rem", fontSize: "1rem", height: "50px" }}
       >
       
       <option value="">All Genres</option>
@@ -134,7 +138,7 @@ export default function Homepage() {
       <select
       value={filterYear}
       onChange={(e) => setFilterYear(e.target.value)}
-      style={{ padding: "0.5rem", fontSize: "1rem" }}
+      style={{ padding: "0.5rem", fontSize: "1rem", height: "50px" }}
       >
       
       <option value="">All years</option>
@@ -145,6 +149,38 @@ export default function Homepage() {
       <option value="2000s">2000s</option>
       <option value="2010s">2010s</option>
       <option value="2020s">2020s</option>
+      </select>
+
+      <select
+      value={filterDirector}
+      onChange={(e) => setFilterDirector(e.target.value)}
+      style={{ padding: "0.5rem", fontSize: "1rem", height: "50px" }}
+      >
+      
+      <option value="">All directors</option>
+      <option value="Anthony Russo">Anthony Russo</option>
+      <option value="Joe Russo">Joe Russo</option>
+      <option value="Robert Zemeckis">Robert Zemeckis</option>
+      <option value="Chad Stahelski">Chad Stahelski</option>
+      <option value="Todd Phillips">Todd Phillips</option>
+      <option value="Daniel Espinosa">Daniel Espinosa</option>
+      <option value="Quentin Tarantino">Quentin Tarantino</option>
+      </select>      
+      
+      <select
+      value={filterStar}
+      onChange={(e) => setFilterStar(e.target.value)}
+      style={{ padding: "0.5rem", fontSize: "1rem", height: "50px" }}
+      >
+      
+      <option value="">All stars</option>
+      <option value="John Travolta">John Travolta</option>
+      <option value="Samuel L. Jackson">Samuel L. Jackson</option>
+      <option value="Zendaya">Zendaya</option>
+      <option value="Benedict Cumberbatch">Benedict Cumberbatch</option>
+      <option value="Tom Holland">Tom Holland</option>
+      <option value="Robert Downey Jr.">Robert Downey Jr.</option>
+      <option value="Keanu Reeves">Keanu Reeves</option>
       </select>
       </div>
 

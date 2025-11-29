@@ -8,6 +8,8 @@ from ..schemas.role import Role
 from ..repos.movieRepo import loadMovies
 from ..repos.userRepo import loadUsers
 from ..services.favoritesService import MovieNotFoundError
+import logging
+import sys
 
 router = APIRouter(prefix = "/users", tags = ["users"])
 
@@ -51,10 +53,10 @@ def getUserWatchlist(currentUser = Depends(getCurrentUser)):
     Gets the user's watchlist
     """
     user = getUserById(currentUser.id)
-    movies = loadMovies()
-    watchlist = getWatchlist(user)
+    movies = {movie.id: movie for movie in loadMovies()}  # dict keyed by ID
+    watchlistIds = getWatchlist(user)
 
-    moviesToWatch = [movies[movieId] for movieId in watchlist if movieId in movies]
+    moviesToWatch = [movies[movieId] for movieId in watchlistIds if movieId in movies]
     return {"watchlist": moviesToWatch}
 
 @router.get("/{userId}", response_model = SafeUser)
@@ -99,7 +101,7 @@ def removeUser(userId: int, currentUser = Depends(getCurrentUser)):
     
     return None
 
-@router.get("/userProfile/{userId}")
+@router.get("/userProfile")
 def getUserProfile(userId: int, currentUser = Depends(getCurrentUser)):
     """
     Gets the user profile of either the owner or another reviewer
@@ -122,7 +124,7 @@ def getUserProfile(userId: int, currentUser = Depends(getCurrentUser)):
 @router.post("/watchlist/{movieId}")
 def addMovieToWatchlist(movieId: int, currentUser = Depends(getCurrentUser)):
     """
-    Adds a movie to the users watchlist
+    Adds a movie to the user's watchlist
     """
     movies = {movie.id: movie for movie in loadMovies()}
     user = getUserById(currentUser.id)
@@ -135,7 +137,15 @@ def addMovieToWatchlist(movieId: int, currentUser = Depends(getCurrentUser)):
         return {"watchlist": watchlist}
 
     updatedWatchlist = watchlist + [movieId]
-    updateUser(currentUser.id, UserUpdate(watchlist=updatedWatchlist))
+    updatedUser = updateUser(currentUser.id, UserUpdate(watchlist=updatedWatchlist))
+
+    # Debug prints
+    logging.debug(">>> Updated watchlist in memory:", updatedUser.watchlist, file=sys.stderr)
+    all_users = loadUsers()
+    for u in all_users:
+        if u.id == currentUser.id:
+            logging.debug(">>> Watchlist from storage:", u.watchlist, file=sys.stderr)
+
     return {"watchlist": updatedWatchlist}
 
 @router.delete("/watchlist/{movieId}")

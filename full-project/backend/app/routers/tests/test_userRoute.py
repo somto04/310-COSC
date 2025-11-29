@@ -220,15 +220,13 @@ def test_deleteUser(mockDelete, client, sampleUsers):
     assert response.status_code == 204
     mockDelete.assert_called_once_with(1)
 
-def fakeGetCurrentUser():
-    return MagicMock(id=1)
-
-def test_getUserProfile(sampleUsers):
+def test_getUserProfile(sampleUsersPydantic):
     """Gets the user profile based on the userId given"""
-    main_app.app.dependency_overrides[getCurrentUser] = fakeGetCurrentUser
+    main_app.app.dependency_overrides[getCurrentUser] = lambda: sampleUsersPydantic[0]
     client = TestClient(main_app.app)
-    with patch("app.routers.userRoute.getUserById", return_value = sampleUsers[0]):
-        response = client.get("/users/userProfile/1")
+
+    with patch("app.routers.userRoute.getUserById", return_value = sampleUsersPydantic[0]):
+        response = client.get("/users/userProfile", params={"userId": 1})
 
     assert response.status_code == 200
     data = response.json()
@@ -238,21 +236,36 @@ def test_getUserProfile(sampleUsers):
     assert data["isOwner"] is True    
 
     main_app.app.dependency_overrides = {} 
-
 def test_getUserWatchlist(sampleUsersPydantic):
     main_app.app.dependency_overrides[getCurrentUser] = lambda: sampleUsersPydantic[1]
     client = TestClient(main_app.app)
 
     with patch("app.routers.userRoute.getUserById", return_value=sampleUsersPydantic[1]):
-        with patch("app.routers.userRoute.loadMovies", return_value={
-            1: {"id": 1, "title": "Movie1"},
-            2: {"id": 2, "title": "Movie2"}
-        }):
+        with patch("app.routers.userRoute.loadMovies", return_value=[
+            Movie(id=1, 
+                  title="Movie1", 
+                  movieIMDb=8.0, 
+                  movieGenre=["Action"], 
+                  directors=["Director1"], 
+                  mainstars=["Star1"], 
+                  description="Desc1", 
+                  datePublished="2020-01-01", 
+                  duration=120),
+            Movie(id=2, 
+                  title="Movie2", 
+                  movieIMDb=7.5, 
+                  movieGenre=["Drama"], 
+                  directors=["Director2"], 
+                  mainstars=["Star2"], 
+                  description="Desc2", 
+                  datePublished="2021-01-01", 
+                  duration=130)
+                ]):
             response = client.get("/users/watchlist")
 
     assert response.status_code == 200
     data = response.json()
-    assert data["watchlist"] == [
+    assert [{"id": movie["id"], "title": movie["title"]} for movie in data["watchlist"]] == [
         {"id": 1, "title": "Movie1"},
         {"id": 2, "title": "Movie2"}
     ]

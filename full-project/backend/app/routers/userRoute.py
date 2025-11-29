@@ -8,8 +8,6 @@ from ..schemas.role import Role
 from ..repos.movieRepo import loadMovies
 from ..repos.userRepo import loadUsers
 from ..services.favoritesService import MovieNotFoundError
-import logging
-import sys
 
 router = APIRouter(prefix = "/users", tags = ["users"])
 
@@ -47,6 +45,26 @@ def createNewUser(payload: UserCreate = Body(
     except UsernameTakenError as e:
         raise HTTPException(status_code=409, detail=str(e))
 
+
+@router.get("/userProfile")
+def getUserProfile(userId: int, currentUser = Depends(getCurrentUser)):
+    """
+    Gets the user profile of either the owner or another reviewer
+
+    Returns:
+        User profile.
+    
+    Raises:
+        Exception: If the user doesnt exist.
+    """
+    try:
+        user = getUserById(userId)
+    except UserNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    else:       
+        isOwner = currentUser.id == userId
+        return {"user": user, "isOwner": isOwner}
+    
 @router.get("/watchlist")
 def getUserWatchlist(currentUser = Depends(getCurrentUser)):
     """
@@ -101,26 +119,6 @@ def removeUser(userId: int, currentUser = Depends(getCurrentUser)):
     
     return None
 
-@router.get("/userProfile")
-def getUserProfile(userId: int, currentUser = Depends(getCurrentUser)):
-    """
-    Gets the user profile of either the owner or another reviewer
-
-    Returns:
-        User profile.
-    
-    Raises:
-        Exception: If the user doesnt exist.
-    """
-    try:
-        user = getUserById(userId)
-    except UserNotFoundError as e:
-        raise HTTPException(status_code=404, detail=str(e))
-    else:       
-        isOwner = currentUser.id == userId
-        return {"user": user, "isOwner": isOwner}
-    
-
 @router.post("/watchlist/{movieId}")
 def addMovieToWatchlist(movieId: int, currentUser = Depends(getCurrentUser)):
     """
@@ -138,13 +136,6 @@ def addMovieToWatchlist(movieId: int, currentUser = Depends(getCurrentUser)):
 
     updatedWatchlist = watchlist + [movieId]
     updatedUser = updateUser(currentUser.id, UserUpdate(watchlist=updatedWatchlist))
-
-    # Debug prints
-    logging.debug(">>> Updated watchlist in memory:", updatedUser.watchlist, file=sys.stderr)
-    all_users = loadUsers()
-    for u in all_users:
-        if u.id == currentUser.id:
-            logging.debug(">>> Watchlist from storage:", u.watchlist, file=sys.stderr)
 
     return {"watchlist": updatedWatchlist}
 

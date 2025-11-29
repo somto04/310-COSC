@@ -13,6 +13,11 @@ export default function Homepage() {
     const [movies, setMovies] = useState<Movie[]>([]);
     const [searchTerm, setSearchTerm] = useState("");
     const [loading, setLoading] = useState(false);
+    const [filterGenre, setFilterGenre] = useState("");
+    const [filterYear, setFilterYear] = useState("");
+    const [filterDirector, setFilterDirector] = useState("");
+    const [filterStar, setFilterStar] = useState("");
+
 
     const fetchMoviesWithPosters = async (moviesList: any[]) => {
         const moviesWithPosters = await Promise.all(
@@ -48,40 +53,53 @@ export default function Homepage() {
     }, []);
     
     useEffect(() => {
-        const fetchSearchResults = async () => {
-        if (!searchTerm) {
-            const res = await fetch("http://localhost:8000/movies/");
-            const data = await res.json();
-            const moviesWithPosters = await fetchMoviesWithPosters(data);
-            setMovies(moviesWithPosters);
-            return;
-        }
+        const fetchFilteresMovies = async () => {
+            try {
+                let url = "http://localhost:8000/movies/filter?";
+                const params = new URLSearchParams();
 
-        try {
-            const res = await fetch(
-            `http://localhost:8000/movies/search?query=${encodeURIComponent(
-                searchTerm
-            )}`
-        );
-        if (res.status === 404) {
-            setMovies([]);
-            return;
-        }
-        const data = await res.json();
-        const moviesWithPosters = await fetchMoviesWithPosters(data);
-        setMovies(moviesWithPosters);
-    } 
-    catch (err) {
-        console.error(err);
-    }
-};
-fetchSearchResults();}, [searchTerm]);
+                if (searchTerm) params.append("query", searchTerm);
+                if (filterGenre) params.append("genre", filterGenre);
+                if (filterYear) {
+                    const decadeMap: { [key: string]: number } = {
+                        "60s": 1960,
+                        "70s": 1970,
+                        "80s": 1980,
+                        "90s": 1990,
+                        "2000s": 2000,
+                        "10s": 2010,
+                        "20s": 2020,
+                    };
+                    params.append("year", String(decadeMap[filterYear]));
+                }
+                if (filterDirector) params.append("genre", filterDirector);
+                if (filterStar) params.append("genre", filterStar);
+
+                const res = await fetch(url + params.toString());
+
+                if (res.status === 404) {
+                    setMovies([]);
+                    return;
+                }
+                
+                const data = await res.json();
+                const moviesWithPosters = await fetchMoviesWithPosters(data);
+
+                setMovies(moviesWithPosters);
+            }
+            catch (err) {
+                console.error("Error fetching movies: ", err);
+            }
+    };
+    fetchFilteresMovies();
+}, [searchTerm, filterDirector, filterStar, filterGenre, filterYear]);
 
  return (
     <div style={{ padding: "2rem", maxWidth: "700px", margin: "0 auto" }}>
       <h1 style={{ marginBottom: "1rem" }}>Movies</h1>
 
       {/* SEARCH BOX */}
+      <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1rem" }}>
       <input
         type="text"
         placeholder="Search movies..."
@@ -94,6 +112,42 @@ fetchSearchResults();}, [searchTerm]);
           fontSize: "1rem",
         }}
       />
+
+      <select
+      value={filterGenre}
+      onChange={(e) => setFilterGenre(e.target.value)}
+      style={{ padding: "0.5rem", fontSize: "1rem" }}
+      >
+      
+      <option value="">All Genres</option>
+      <option value="action">Action</option>
+      <option value="comedy">Comedy</option>
+      <option value="drama">Drama</option>
+      <option value="adventure">Adventure</option>
+      <option value="scifi">Sci-Fi</option>
+      <option value="crime">Crime</option>
+      <option value="romance">Romance</option>
+      <option value="thriller">Thriller</option>
+      <option value="horror">Horror</option>
+      </select>
+
+      <select
+      value={filterYear}
+      onChange={(e) => setFilterYear(e.target.value)}
+      style={{ padding: "0.5rem", fontSize: "1rem" }}
+      >
+      
+      <option value="">All years</option>
+      <option value="60s">60s</option>
+      <option value="70s">70s</option>
+      <option value="80s">80s</option>
+      <option value="90s">90s</option>
+      <option value="2000s">2000s</option>
+      <option value="2010s">2010s</option>
+      <option value="2020s">2020s</option>
+      </select>
+      </div>
+
 
       {/* MOVIES */}
       <section style={{ marginTop: "2rem" }}>

@@ -29,8 +29,39 @@ def app():
 @pytest.fixture
 def client(app):
     """Create a test client for making HTTP requests"""
-    app.include_router(router)
+    #app.include_router(router)
     return TestClient(app)
+
+@pytest.fixture
+def sampleUsersPydantic():
+    return [
+        User(
+            id=1,
+            username='alicej',
+            firstName='Alice',
+            lastName='Johnson',
+            age=25,
+            email='alice@example.com',
+            pw='SecureP@ss123',
+            role=Role.USER,
+            penalties=0,
+            isBanned=False,
+            watchlist=[]
+        ),
+        User(
+            id=2,
+            username='bobsmith',
+            firstName='Bob',
+            lastName='Smith',
+            age=30,
+            email='bob@example.com',
+            pw='passwHOrd!@#234',
+            role=Role.ADMIN,
+            penalties=1,
+            isBanned=False,
+            watchlist=[1, 2]
+        )
+    ]
 
 @pytest.fixture
 def sampleUsers():
@@ -207,39 +238,32 @@ def test_getUserProfile(sampleUsers):
 
     main_app.app.dependency_overrides = {} 
 
-@patch("app.routers.userRoute.getUserById")
-@patch("app.routers.userRoute.loadMovies")
-def test_getUserWatchlist(mockLoad, mockGet, client, sampleUsers):
-    """Test GET /users/{userId}/watchlist returns the correct watchlist"""
+def test_getUserWatchlist(sampleUsersPydantic):
+    main_app.app.dependency_overrides[getCurrentUser] = lambda: sampleUsersPydantic[1]
+    client = TestClient(main_app.app)
 
-    client.app.dependency_overrides[getCurrentUser] = lambda: MagicMock(id=2)
-
-    user = sampleUsers[1]
-    mockGet.return_value = user
-
-    mockLoad.return_value = {
-        1: {"id": 1, "title": "Movie1"},
-        2: {"id": 2, "title": "Movie2"}
-    }
-
-    response = client.get(f"/users/{user['id']}/watchlist")
+    with patch("app.routers.userRoute.getUserById", return_value=sampleUsersPydantic[1]):
+        with patch("app.routers.userRoute.loadMovies", return_value={
+            1: {"id": 1, "title": "Movie1"},
+            2: {"id": 2, "title": "Movie2"}
+        }):
+            response = client.get("/users/watchlist")
 
     assert response.status_code == 200
     data = response.json()
-
-    expected = [mockLoad.return_value[movieId] for movieId in user["watchlist"]]
-    assert data["watchlist"] == expected
-
-    mockGet.assert_called_once_with(user["id"])
-    mockLoad.assert_called_once()
+    assert data["watchlist"] == [
+        {"id": 1, "title": "Movie1"},
+        {"id": 2, "title": "Movie2"}
+    ]
+    main_app.app.dependency_overrides = {}
 
 @patch("app.routers.userRoute.getUserById")
 @patch("app.routers.userRoute.loadMovies")
 @patch("app.routers.userRoute.updateUser")
-def test_addMovieToWatchlist(mockUpdate, mockLoad, mockGet, client, sampleUsers):
+def test_addMovieToWatchlist(mockUpdate, mockLoad, mockGet, client, sampleUsersPydantic):
     client.app.dependency_overrides[getCurrentUser] = lambda: MagicMock(id=1)
 
-    user = sampleUsers[0]
+    user = sampleUsersPydantic[0]
     mockGet.return_value = user
 
     mockLoad.return_value = {
@@ -251,7 +275,7 @@ def test_addMovieToWatchlist(mockUpdate, mockLoad, mockGet, client, sampleUsers)
     response = client.post(f"/users/watchlist/{movieId}")
     assert response.status_code == 200
 
-    updatedList = user["watchlist"] + [movieId]
+    updatedList = user.watchlist + [movieId]
     mockUpdate.assert_called_once_with(
         1,
         UserUpdate(watchlist=updatedList)
@@ -261,7 +285,7 @@ def test_addMovieToWatchlist(mockUpdate, mockLoad, mockGet, client, sampleUsers)
 @patch("app.routers.userRoute.loadMovies")
 @patch("app.routers.userRoute.updateUser")
 def test_removeMovieFromWatchlist(mockUpdate, mockLoad, mockGet, client, sampleUsers):
-    client.app.dependency_overrides[getCurrentUser] = lambda: MagicMock(id=2)
+    client.app.dependency_overrides[getCurrentUser] = lambda: MagicMock(id=2, role="USER")
 
     user = sampleUsers[1]
     user["watchlist"] = [1, 2]

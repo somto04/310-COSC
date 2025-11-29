@@ -45,6 +45,18 @@ def createNewUser(payload: UserCreate = Body(
     except UsernameTakenError as e:
         raise HTTPException(status_code=409, detail=str(e))
 
+@router.get("/watchlist")
+def getUserWatchlist(currentUser = Depends(getCurrentUser)):
+    """
+    Gets the user's watchlist
+    """
+    user = getUserById(currentUser.id)
+    movies = loadMovies()
+    watchlist = getWatchlist(user)
+
+    moviesToWatch = [movies[movieId] for movieId in watchlist if movieId in movies]
+    return {"watchlist": moviesToWatch}
+
 @router.get("/{userId}", response_model = SafeUser)
 def getUser(userId: int):
     try:
@@ -106,15 +118,6 @@ def getUserProfile(userId: int, currentUser = Depends(getCurrentUser)):
         isOwner = currentUser.id == userId
         return {"user": user, "isOwner": isOwner}
     
-@router.get("/{userId}/watchlist")
-def getUserWatchlist(currentUser = Depends(getCurrentUser)):
-    """
-    Gets the user's watchlist
-    """
-    user = getUserById(currentUser.id)
-    movies = loadMovies()
-    moviesToWatch = [movies[movieId] for movieId in user.watchlist if movieId in movies]
-    return {"watchlist": moviesToWatch}
 
 @router.post("/watchlist/{movieId}")
 def addMovieToWatchlist(movieId: int, currentUser = Depends(getCurrentUser)):
@@ -123,14 +126,15 @@ def addMovieToWatchlist(movieId: int, currentUser = Depends(getCurrentUser)):
     """
     movies = loadMovies()
     user = getUserById(currentUser.id)
+    watchlist = getWatchlist(user)
 
     if movieId not in movies:
         raise MovieNotFoundError("This movie does not exist")
     
-    if movieId in user.watchlist:
-        return {"watchlist": user.watchlist}
+    if movieId in watchlist:
+        return {"watchlist": watchlist}
 
-    updatedWatchlist = user.watchlist + [movieId]
+    updatedWatchlist = watchlist + [movieId]
     updateUser(currentUser.id, UserUpdate(watchlist=updatedWatchlist))
     return {"watchlist": updatedWatchlist}
 
@@ -141,14 +145,17 @@ def removeMovieFromWatchlist(movieId: int, currentUser = Depends(getCurrentUser)
     """
     movies = loadMovies()
     user = getUserById(currentUser.id)
+    watchlist = getWatchlist(user)
 
     if movieId not in movies:
         raise MovieNotFoundError("This movie does not exist")
     
-    if movieId not in user.watchlist:
+    if movieId not in watchlist:
         return {"message": "Movie not in watchlist"}
 
-    updatedWatchlist = [movie for movie in user.watchlist if movie != movieId]
+    updatedWatchlist = [movie for movie in watchlist if movie != movieId]
     updateUser(currentUser.id, UserUpdate(watchlist=updatedWatchlist))
     return {"message": "movie removed", "watchlist": updatedWatchlist}
 
+def getWatchlist(user):
+    return user.watchlist if hasattr(user, "watchlist") else user["watchlist"]

@@ -42,7 +42,7 @@ def getMovieDetailsById(tmdbId: int) -> TMDbMovie | None:
     )
     data = response.json()
 
-    if data.get("status_code") == 34:
+    if data.get("status_code") is not None:
         return None
 
     return TMDbMovie(

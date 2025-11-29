@@ -124,7 +124,7 @@ def addMovieToWatchlist(movieId: int, currentUser = Depends(getCurrentUser)):
     """
     Adds a movie to the users watchlist
     """
-    movies = loadMovies()
+    movies = {movie.id: movie for movie in loadMovies()}
     user = getUserById(currentUser.id)
     watchlist = getWatchlist(user)
 
@@ -143,7 +143,7 @@ def removeMovieFromWatchlist(movieId: int, currentUser = Depends(getCurrentUser)
     """
     Adds a movie to the users watchlist
     """
-    movies = loadMovies()
+    movies = {movie.id: movie for movie in loadMovies()}
     user = getUserById(currentUser.id)
     watchlist = getWatchlist(user)
 

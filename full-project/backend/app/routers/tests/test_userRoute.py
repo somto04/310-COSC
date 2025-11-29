@@ -17,6 +17,7 @@ from app.schemas.user import User, UserCreate, UserUpdate
 from ..userRoute import getUserProfile
 from app.routers.authRoute import getCurrentUser
 from app.schemas.role import Role
+from app.schemas.movie import Movie
 
 
 @pytest.fixture
@@ -266,10 +267,30 @@ def test_addMovieToWatchlist(mockUpdate, mockLoad, mockGet, client, sampleUsersP
     user = sampleUsersPydantic[0]
     mockGet.return_value = user
 
-    mockLoad.return_value = {
-        1: {"id": 1, "title": "Movie1"},
-        2: {"id": 2, "title": "Movie2"},
-    }
+    mockLoad.return_value = [
+        Movie(
+            id=1,
+            title="Movie1",
+            movieIMDb=8.0,
+            movieGenre=["Action"],
+            directors=["Director1"],
+            mainstars=["Star1"],
+            description="Desc1",
+            datePublished="2020-01-01",
+            duration=120
+        ),
+        Movie(
+            id=2,
+            title="Movie2",
+            movieIMDb=7.5,
+            movieGenre=["Drama"],
+            directors=["Director2"],
+            mainstars=["Star2"],
+            description="Desc2",
+            datePublished="2021-01-01",
+            duration=130
+        )
+    ]
 
     movieId = 2
     response = client.post(f"/users/watchlist/{movieId}")
@@ -291,10 +312,30 @@ def test_removeMovieFromWatchlist(mockUpdate, mockLoad, mockGet, client, sampleU
     user["watchlist"] = [1, 2]
     mockGet.return_value = user
 
-    mockLoad.return_value = {
-        1: {"id": 1, "title": "Movie1"},
-        2: {"id": 2, "title": "Movie2"},
-    }
+    mockLoad.return_value = [
+        Movie(
+            id=1,
+            title="Movie1",
+            movieIMDb=8.0,
+            movieGenre=["Action"],
+            directors=["Director1"],
+            mainstars=["Star1"],
+            description="Desc1",
+            datePublished="2020-01-01",
+            duration=120
+        ),
+        Movie(
+            id=2,
+            title="Movie2",
+            movieIMDb=7.5,
+            movieGenre=["Drama"],
+            directors=["Director2"],
+            mainstars=["Star2"],
+            description="Desc2",
+            datePublished="2021-01-01",
+            duration=130
+        )
+    ]
 
     movieIdToRemove = 2
     response = client.delete(f"/users/watchlist/{movieIdToRemove}")

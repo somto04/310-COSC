@@ -7,6 +7,7 @@ import Profile from "./pages/Profile";
 import LikedReviews from "./pages/LikedReviews";
 import FavoriteMovies from "./pages/FavoriteMovies";
 import Watchlist from "./pages/Watchlist";
+import ResetPassword from './pages/ResetPassword';
 
 
 function App() {
@@ -21,6 +22,7 @@ function App() {
         <Route path="/liked-reviews" element={<LikedReviews />} />
         <Route path="/watchlist" element={<Watchlist />} />
         <Route path="/favorite-movies" element={<FavoriteMovies />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
 
       </Routes>
     </BrowserRouter>

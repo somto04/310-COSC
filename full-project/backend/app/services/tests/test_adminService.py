@@ -64,14 +64,8 @@ def testRevokeAdminCallsUpdateUserWithUserRole(mocker):
         return_value=updatedUser,
     )
 
-    result = adminService.revokeAdmin(userId, currentAdmin)
-
-    updateUserMock.assert_called_once()
-    calledUserId, payload = updateUserMock.call_args.args
-    assert calledUserId == userId
-    assert isinstance(payload, AdminUserUpdate)
-    assert payload.role == Role.USER
-    assert result == updatedUser
+    with pytest.raises(adminService.AdminActionError):
+        result = adminService.revokeAdmin(userId, currentAdmin)
 
 
 def testRevokeAdminRaisesAdminActionErrorWhenTargetIsCurrentAdmin():

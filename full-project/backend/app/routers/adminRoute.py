@@ -130,7 +130,6 @@ def getFlaggedReviewReports(
     )
 
 
-# TODO: Implement grantAdmin and revokeAdmin functions in admin service
 @router.put("/{userId}/grantAdmin")
 def grantAdminPrivileges(
     userId: int, currentAdmin: CurrentUser = Depends(requireAdmin)

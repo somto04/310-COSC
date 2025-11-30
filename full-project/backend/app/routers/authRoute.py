@@ -94,6 +94,7 @@ def login(
         "message": "Login successful",
         "access_token": username,  # should be token when implemented
         "token_type": "bearer",
+        "userId": user.id,
     }
 
 

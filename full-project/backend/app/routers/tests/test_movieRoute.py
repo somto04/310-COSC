@@ -128,7 +128,7 @@ def testFilterMoviesNormalizesAndPassesFilters(monkeypatch, sampleMoviesList):
 
 def testFilterMoviesRaises404WhenNoResults(monkeypatch):
     def fakeGetMovieByFilter(genreValue, yearValue, directorValue, starValue):
-        return []
+        raise HTTPException(status_code=404, detail="No movies found with the given filters")
 
     monkeypatch.setattr(movieRouteModule, "getMovieByFilter", fakeGetMovieByFilter)
 

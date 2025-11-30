@@ -1,6 +1,6 @@
 FROM node:20-alpine
 
-WORKDIR /app/full-project/frontend
+WORKDIR /app
 
 COPY package*.json ./
 RUN npm ci

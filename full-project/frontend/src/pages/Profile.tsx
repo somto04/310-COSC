@@ -86,7 +86,7 @@ useEffect(() => {
     .then(async (data) => {
       const movies = data.watchlist || [];
 
-      // fetch posters + durations from TMDB endpoint you already use
+      // fetch posters
       const enriched = await Promise.all(
         movies.map(async (movie: any) => {
           const tmdbRes = await fetch(
@@ -258,7 +258,7 @@ useEffect(() => {
                 lastName: editLastName,
                 email: editEmail,
                 age: user.age,
-                pw: user.pw, // required by backend
+                pw: user.pw,
               }),
             })
               .then((res) => res.json())

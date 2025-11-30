@@ -9,7 +9,7 @@ The backend manages all core logic including reviews, replies, penalties, user a
 
 ## How to run docker
 
-To start, ensure you are in the root file, whatever that may be (e.g. 310-COSC, full-project, or whatever contains ALL the project code.) Next, run this to containerize the backend and frontend, and hopefully everything is good from there:
+To start, ensure you are in the root directory, whatever that may be (e.g. 310-COSC, full-project, or whatever contains ALL the project code.) Next, run this to containerize the backend and frontend, and hopefully everything is good from there:
 ```
 docker compose up --build
 ```

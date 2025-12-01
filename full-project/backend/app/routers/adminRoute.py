@@ -1,6 +1,4 @@
 from fastapi import APIRouter, Depends, HTTPException
-from typing import List
-from ..repos.reviewRepo import loadReviews, saveReviews
 from ..services.reviewService import (
     deleteReview,
     getReviewById,
@@ -12,7 +10,6 @@ from ..utilities.penalties import incrementPenaltyForUser
 from ..schemas.user import CurrentUser
 from .authRoute import requireAdmin
 from ..schemas.admin import AdminFlagResponse, PaginatedFlaggedReviewsResponse
-from ..schemas.review import Review
 from ..services.adminService import grantAdmin, revokeAdmin, AdminActionError
 from app.services.userService import UserNotFoundError
 

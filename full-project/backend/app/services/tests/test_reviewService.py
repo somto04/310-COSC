@@ -163,3 +163,26 @@ def test_deleteReviewNotFound(mockLoad, mockSave, fakeReviews):
     mockLoad.return_value = fakeReviews
     with pytest.raises(ReviewNotFoundError) as exc:
         reviewService.deleteReview(999)
+
+
+@patch("app.services.reviewService.saveReviews")
+@patch("app.services.reviewService.loadReviews")
+def test_flagReviewSuccess(mockLoad, mockSave, fakeReviews):
+    mockLoad.return_value = fakeReviews
+
+    updated = reviewService.flagReview(1)
+
+    assert updated.id == 1
+    assert updated.flagged is True
+    mockSave.assert_called_once()
+
+
+@patch("app.services.reviewService.saveReviews")
+@patch("app.services.reviewService.loadReviews")
+def test_flagReviewNotFound(mockLoad, mockSave):
+    mockLoad.return_value = []
+
+    with pytest.raises(ReviewNotFoundError):
+        reviewService.flagReview(999)
+
+    mockSave.assert_not_called()

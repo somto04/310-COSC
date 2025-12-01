@@ -141,3 +141,19 @@ def flagReview(reviewId: int) -> Review:
             return updated
 
     raise ReviewNotFoundError("Review not found")
+
+def unflagReview(reviewId: int) -> Review:
+    reviews = loadReviews()
+
+    for index, review in enumerate(reviews):
+        if review.id == reviewId:
+            updated = review.model_copy(update={"flagged": False})
+            reviews[index] = updated
+            saveReviews(reviews)
+            return updated
+
+    raise ReviewNotFoundError("Review not found")
+
+def getFlaggedReviews() -> List[Review]:
+    return [review for review in loadReviews() if review.flagged]
+

@@ -78,31 +78,6 @@ def rejectReviewFlag(reviewId: int, currentAdmin: CurrentUser = Depends(requireA
 
 
 # ---------------------------
-# Mark review inappropriate
-# ---------------------------
-
-
-@router.post("/reviews/{reviewId}/markInappropriate", response_model=AdminFlagResponse)
-def markReviewInappropriate(
-    reviewId: int, currentAdmin: CurrentUser = Depends(requireAdmin)
-):
-    """Mark a review as inappropriate and penalize the user."""
-    reviewList, review = getReviewById(reviewId)
-
-    reviewList = [review for review in reviewList if review.id != reviewId]
-    saveReviews(reviewList)
-
-    updatedUser = incrementPenaltyForUser(review.userId)
-
-    return AdminFlagResponse(
-        message="Review flagged and user penalized",
-        userId=updatedUser.id,
-        penaltyCount=updatedUser.penalties,
-        isBanned=updatedUser.isBanned,
-    )
-
-
-# ---------------------------
 # Paginated flagged review reports
 # ---------------------------
 

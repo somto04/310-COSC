@@ -248,3 +248,55 @@ class TestReviewRouterIntegration:
         assert response.json()["detail"] == "Review not found"
 
         app.dependency_overrides = {}
+
+    @patch("app.routers.reviewRoute.flagReview")
+    @patch("app.routers.reviewRoute.getReviewById")
+    def test_flagReviewEndpoint(
+        self, mockGetReview, mockFlagReview, client, sampleReviewData, app
+    ):
+        flaggedReview = sampleReviewData.model_copy()
+        flaggedReview.flagged = True
+
+        mockGetReview.return_value = sampleReviewData
+        mockFlagReview.return_value = flaggedReview
+
+        app.dependency_overrides[getCurrentUser] = lambda: FakeUser(
+            id=1,
+            username="testuser",
+            role="user",
+        )
+
+        response = client.patch(
+            "/reviews/1/flag",
+            headers={"Authorization": "Bearer testuser"},
+        )
+
+        app.dependency_overrides = {}
+
+        assert response.status_code == status.HTTP_200_OK
+        data = response.json()
+        assert data["flagged"] is True
+        mockGetReview.assert_called_once_with(1)
+        mockFlagReview.assert_called_once_with(1)
+
+    @patch("app.routers.reviewRoute.flagReview")
+    def test_flagReviewNotFound(self, mockFlagReview, client, app):
+        app.dependency_overrides[getCurrentUser] = lambda: FakeUser(
+            id=1,
+            username="testuser",
+            role="user",
+        )
+
+        mockFlagReview.side_effect = HTTPException(
+            status_code=404, detail="Review not found"
+        )
+
+        response = client.patch(
+            "/reviews/999/flag",
+            headers={"Authorization": "Bearer testuser"},
+        )
+
+        app.dependency_overrides = {}
+
+        assert response.status_code == 404
+        assert response.json()["detail"] == "Review not found"

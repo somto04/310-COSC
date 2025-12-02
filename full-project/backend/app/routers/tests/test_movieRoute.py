@@ -140,8 +140,42 @@ def testFilterMoviesReturnsEmptyList(monkeypatch):
     result = fakeGetMovieByFilter(genreValue, yearValue, directorValue, starValue)
     assert result == []
 
-# write test for movies meta
+def testGetMoviesMetaSuccess(client):
+    """Test that /movies/meta returns metadata successfully"""
+    response = client.get("/movies/meta")
+    
+    assert response.status_code == 200
+    data = response.json()
+    
+    # Check that all filters are sent back
+    assert "genres" in data
+    assert "decades" in data
+    assert "directors" in data
+    assert "stars" in data
+    
+    # Check that they are lists
+    assert isinstance(data["genres"], list)
+    assert isinstance(data["decades"], list)
+    assert isinstance(data["directors"], list)
+    assert isinstance(data["stars"], list)
 
+def testMoviesMetaNoDuplicates(client):
+    """Test that metadata contains no duplicate values"""
+    response = client.get("/movies/meta")
+    data = response.json()
+    
+    assert len(data["genres"]) == len(set(data["genres"]))
+    assert len(data["decades"]) == len(set(data["decades"]))
+    assert len(data["directors"]) == len(set(data["directors"]))
+    assert len(data["stars"]) == len(set(data["stars"]))
+
+def testMoviesMetaDecadesAreValid(client):
+    """Test that decades are multiples of 10"""
+    response = client.get("/movies/meta")
+    data = response.json()
+    
+    for decade in data["decades"]:
+        assert decade % 10 == 0, f"Decade {decade} is not a multiple of 10"
 
 def testGetMoviesReturnsListFromService(monkeypatch, sampleMoviesList):
     def fakeListMovies():

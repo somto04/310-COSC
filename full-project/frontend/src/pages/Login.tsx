@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-export default function TempLogin() {
+export default function Login() {
   const [username, setUsername] = useState("");
   const [pw, setPw] = useState("");
   const [msg, setMsg] = useState("");
@@ -12,7 +12,7 @@ export default function TempLogin() {
     formData.append("username", username);
     formData.append("password", pw);
 
-    fetch('${BASE_URL}/token', {
+    fetch(`${BASE_URL}/token`, {
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
@@ -36,7 +36,7 @@ export default function TempLogin() {
 
   return (
     <div style={{ padding: "2rem" }}>
-      <h1>Temporary Login</h1>
+      <h1>Login</h1>
 
       <form onSubmit={handleLogin} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
         <input

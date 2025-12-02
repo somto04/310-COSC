@@ -3,10 +3,12 @@ import './Header.css'
 
 function Header() {
     return (
-        <nav>
-            <Link to="/">Home</Link>
-            <Link to="/login">Login</Link>
-            <Link to="/register">Sign Up</Link>
+        <nav className="header">
+            <div className="nav-links">
+                <Link to="/">Home</Link>
+                <Link to="/login">Login</Link>
+                <Link to="/create-account">Sign Up</Link>
+            </div>
         </nav>
     )
 }

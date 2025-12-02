@@ -23,7 +23,7 @@ export default function Homepage() {
 
     // Available options from API
     const [genres, setGenres] = useState<string[]>([]);
-    const [years, setYears] = useState<number[]>([]);
+    const [decades, setDecades] = useState<number[]>([]);
     const [directors, setDirectors] = useState<string[]>([]);
     const [stars, setStars] = useState<string[]>([]);
 
@@ -88,7 +88,7 @@ export default function Homepage() {
             .then(data => {
                 console.log("Metadata received:", data);
                 setGenres(data.genres || []);
-                setYears(data.years || []);
+                setDecades(data.decades || []);
                 setDirectors(data.directors || []);
                 setStars(data.stars || []);
             })
@@ -144,7 +144,7 @@ export default function Homepage() {
         <div style={{ padding: "2rem", margin: "0 auto", maxWidth: "1200px" }}>
             <h1 style={{ marginBottom: "1rem" }}>Movies</h1>
 
-            <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1rem", flexWrap: "wrap" }}>
+            <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1rem" }}>
                 <input
                     type="text"
                     placeholder="Search movies..."
@@ -152,7 +152,7 @@ export default function Homepage() {
                     onChange={(e) => setSearchTerm(e.target.value)}
                     style={{
                         padding: "0.5rem",
-                        flex: "1 1 300px",
+                        flex: "1",
                         fontSize: "1rem",
                         height: "50px",
                     }}
@@ -161,7 +161,7 @@ export default function Homepage() {
                 <select 
                     value={filterGenre} 
                     onChange={(e) => setFilterGenre(e.target.value)}
-                    style={{ padding: "0.5rem", fontSize: "1rem", height: "50px", minWidth: "150px" }}
+                    style={{ padding: "0.5rem", fontSize: "1rem", height: "50px", minWidth: "120px" }}
                 >
                     <option value="">All Genres</option>
                     {genres.map((g) => (
@@ -174,12 +174,12 @@ export default function Homepage() {
                 <select
                     value={filterYear}
                     onChange={(e) => setFilterYear(e.target.value)}
-                    style={{ padding: "0.5rem", fontSize: "1rem", height: "50px", minWidth: "120px" }}
+                    style={{ padding: "0.5rem", fontSize: "1rem", height: "50px", minWidth: "100px" }}
                 >
-                    <option value="">All Years</option>
-                    {years.map((y) => (
-                        <option key={y} value={y}>
-                            {y}
+                    <option value="">All Decades</option>
+                    {decades.map((decade) => (
+                        <option key={decade} value={decade}>
+                            {decade}s
                         </option>
                     ))}
                 </select>
@@ -187,7 +187,7 @@ export default function Homepage() {
                 <select
                     value={filterDirector}
                     onChange={(e) => setFilterDirector(e.target.value)}
-                    style={{ padding: "0.5rem", fontSize: "1rem", height: "50px", minWidth: "150px" }}
+                    style={{ padding: "0.5rem", fontSize: "1rem", height: "50px", minWidth: "120px" }}
                 >
                     <option value="">All Directors</option>
                     {directors.map((d) => (
@@ -200,7 +200,7 @@ export default function Homepage() {
                 <select
                     value={filterStar}
                     onChange={(e) => setFilterStar(e.target.value)}
-                    style={{ padding: "0.5rem", fontSize: "1rem", height: "50px", minWidth: "150px" }}
+                    style={{ padding: "0.5rem", fontSize: "1rem", height: "50px", minWidth: "120px" }}
                 >
                     <option value="">All Stars</option>
                     {stars.map((s) => (

@@ -17,9 +17,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-@app.get("/ping")
-def ping():
-    return {"ping": "pong"}
 
 # Include routers for different modules
 app.include_router(movieRoute.router)

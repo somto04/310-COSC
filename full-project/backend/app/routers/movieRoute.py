@@ -54,10 +54,12 @@ def getMoviesMeta():
         if hasattr(movie, "movieGenres") and movie.movieGenres:
             genres.update(movie.movieGenres)
     
-    years = set()
+    decades = set()
     for movie in movies:
         if hasattr(movie, "datePublished") and movie.datePublished:
-            years.add(movie.datePublished.year)
+            year = movie.datePublished.year
+            decade = (year // 10) * 10 
+            decades.add(decade)
     
     directors = set()
     for movie in movies:
@@ -71,7 +73,7 @@ def getMoviesMeta():
 
     return {
         "genres": sorted(list(genres)),
-        "years": sorted(list(years), reverse=True),
+        "decades": sorted(list(decades), reverse=True),
         "directors": sorted(list(directors)),
         "stars": sorted(list(stars))
     }

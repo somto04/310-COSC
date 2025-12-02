@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+const API = import.meta.env.VITE_API_URL;
 
 export default function Homepage() {
     type Movie = {
@@ -10,7 +11,6 @@ export default function Homepage() {
         rating?: number;
     };
 
-    const API = import.meta.env.VITE_API_URL;
     const [movies, setMovies] = useState<Movie[]>([]);
     const [searchTerm, setSearchTerm] = useState("");
     const [loading, setLoading] = useState(false);
@@ -24,7 +24,7 @@ export default function Homepage() {
         const moviesWithPosters = await Promise.all(
             moviesList.map(async (movie: any) => {
                 const tmdbRes = await fetch(
-                    `http://localhost:8000/tmdb/details/${movie.id}`
+                    `${API}/tmdb/details/${movie.id}`
                 );
 
                 const tmdbData = await tmdbRes.json();

@@ -1,10 +1,12 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 
 export default function Login() {
   const [username, setUsername] = useState("");
   const [pw, setPw] = useState("");
   const [msg, setMsg] = useState("");
   const BASE_URL = "http://localhost:8000";
+
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -59,6 +61,15 @@ export default function Login() {
         </button>
       </form>
 
+     {/* New Create Account Button */}
+      <div style={{ marginTop: "1rem" }}>
+        <Link to="/create-account">
+          <button style={{ padding: "0.5rem", border: "1px solid black" }}>
+            Create an Account
+          </button>
+        </Link>
+      </div>
+    
       {msg && <p>{msg}</p>}
     </div>
   );

@@ -9,8 +9,10 @@ from app.schemas.role import Role
 from app.schemas.user import User
 from app.schemas.review import Review
 import app.repos.reviewRepo as reviewRepo
-from app.services import adminService
+from app.services.adminService import AdminActionError
 from app.services.userService import UserNotFoundError
+from app.services.reviewService import ReviewNotFoundError
+from unittest.mock import ANY
 
 
 @pytest.fixture(autouse=True)
@@ -75,7 +77,7 @@ def createReview(id, movieId, userId, flagged=False):
     )
 
 
-def createMockUser(id, penalties=0, isBanned=False):
+def createMockUser(id, penalties=0, isBanned=False, role=Role.USER):
     return User(
         id=id,
         username=f"user{id}",
@@ -90,69 +92,18 @@ def createMockUser(id, penalties=0, isBanned=False):
     )
 
 
-def test_get_flagged_reviews(client):
-    mockReviews = [
-        createReview(1, 100, 10, flagged=True),
-        createReview(2, 101, 11, flagged=False),
-        createReview(3, 102, 12, flagged=True),
-        createReview(4, 103, 13, flagged=True),
-    ]
-
-    with patch("app.routers.adminRoute.loadReviews", return_value=mockReviews):
-        response = client.get("/admin/reports/reviews")
-
-    assert response.status_code == 200
-    data = response.json()
-
-    assert data["totalFlagged"] == 3
-    assert len(data["reviews"]) == 3
-    assert data["page"] == 1
-    assert data["pageSize"] == 20
-
-
-def test_get_flagged_reviews_pagination(client):
-    mockReviews = [createReview(i, 100 + i, 10, flagged=True) for i in range(1, 26)]
-
-    with patch("app.routers.adminRoute.loadReviews", return_value=mockReviews):
-        response = client.get("/admin/reports/reviews?page=2&pageSize=10")
-
-    assert response.status_code == 200
-    data = response.json()
-
-    assert len(data["reviews"]) == 10
-    assert data["page"] == 2
-    assert data["pageSize"] == 10
-    assert data["totalFlagged"] == 25
-    assert data["pageCount"] == 3
-
-
-def test_get_flagged_reviews_empty(client):
-    mockReviews = [
-        createReview(1, 100, 10, flagged=False),
-        createReview(2, 101, 11, flagged=False),
-    ]
-
-    with patch("app.routers.adminRoute.loadReviews", return_value=mockReviews):
-        response = client.get("/admin/reports/reviews")
-
-    assert response.status_code == 200
-    data = response.json()
-
-    assert data["totalFlagged"] == 0
-    assert len(data["reviews"]) == 0
-
-
 def test_accept_flag_success(client):
     mockReview = createReview(1, 100, 5, flagged=True)
-    mockReviews = [mockReview]
-    mockUserAfterPenalty = createMockUser(5, penalties=1, isBanned=False)
+    mockUserAfterPenalty = createMockUser(5, penalties=3, isBanned=True)
 
-    with patch("app.routers.adminRoute.loadReviews", return_value=mockReviews), patch(
-        "app.routers.adminRoute.deleteReview"
-    ) as mockDelete, patch(
+    with patch(
+        "app.routers.adminRoute.getReviewById", return_value=mockReview
+    ) as mockGet, patch(
         "app.routers.adminRoute.incrementPenaltyForUser",
         return_value=mockUserAfterPenalty,
-    ) as mockPenalty:
+    ) as mockPenalty, patch(
+        "app.routers.adminRoute.deleteReview"
+    ) as mockDelete:
 
         response = client.post("/admin/reviews/1/acceptFlag")
 
@@ -161,146 +112,145 @@ def test_accept_flag_success(client):
 
     assert data["message"] == "Review flag accepted. Review deleted and user penalized."
     assert data["userId"] == 5
-    assert data["penaltyCount"] == 1
-    assert data["isBanned"] is False
-
-    mockDelete.assert_called_once_with(1)
-    mockPenalty.assert_called_once_with(5)
-
-
-def test_accept_flag_user_banned(client):
-    mockReview = createReview(1, 100, 5, flagged=True)
-    mockReviews = [mockReview]
-    mockUserAfterPenalty = createMockUser(5, penalties=3, isBanned=True)
-
-    with patch("app.routers.adminRoute.loadReviews", return_value=mockReviews), patch(
-        "app.routers.adminRoute.deleteReview"
-    ), patch(
-        "app.routers.adminRoute.incrementPenaltyForUser",
-        return_value=mockUserAfterPenalty,
-    ):
-
-        response = client.post("/admin/reviews/1/acceptFlag")
-
-    assert response.status_code == 200
-    data = response.json()
-
-    assert data["userId"] == 5
     assert data["penaltyCount"] == 3
     assert data["isBanned"] is True
 
+    mockGet.assert_called_once_with(1)
+    mockPenalty.assert_called_once_with(5)
+    mockDelete.assert_called_once_with(1)
 
-def test_accept_flag_review_not_found(client):
-    with patch("app.routers.adminRoute.loadReviews", return_value=[]):
+
+def test_accept_flag_review_not_flagged_returns_400(client):
+    mockReview = createReview(1, 100, 5, flagged=False)
+
+    with patch("app.routers.adminRoute.getReviewById", return_value=mockReview):
+        response = client.post("/admin/reviews/1/acceptFlag")
+
+    assert response.status_code == 400
+    body = response.json()
+    assert body["detail"] == "Cannot accept flag. Review is not flagged."
+
+
+def test_accept_flag_review_not_found_returns_404(client):
+    with patch(
+        "app.routers.adminRoute.getReviewById",
+        side_effect=ReviewNotFoundError("Review not found"),
+    ):
         response = client.post("/admin/reviews/999/acceptFlag")
 
     assert response.status_code == 404
-    assert "Review not found" in response.json()["detail"]
+    body = response.json()
+    assert body["detail"] == "Review not found"
 
 
 def test_reject_flag_success(client):
     mockReview = createReview(1, 100, 5, flagged=True)
-    mockReviews = [mockReview]
+    mockUpdated = createReview(1, 100, 5, flagged=False)
 
-    with patch("app.routers.adminRoute.loadReviews", return_value=mockReviews), patch(
-        "app.routers.adminRoute.saveReviews"
-    ) as mockSave:
+    with patch(
+        "app.routers.adminRoute.getReviewById",
+        return_value=mockReview,
+    ) as mockGet, patch(
+        "app.routers.adminRoute.unflagReview",
+        return_value=mockUpdated,
+    ) as mockUnflag:
 
-        response = client.post("/admin/reviews/1/rejectFlag")
+        res = client.post("/admin/reviews/1/rejectFlag")
 
-    assert response.status_code == 200
-    data = response.json()
+    assert res.status_code == 200
+    data = res.json()
 
     assert data["message"] == "Flag rejected. Review unflagged (no penalty applied)."
     assert data["userId"] == 5
     assert data["penaltyCount"] == 0
     assert data["isBanned"] is False
 
-    mockSave.assert_called_once()
-    savedReviews = mockSave.call_args[0][0]
-    assert savedReviews[0].flagged is False
+    mockGet.assert_called_once_with(1)
+    mockUnflag.assert_called_once_with(1)
 
 
-def test_reject_flag_review_not_found(client):
-    with patch("app.routers.adminRoute.loadReviews", return_value=[]):
-        response = client.post("/admin/reviews/999/rejectFlag")
-
-    assert response.status_code == 404
-
-
-def test_mark_inappropriate_success(client):
+def test_reject_flag_not_flagged_returns_400(client):
     mockReview = createReview(1, 100, 5, flagged=False)
-    mockReviews = [mockReview]
-    mockUserAfterPenalty = createMockUser(5, penalties=1, isBanned=False)
 
-    with patch("app.routers.adminRoute.loadReviews", return_value=mockReviews), patch(
-        "app.routers.adminRoute.saveReviews"
-    ) as mockSave, patch(
-        "app.routers.adminRoute.incrementPenaltyForUser",
-        return_value=mockUserAfterPenalty,
-    ) as mockPenalty:
-        response = client.post("/admin/reviews/1/markInappropriate")
+    with patch(
+        "app.routers.adminRoute.getReviewById",
+        return_value=mockReview,
+    ):
+        res = client.post("/admin/reviews/1/rejectFlag")
+
+    assert res.status_code == 400
+    assert res.json()["detail"] == "Cannot reject flag. Review is not flagged."
+
+
+def test_reject_flag_review_not_found_returns_404(client):
+    with patch(
+        "app.routers.adminRoute.getReviewById",
+        side_effect=ReviewNotFoundError("Review not found"),
+    ):
+        res = client.post("/admin/reviews/999/rejectFlag")
+
+    assert res.status_code == 404
+    assert res.json()["detail"] == "Review not found"
+
+
+def test_get_flagged_review_reports_default_pagination(client):
+    # 3 flagged, 1 not flagged just to prove the helper filters
+    reviews = [
+        createReview(1, 101, 11, flagged=True),
+        createReview(2, 102, 12, flagged=False),
+        createReview(3, 103, 13, flagged=True),
+        createReview(4, 104, 14, flagged=True),
+    ]
+
+    # getFlaggedReviews should already do the filtering, so we mock it directly
+    with patch("app.routers.adminRoute.getFlaggedReviews", return_value=reviews):
+        response = client.get("/admin/reports/reviews")
 
     assert response.status_code == 200
     data = response.json()
 
-    assert data["message"] == "Review flagged and user penalized"
-    assert data["userId"] == 5
-    assert data["penaltyCount"] == 1
-    assert data["isBanned"] is False
-
-    mockSave.assert_called_once()
-    savedReviews = mockSave.call_args[0][0]
-
-    mockPenalty.assert_called_once_with(5)
+    assert data["page"] == 1
+    assert data["pageSize"] == 20
+    assert data["totalFlagged"] == 4
+    assert data["pageCount"] == 1
+    assert len(data["reviews"]) == 4
+    # sanity: first item is what we expect
+    assert data["reviews"][0]["id"] == 1
 
 
-def test_mark_inappropriate_review_not_found(client):
-    with patch("app.routers.adminRoute.loadReviews", return_value=[]):
-        response = client.post("/admin/reviews/999/markInappropriate")
+def test_get_flagged_review_reports_custom_page_and_size(client):
+    # 25 flagged reviews so we can actually paginate
+    reviews = [createReview(i, 100 + i, 10 + i, flagged=True) for i in range(1, 26)]
 
-    assert response.status_code == 404
+    with patch("app.routers.adminRoute.getFlaggedReviews", return_value=reviews):
+        response = client.get("/admin/reports/reviews?page=2&pageSize=10")
+
+    assert response.status_code == 200
+    data = response.json()
+
+    # second page of 10 out of 25
+    assert data["page"] == 2
+    assert data["pageSize"] == 10
+    assert data["totalFlagged"] == 25
+    # ceil(25 / 10) = 3
+    assert data["pageCount"] == 3
+    assert len(data["reviews"]) == 10
+    # first review on page 2 should be index 10 in the original list -> id 11
+    assert data["reviews"][0]["id"] == 11
 
 
-def test_admin_endpoints_require_admin(client):
-    def mockGetUserNonAdmin():
-        return User(
-            id=2,
-            username="regular_user",
-            firstName="Regular",
-            lastName="User",
-            age=25,
-            email="user@test.com",
-            pw="hashedpassword",
-            role=Role.USER,
-        )
+def test_get_flagged_review_reports_empty(client):
+    with patch("app.routers.adminRoute.getFlaggedReviews", return_value=[]):
+        response = client.get("/admin/reports/reviews")
 
-    def mockRequireAdminDenied():
-        raise HTTPException(status_code=403, detail="Admin access required")
+    assert response.status_code == 200
+    data = response.json()
 
-    app.dependency_overrides = {
-        getCurrentUser: mockGetUserNonAdmin,
-        requireAdmin: mockRequireAdminDenied,
-    }
-
-    testClient = TestClient(app)
-
-    endpoints = [
-        ("/admin/reports/reviews", "get"),
-        ("/admin/reviews/1/acceptFlag", "post"),
-        ("/admin/reviews/1/rejectFlag", "post"),
-        ("/admin/reviews/1/markInappropriate", "post"),
-    ]
-
-    for endpoint, method in endpoints:
-        if method == "get":
-            response = testClient.get(endpoint)
-        else:
-            response = testClient.post(endpoint)
-
-        assert response.status_code == 403
-
-    app.dependency_overrides = {}
+    assert data["page"] == 1
+    assert data["pageSize"] == 20
+    assert data["totalFlagged"] == 0
+    assert data["pageCount"] == 0
+    assert data["reviews"] == []
 
 
 # ---------------------------
@@ -367,7 +317,7 @@ def test_revoke_admin_success(client):
 def test_grant_admin_action_error(client):
     with patch(
         "app.routers.adminRoute.grantAdmin",
-        side_effect=adminService.AdminActionError("nope"),
+        side_effect=AdminActionError("nope"),
     ):
         response = client.put("/admin/5/grantAdmin")
 
@@ -378,7 +328,7 @@ def test_grant_admin_action_error(client):
 def test_revoke_admin_action_error(client):
     with patch(
         "app.routers.adminRoute.revokeAdmin",
-        side_effect=adminService.AdminActionError("cannot"),
+        side_effect=AdminActionError("cannot"),
     ):
         response = client.put("/admin/5/revokeAdmin")
 

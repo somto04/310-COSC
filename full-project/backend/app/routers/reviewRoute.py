@@ -3,6 +3,8 @@ from fastapi import APIRouter, status, Depends, HTTPException
 from ..schemas.review import Review, ReviewCreate, ReviewUpdate
 from ..schemas.user import CurrentUser
 from ..services.reviewService import (
+    ReviewNotFoundError,
+    flagReview,
     listReviews,
     createReview,
     deleteReview,
@@ -85,6 +87,23 @@ def putReview(
     validateReview(review)
     validateReviewOwner(currentUser, review)
     return updateReview(reviewId, payload)
+
+@router.patch("/{reviewId}/flag", response_model=Review)
+def markReviewAsInappropriate(
+    reviewId: int,
+    currentUser: CurrentUser = Depends(getCurrentUser),
+):
+    try:
+        review = getReviewById(reviewId)
+    except ReviewNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+    
+    try:
+        updated = flagReview(reviewId)
+    except ReviewNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+
+    return updated
 
 
 @router.delete("/{reviewId}", status_code=status.HTTP_204_NO_CONTENT)

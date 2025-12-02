@@ -7,11 +7,19 @@ from fastapi.middleware.cors import CORSMiddleware
 app = FastAPI(title = "SpoilerAlert API")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # React development server
+    allow_origins=[
+        "http://localhost:5173",
+        "http://localhost:5174",
+        "http://127.0.0.1:5173",
+        "http://127.0.0.1:5174",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+@app.get("/ping")
+def ping():
+    return {"ping": "pong"}
 
 # Include routers for different modules
 app.include_router(movieRoute.router)

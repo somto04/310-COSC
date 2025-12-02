@@ -48,16 +48,32 @@ def filterMovies(
 def getMoviesMeta():
     """ Returns the different filters that movies have in order to view on the html"""
     movies = listMovies()
-    genres = sorted({movie["genre"] for movie in movies if movie.get("genre")})
-    years = sorted({movie["year"] for movie in movies if movie.get("year")}, reverse=True)
-    directors = sorted({movie["director"] for movie in movies if movie.get("director")})
-    stars = sorted({movie["star"] for movie in movies if movie.get("star")})
+    
+    genres = set()
+    for movie in movies:
+        if hasattr(movie, "movieGenres") and movie.movieGenres:
+            genres.update(movie.movieGenres)
+    
+    years = set()
+    for movie in movies:
+        if hasattr(movie, "datePublished") and movie.datePublished:
+            years.add(movie.datePublished.year)
+    
+    directors = set()
+    for movie in movies:
+        if hasattr(movie, "directors") and movie.directors:
+            directors.update(movie.directors)
+    
+    stars = set()
+    for movie in movies:
+        if hasattr(movie, "mainStars") and movie.mainStars:
+            stars.update(movie.mainStars)
 
     return {
-        "genres": genres,
-        "years": years,
-        "directors": directors,
-        "stars": stars
+        "genres": sorted(list(genres)),
+        "years": sorted(list(years), reverse=True),
+        "directors": sorted(list(directors)),
+        "stars": sorted(list(stars))
     }
 
 

@@ -44,6 +44,22 @@ def filterMovies(
 
     return results
 
+@router.get("/meta")
+def getMoviesMeta():
+    """ Returns the different filters that movies have in order to view on the html"""
+    movies = listMovies()
+    genres = sorted({movie["genre"] for movie in movies if movie.get("genre")})
+    years = sorted({movie["year"] for movie in movies if movie.get("year")}, reverse=True)
+    directors = sorted({movie["director"] for movie in movies if movie.get("director")})
+    stars = sorted({movie["star"] for movie in movies if movie.get("star")})
+
+    return {
+        "genres": genres,
+        "years": years,
+        "directors": directors,
+        "stars": stars
+    }
+
 
 @router.get("", response_model=List[Movie])
 def getMovies():

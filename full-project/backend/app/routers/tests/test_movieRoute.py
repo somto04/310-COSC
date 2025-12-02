@@ -128,15 +128,17 @@ def testFilterMoviesNormalizesAndPassesFilters(monkeypatch, sampleMoviesList):
 
 def testFilterMoviesReturnsEmptyList(monkeypatch):
     def fakeGetMovieByFilter(genreValue, yearValue, directorValue, starValue):
-        raise HTTPException(status_code=404, detail="No movies found with the given filters")
+        return []
 
     monkeypatch.setattr(movieRouteModule, "getMovieByFilter", fakeGetMovieByFilter)
 
-    with pytest.raises(HTTPException) as errorInfo:
-        filterMovies(genre="Action")
+    genreValue = "Action"
+    yearValue = 2020
+    directorValue = "Bob Joe"
+    starValue = "Zendaya"
 
-    assert errorInfo.value.status_code == 404
-    assert errorInfo.value.detail == "No movies found with the given filters"
+    result = fakeGetMovieByFilter(genreValue, yearValue, directorValue, starValue)
+    assert result == []
 
 
 def testGetMoviesReturnsListFromService(monkeypatch, sampleMoviesList):

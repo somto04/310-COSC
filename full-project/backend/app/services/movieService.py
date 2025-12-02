@@ -52,7 +52,7 @@ def getMovieByFilter(
     star: str | None = None,
 ) -> List[Movie]:
     """
-    Filters movies based on genre, year, director, and star.
+    Filters movies based on genre, decade, director, and star.
 
     Returns:
         List of Movie models that match the filters.

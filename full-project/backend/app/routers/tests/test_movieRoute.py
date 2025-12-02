@@ -126,7 +126,7 @@ def testFilterMoviesNormalizesAndPassesFilters(monkeypatch, sampleMoviesList):
     assert resultMovies is sampleMoviesList
 
 
-def testFilterMoviesRaises404WhenNoResults(monkeypatch):
+def testFilterMoviesReturnsEmptyList(monkeypatch):
     def fakeGetMovieByFilter(genreValue, yearValue, directorValue, starValue):
         raise HTTPException(status_code=404, detail="No movies found with the given filters")
 
@@ -278,7 +278,7 @@ def testFilterMoviesEndpointReturns404(monkeypatch, client):
 
 def testRemoveMovieEndpointCallsService(monkeypatch, client):
     calledArgs = {}
-
+    
     def fakeDeleteMovie(movieId):
         calledArgs["movieId"] = movieId
 

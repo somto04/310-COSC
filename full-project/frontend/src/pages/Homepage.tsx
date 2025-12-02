@@ -9,7 +9,8 @@ export default function Homepage() {
         overview?: string;
         rating?: number;
     };
-    
+
+    const API = import.meta.env.VITE_API_URL;
     const [movies, setMovies] = useState<Movie[]>([]);
     const [searchTerm, setSearchTerm] = useState("");
     const [loading, setLoading] = useState(false);
@@ -39,7 +40,7 @@ export default function Homepage() {
   
   useEffect(() => {
     setLoading(true);
-    fetch("http://localhost:8000/movies/")
+    fetch(`${API}/movies/`)
     .then((res) => res.json())
     .then(async (moviesList) => {
         const moviesWithPosters = await fetchMoviesWithPosters(moviesList);
@@ -55,7 +56,7 @@ export default function Homepage() {
     useEffect(() => {
         const fetchFilteresMovies = async () => {
             try {
-                let url = "http://localhost:8000/movies/filter?";
+                let url = `${API}/movies/filter?`;
                 const params = new URLSearchParams();
 
                 if (searchTerm) params.append("query", searchTerm);

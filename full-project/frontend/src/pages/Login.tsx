@@ -5,7 +5,7 @@ export default function Login() {
   const [username, setUsername] = useState("");
   const [pw, setPw] = useState("");
   const [msg, setMsg] = useState("");
-  const BASE_URL = "http://localhost:8000";
+  const API = import.meta.env.VITE_API_URL;
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -14,7 +14,7 @@ export default function Login() {
     formData.append("username", username);
     formData.append("password", pw);
 
-    fetch(`${BASE_URL}/token`, {
+    fetch(`${API}/token`, {
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",

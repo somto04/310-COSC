@@ -15,7 +15,7 @@ import AdminPage from './pages/AdminPage';
 import MovieDetails from './pages/MovieDetails';
 
 import { useState, useEffect } from "react";
-import { getToken, getIsAdmin, requireAuth } from "./utils/auth";
+import { getToken, getIsAdmin, requireAuth, requireAdmin } from "./utils/auth";
 
 function App() {
   const [token, setToken] = useState(getToken());
@@ -47,7 +47,7 @@ function App() {
         <Route path="/watchlist" element={requireAuth(<Watchlist />)} />
         <Route path="/favorite-movies" element={requireAuth(<FavoriteMovies />)} />
         <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/admin" element={<AdminPage />} />
+        <Route path="/admin" element={requireAdmin(<AdminPage />)} />
 
         <Route path="/test" element={<TestPage />} />
         <Route path="/movies/:movieId" element={<MovieDetails />} />

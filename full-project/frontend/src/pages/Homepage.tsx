@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom"; // Added for navigation
+
 const API = import.meta.env.VITE_API_URL;
+
 
 export default function Homepage() {
     type Movie = {
@@ -10,6 +13,8 @@ export default function Homepage() {
         overview?: string;
         rating?: number;
     };
+
+    const navigate = useNavigate(); // Initialize navigate
 
     const [movies, setMovies] = useState<Movie[]>([]);
     const [searchTerm, setSearchTerm] = useState("");
@@ -234,6 +239,7 @@ export default function Homepage() {
                                 }}
                                 onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#f5f5f5"}
                                 onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
+                                onClick={() => navigate(`/movies/${movie.id}`)} // Navigate to MovieDetails
                             >
                                 {movie.poster ? (
                                     <img

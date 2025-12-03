@@ -66,6 +66,15 @@ export default function Login() {
         </button>
       </form>
 
+    {/* reset password button */}
+      <div style={{ marginTop: "1rem" }}>
+        <Link to="/reset-password">
+          <button style={{ padding: "0.5rem", border: "1px solid black" }}>
+            Forgot password? Reset here!
+          </button>
+        </Link>
+      </div>
+
      {/* New Create Account Button */}
       <div style={{ marginTop: "1rem" }}>
         <Link to="/create-account">

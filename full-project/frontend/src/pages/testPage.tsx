@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { getToken } from "../utils/auth";
 
 const API = import.meta.env.VITE_API_URL;
 
@@ -6,8 +7,7 @@ export default function TestPage() {
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState<string>("");
 
-  // auth + pagination inputs
-  const [token, setToken] = useState<string>("");
+  // pagination inputs
   const [page, setPage] = useState<string>("1");
   const [count, setCount] = useState<string>("10");
 
@@ -20,7 +20,8 @@ export default function TestPage() {
         "Content-Type": "application/json",
       };
 
-      if (token.trim()) {
+      const token = getToken();
+      if (token && token.trim()) {
         headers["Authorization"] = `Bearer ${token.trim()}`;
       }
 
@@ -89,22 +90,15 @@ export default function TestPage() {
 
         <div style={{ marginBottom: "12px" }}>
           <label style={{ display: "block", marginBottom: "4px" }}>
-            JWT Token (paste from /login)
+            Auth status
           </label>
-          <input
-            type="text"
-            value={token}
-            onChange={(e) => setToken(e.target.value)}
-            style={{
-              width: "100%",
-              padding: "8px",
-              borderRadius: "4px",
-              border: "1px solid #555",
-              background: "#222",
-              color: "#eee",
-            }}
-          />
+          <div style={{ fontSize: "0.9rem" }}>
+            {getToken()
+              ? "Token found in localStorage. Requests will be authenticated."
+              : "No token in localStorage. Log in first if the endpoint needs auth."}
+          </div>
         </div>
+
 
         <div
           style={{

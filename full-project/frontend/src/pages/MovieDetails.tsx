@@ -129,20 +129,30 @@ export default function MovieDetails() {
     }
   };
 
-    const addToWatchlist = async () => {
+  const addToWatchlist = async () => {
     const token = localStorage.getItem("token");
     if (!token || !movie) return;
 
     try {
-      await fetch(`${API}/users/watchlist/${movie.id}`, {
+      const res = await fetch(`${API}/users/watchlist/${movie.id}`, {
         method: "POST",
-        headers: { Authorization: `Bearer ${token}` }
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
       });
+
+      if (!res.ok) {
+        console.error("Backend failed to add movie:", res.status);
+        return;
+      }
+
       setInWatchlist(true);
     } catch (err) {
       console.error("Failed to add to watchlist", err);
     }
   };
+
 
   const removeFromWatchlist = async () => {
     const token = localStorage.getItem("token");

@@ -67,3 +67,5 @@ To reload fastapi: `uvicorn app.app:app --reload`
 | typing_extensions | 4.15.0    |
 | typing-inspection | 0.4.2     |
 | uvicorn           | 0.38.0    |
+| python-jose[cryptography]  
+

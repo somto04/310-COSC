@@ -1,7 +1,8 @@
 from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, status, Form
 from fastapi.security import OAuth2PasswordBearer
-
+from jose import jwt, JWTError
+from datetime import datetime, timedelta
 from ..schemas.user import CurrentUser, Password, Email, Username
 from ..schemas.role import Role
 from ..services.userService import getUserByEmail, getUserByUsername
@@ -14,22 +15,44 @@ from ..services.authService import (
     InvalidPasswordError,
 )
 
+SECRET_KEY = "CHANGEME"
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 60
+
 
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 # ==================================HELPER FUNCTIONS==================================
 
+def createAccessToken(username: str):
+    expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    toEncode = {"sub": username, "exp": expire}
+    return jwt.encode(toEncode, SECRET_KEY, algorithm=ALGORITHM)
+
+def decodeAccesstoken(token: str):
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        return payload.get("sub")
+    except JWTError:
+        return None
 
 def getCurrentUser(token: str = Depends(oauth2_scheme)) -> CurrentUser:
     """
     Resolve the current user from the bearer token (username for now).
     Maps domain errors to HTTP errors.
     """
+    username = decodeAccesstoken(token)
+    if not username:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid authentication credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
     try:
-        user = ensureUserExists(getUserByUsername(token))
+        user = ensureUserExists(getUserByUsername(username))
     except UserNotFoundError:
-        # Token is invalid / user no longer exists
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid authentication credentials",
@@ -92,7 +115,7 @@ def login(
 
     return {
         "message": "Login successful",
-        "access_token": username,  # should be token when implemented
+        "access_token": createAccessToken(username),
         "token_type": "bearer",
         "userId": user.id,
         "role": user.role,

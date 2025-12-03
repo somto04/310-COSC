@@ -12,6 +12,7 @@ import Homepage from './pages/Homepage';
 import './App.css'
 import TestPage from './pages/testPage'
 import AdminPage from './pages/AdminPage';
+import MovieDetails from './pages/MovieDetails';
 
 function App() {
   return (
@@ -29,6 +30,7 @@ function App() {
         <Route path="/admin" element={<AdminPage />} />
 
         <Route path="/test" element={<TestPage />} />
+        <Route path="/movies/:movieId" element={<MovieDetails />} />
       </Routes>
     </BrowserRouter>
   );

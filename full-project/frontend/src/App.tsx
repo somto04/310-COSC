@@ -14,7 +14,7 @@ import TestPage from './pages/testPage'
 import AdminPage from './pages/AdminDashboard';
 import MovieDetails from './pages/MovieDetails';
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { getToken, getIsAdmin, requireAuth, requireAdmin } from "./utils/auth";
 
 function App() {

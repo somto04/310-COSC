@@ -11,6 +11,7 @@ import ResetPassword from './pages/ResetPassword';
 import Homepage from './pages/Homepage';
 import './App.css'
 import TestPage from './pages/testPage'
+import MovieDetails from './pages/MovieDetails';
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
         <Route path="/reset-password" element={<ResetPassword />} />
 
         <Route path="/test" element={<TestPage />} />
+        <Route path="/movies/:movieId" element={<MovieDetails />} />
       </Routes>
     </BrowserRouter>
   );

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+const API = import.meta.env.VITE_API_URL;
 
 export default function Profile() {
 
@@ -50,7 +51,7 @@ export default function Profile() {
 useEffect(() => {
   if (!userId || !token) return;
 
-  fetch(`http://localhost:8000/users/userProfile?userId=${userId}`, {
+  fetch(`${API}/users/userProfile?userId=${userId}`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -79,7 +80,8 @@ useEffect(() => {
   const token = localStorage.getItem("token");
   if (!token) return;
 
-  fetch("http://localhost:8000/users/watchlist", {
+ fetch(`${API}/users/watchlist`,
+ {
     headers: { Authorization: `Bearer ${token}` },
   })
     .then((res) => res.json())
@@ -90,7 +92,7 @@ useEffect(() => {
       const enriched = await Promise.all(
         movies.map(async (movie: any) => {
           const tmdbRes = await fetch(
-            `http://localhost:8000/tmdb/details/${movie.id}`
+            `${API}/tmdb/details/${movie.id}`
           );
           const tmdb = await tmdbRes.json();
 
@@ -114,7 +116,7 @@ useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) return;
 
-    fetch("http://localhost:8000/favorites/", {
+    fetch(`${API}/favorites/`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => res.json())
@@ -122,7 +124,7 @@ useEffect(() => {
         const moviesWithPosters = await Promise.all(
           movies.map(async (movie: any) => {
             const tmdbRes = await fetch(
-              `http://localhost:8000/tmdb/details/${movie.id}`
+              `${API}/tmdb/details/${movie.id}`
             );
             const tmdbData = await tmdbRes.json();
 
@@ -145,7 +147,7 @@ useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) return;
 
-    fetch("http://localhost:8000/likeReview/", {
+fetch(`${API}/likeReview/`,{
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => res.json())
@@ -165,14 +167,15 @@ useEffect(() => {
       <button
         onClick={() => {
           const token = localStorage.getItem("token");
-          fetch("http://localhost:8000/default/logout", {
+          fetch(`${API}/default/logout`, {
+
             method: "POST",
             headers: { Authorization: `Bearer ${token}` },
           }).catch(() => {});
 
           localStorage.removeItem("token");
           localStorage.removeItem("userId");
-          window.location.href = "/temp-login";
+          window.location.href = "/login";
         }}
         style={{
           padding: "0.5rem 1rem",
@@ -246,7 +249,7 @@ useEffect(() => {
             const token = localStorage.getItem("token");
             const userId = localStorage.getItem("userId");
 
-            fetch(`http://localhost:8000/users/${userId}`, {
+            fetch(`${API}/users/${userId}`, {
               method: "PUT",
               headers: {
                 "Content-Type": "application/json",
@@ -267,7 +270,7 @@ useEffect(() => {
   const token = localStorage.getItem("token");
   const userId = localStorage.getItem("userId");
 
-  fetch(`http://localhost:8000/users/userProfile/${userId}`, {
+  fetch(`${API}/users/userProfile/${userId}`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -403,7 +406,7 @@ useEffect(() => {
                   onClick={() => {
                     const token = localStorage.getItem("token");
 
-                    fetch(`http://localhost:8000/likeReview/${r.id}`, {
+                    fetch(`${API}/likeReview/${r.id}`, {
                       method: "DELETE",
                       headers: {
                         Authorization: `Bearer ${token}`,
@@ -479,7 +482,7 @@ useEffect(() => {
           <button
             onClick={() => {
               const token = localStorage.getItem("token");
-              fetch(`http://localhost:8000/users/watchlist/${movie.id}`, {
+              fetch(`${API}/users/watchlist/${movie.id}`, {
                 method: "DELETE",
                 headers: { Authorization: `Bearer ${token}` },
               })
@@ -553,7 +556,7 @@ useEffect(() => {
                   onClick={() => {
                     const token = localStorage.getItem("token");
 
-                    fetch(`http://localhost:8000/favorites/${f.id}`, {
+                    fetch(`${API}/favorites/${f.id}`, {
                       method: "DELETE",
                       headers: { Authorization: `Bearer ${token}` },
                     })

@@ -60,8 +60,69 @@ export default function WatchlistPage() {
   };
 
   return (
-    <div style={{ padding: "2rem" }}>
-      <h1>Watchlist</h1>
+    <div style={{ padding: "2rem", margin: "0 auto", maxWidth: "1200px" }}>
+      <h1 style={{ marginBottom: "1rem" }}>Watchlist</h1>
+
+        <section style={{ marginTop: "2rem" }}>
+            {loading ? (
+                <p>Loading movies...</p>
+            ) : movies.length === 0 ? (
+                <p>No movies found. Try adding a movie to your watchlist.</p>
+            ) : (
+                <ul style={{ listStyle: "none", padding: 0 }}>
+                    {movies.map((movie) => (
+                        <li
+                            key={movie.id}
+                            style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "1rem",
+                                marginBottom: "1rem",
+                                cursor: "pointer",
+                                padding: "0.5rem",
+                                border: "1px solid #ddd",
+                                borderRadius: "4px",
+                                transition: "background-color 0.2s",
+                            }}
+                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#f5f5f5"}
+                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
+                        >
+                            {movie.poster ? (
+                                <img
+                                    src={movie.poster}
+                                    alt={movie.title}
+                                    style={{
+                                        width: "60px",
+                                        height: "90px",
+                                        objectFit: "cover",
+                                        border: "1px solid #ccc",
+                                        borderRadius: "4px",
+                                    }}
+                                />
+                            ) : (
+                                <div style={{
+                                    width: "60px",
+                                    height: "90px",
+                                    backgroundColor: "#e0e0e0",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    border: "1px solid #ccc",
+                                    borderRadius: "4px",
+                                    fontSize: "0.7rem",
+                                    color: "#666",
+                                    textAlign: "center",
+                                    padding: "0.25rem",
+                                }}>
+                                    No Image
+                                </div>
+                            )}
+                            <span style={{ fontSize: "1.1rem" }}>{movie.title}</span>
+                        </li>
+                    ))}
+                </ul>
+            )}
+        </section>
     </div>
   );
 }

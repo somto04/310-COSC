@@ -5,6 +5,7 @@ from jose import jwt, JWTError
 from datetime import datetime, timedelta
 from ..schemas.user import CurrentUser, Password, Email, Username
 from ..schemas.role import Role
+from fastapi.responses import RedirectResponse
 from ..services.userService import getUserByEmail, getUserByUsername
 from ..services.authService import (
     validatePassword,
@@ -139,21 +140,15 @@ def getAdminDashboard(admin: CurrentUser = Depends(requireAdmin)):
     return {"message": "Welcome to the admin dashboard"}
 
 
-@router.post("/forgot-password")
-def forgotPassword(email: Annotated[Email, Form(...)]):
-    """
-    Simulate sending a password reset link to the user's email.
-
-    Raises:
-        HTTPException: if the email is not associated with a user.
-    """
+@router.post("/generate-reset-token")
+def generateResetTokenRoute(username: Annotated[Username, Form(...)]):
     try:
-        ensureUserExists(getUserByEmail(email))
+        user = ensureUserExists(getUserByUsername(username))
     except UserNotFoundError:
-        raise HTTPException(status_code=404, detail="Email not found")
+        raise HTTPException(status_code=404, detail="Username not found")
 
-    token = generateResetToken(email)
-    return {"message": "Password reset link sent", "token": token}
+    token = generateResetToken(user.email) 
+    return {"token": token}
 
 
 @router.post("/reset-password")

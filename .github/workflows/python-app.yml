@@ -29,6 +29,7 @@ jobs:
         pip install pytest pytest-mock coverage fastapi uvicorn pydantic sqlalchemy httpx python-multipart 
         pip install passlib[bcrypt]==1.7.4 bcrypt==4.0.1
         pip install python-dotenv requests
+        pip install python-jose[cryptography]
     - name: Lint with Ruff
       run: |
         ruff check . || true

@@ -42,12 +42,41 @@ def filterMovies(
 
     results = getMovieByFilter(genreQuery, year, directorQuery, starQuery)
 
-    if not results:
-        raise HTTPException(
-            status_code=404, detail="No movies found with the given filters"
-        )
-
     return results
+
+@router.get("/meta")
+def getMoviesMeta():
+    """ Returns the different filters that movies have in order to view on the html"""
+    movies = listMovies()
+    
+    genres = set()
+    for movie in movies:
+        if hasattr(movie, "movieGenres") and movie.movieGenres:
+            genres.update(movie.movieGenres)
+    
+    decades = set()
+    for movie in movies:
+        if hasattr(movie, "datePublished") and movie.datePublished:
+            year = movie.datePublished.year
+            decade = (year // 10) * 10 
+            decades.add(decade)
+    
+    directors = set()
+    for movie in movies:
+        if hasattr(movie, "directors") and movie.directors:
+            directors.update(movie.directors)
+    
+    stars = set()
+    for movie in movies:
+        if hasattr(movie, "mainStars") and movie.mainStars:
+            stars.update(movie.mainStars)
+
+    return {
+        "genres": sorted(list(genres)),
+        "decades": sorted(list(decades), reverse=True),
+        "directors": sorted(list(directors)),
+        "stars": sorted(list(stars))
+    }
 
 
 @router.get("", response_model=List[Movie])

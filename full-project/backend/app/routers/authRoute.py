@@ -5,6 +5,7 @@ from jose import jwt, JWTError
 from datetime import datetime, timedelta
 from ..schemas.user import CurrentUser, Password, Email, Username
 from ..schemas.role import Role
+from fastapi.responses import RedirectResponse
 from ..services.userService import getUserByEmail, getUserByUsername
 from ..services.authService import (
     validatePassword,
@@ -150,8 +151,10 @@ def forgotPassword(email: Annotated[Email, Form(...)]):
         raise HTTPException(status_code=404, detail="Email not found")
 
     token = generateResetToken(email)
-    return {"message": "Password reset link sent", "token": token}
-
+    return RedirectResponse(
+        url=f"/reset-password?token={token}",
+        status_code=303
+    )
 
 @router.post("/reset-password")
 def resettingPassword(

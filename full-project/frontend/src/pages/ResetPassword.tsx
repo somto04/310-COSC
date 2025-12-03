@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+const API = import.meta.env.VITE_API_URL;
+
 export default function ResetPassword() {
   const [username, setUsername] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -9,6 +11,14 @@ export default function ResetPassword() {
   
   const navigate = useNavigate();
 
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+
+    if (!resetToken) {
+      const formData = new FormData();
+      formData.appen
+    }
+  }
   const handleReset = (e: React.FormEvent) => {
     e.preventDefault();
 

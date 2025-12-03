@@ -236,18 +236,21 @@ def test_adminDashboardForbidden():
 
 
 def test_forgotPasswordSuccess(monkeypatch):
-    """Existing email → 200 + token returned."""
+    """Existing email → redirect (303) containing the token in the URL."""
     user = makeUser()
 
     monkeypatch.setattr(authRoute, "getUserByEmail", lambda email: user)
+    monkeypatch.setattr(authRoute, "generateResetToken", lambda email: "TEST_TOKEN")
 
-    # use valid email to satisfy Email Annotated type
-    response = client.post("/forgot-password", data={"email": VALID_EMAIL})
+    response = client.post(
+        "/forgot-password",
+        data={"email": VALID_EMAIL},
+        follow_redirects=False  # IMPORTANT
+    )
 
-    assert response.status_code == 200
-    body = response.json()
-    assert body["message"] == "Password reset link sent"
-    assert "token" in body
+    # new behavior: redirect
+    assert response.status_code == 303
+    assert "/reset-password?token=TEST_TOKEN" in response.headers["location"]
 
 
 def test_forgotPasswordEmailNotFound(monkeypatch):

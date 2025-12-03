@@ -12,7 +12,7 @@ services:
     working_dir: /app/full-project/backend
     restart: unless-stopped
     volumes:
-      - /full-project/backend/app/data:/app/data
+      - ./full-project/backend/app/data:/app/data
 
   frontend:
     build:

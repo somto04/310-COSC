@@ -118,7 +118,10 @@ def login(
         "message": "Login successful",
         "access_token": createAccessToken(username),
         "token_type": "bearer",
+        "username": user.username,
         "userId": user.id,
+        "role": user.role,
+        "isAdmin": user.role == Role.ADMIN,
     }
 
 

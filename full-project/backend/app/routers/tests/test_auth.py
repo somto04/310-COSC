@@ -85,7 +85,12 @@ def test_loginSuccess(monkeypatch):
     assert response.status_code == 200
     body = response.json()
     assert body["message"] == "Login successful"
-    assert body["access_token"] == VALID_USERNAME
+    token = body["access_token"]
+    assert isinstance(token, str)
+    assert len(token) > 20 
+
+    username = authRoute.decodeAccesstoken(token)
+    assert username == VALID_USERNAME
 
 
 def test_loginInvalidPassword(monkeypatch):
@@ -186,9 +191,6 @@ def test_logoutSuccess(monkeypatch):
 
 def test_logoutUnauthorized(monkeypatch):
     """If getCurrentUser fails (no user), logout → 401."""
-    # getUserByUsername returns None, so ensureUserExists will raise HTTPException(401)
-    monkeypatch.setattr(authRoute, "getUserByUsername", lambda token: None)
-
     response = client.post(
         "/logout",
         headers={"Authorization": "Bearer invalidToken"},

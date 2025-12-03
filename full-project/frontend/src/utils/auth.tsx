@@ -1,3 +1,5 @@
+import { Navigate } from "react-router-dom";
+
 export function getToken() {
     return localStorage.getItem("token");
 }
@@ -20,4 +22,14 @@ export function clearAuth() {
     localStorage.removeItem("token");
     localStorage.removeItem("isAdmin");
     localStorage.removeItem("userId");
+}
+
+export function requireAuth(element: React.ReactElement) {
+    const token = getToken();
+
+    if (!token) {
+        return <Navigate to="/login" replace />;
+    }
+
+    return element;
 }

@@ -15,7 +15,7 @@ import AdminPage from './pages/AdminPage';
 import MovieDetails from './pages/MovieDetails';
 
 import { useState, useEffect } from "react";
-import { getToken, getIsAdmin } from "./utils/auth";
+import { getToken, getIsAdmin, requireAuth } from "./utils/auth";
 
 function App() {
   const [token, setToken] = useState(getToken());
@@ -29,6 +29,7 @@ function App() {
   return (
     <BrowserRouter>
       <Header token={token} isAdmin={isAdmin} updateAuth={updateAuth} />
+
       <Routes>
         <Route path="/" element={<Homepage/>} />
         <Route
@@ -37,14 +38,14 @@ function App() {
         />
         <Route 
           path="/logout" 
-          element={<Logout updateAuth={updateAuth} />} 
+          element={requireAuth(<Logout updateAuth={updateAuth} />)} 
         />
 
-        <Route path="/profile" element={<Profile />} />
+        <Route path="/profile" element={requireAuth(<Profile />)} />
         <Route path="/create-account" element={<CreateAccount />} />
-        <Route path="/liked-reviews" element={<LikedReviews />} />
-        <Route path="/watchlist" element={<Watchlist />} />
-        <Route path="/favorite-movies" element={<FavoriteMovies />} />
+        <Route path="/liked-reviews" element={requireAuth(<LikedReviews />)} />
+        <Route path="/watchlist" element={requireAuth(<Watchlist />)} />
+        <Route path="/favorite-movies" element={requireAuth(<FavoriteMovies />)} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/admin" element={<AdminPage />} />
 

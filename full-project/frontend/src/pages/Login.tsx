@@ -34,7 +34,7 @@ export default function Login({ updateAuth }: LoginProps) {
         console.log("LOGIN RESPONSE:", data);
 
         if (data.access_token) {
-          setAuth(data.access_token, data.user_id, data.is_admin);
+          setAuth(data.access_token, data.userId, data.isAdmin, data.username);
           updateAuth();
 
           setMsg("You Have Logged In Successfully!");

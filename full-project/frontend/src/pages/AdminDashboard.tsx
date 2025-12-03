@@ -1,4 +1,3 @@
-// src/pages/AdminDashboard.tsx
 import { useState } from "react";
 import ReviewsAdmin from "../components/admin/ReviewsAdmin";
 // import UsersAdmin from "../components/admin/UsersAdmin";

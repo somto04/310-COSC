@@ -11,7 +11,7 @@ import ResetPassword from './pages/ResetPassword';
 import Homepage from './pages/Homepage';
 import './App.css'
 import TestPage from './pages/testPage'
-import AdminPage from './pages/AdminPage';
+import AdminPage from './pages/AdminDashboard';
 import MovieDetails from './pages/MovieDetails';
 
 import { useState, useEffect } from "react";

@@ -166,6 +166,8 @@ fetch(`${API}/likeReview/`,{
       {/* LOGOUT BUTTON */}
       <button
         onClick={() => {
+          localStorage.removeItem("token");
+          localStorage.removeItem("userId");
           const token = localStorage.getItem("token");
           fetch(`${API}/default/logout`, {
 
@@ -173,8 +175,7 @@ fetch(`${API}/likeReview/`,{
             headers: { Authorization: `Bearer ${token}` },
           }).catch(() => {});
 
-          localStorage.removeItem("token");
-          localStorage.removeItem("userId");
+          
           window.location.href = "/login";
         }}
         style={{

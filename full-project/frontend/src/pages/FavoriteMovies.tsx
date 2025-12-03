@@ -30,6 +30,8 @@ type MovieDetails = {
 export default function FavoriteMovies() {
   const [movies, setMovies] = useState<MovieDetails[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loaded, setLoaded] = useState(false);
+
   const handleRemove = async (movieId: number) => {
   const token = localStorage.getItem("token");
 
@@ -98,17 +100,22 @@ export default function FavoriteMovies() {
 
         setMovies(results);
         setLoading(false);
+        setLoaded(true);
       })
       .catch((err) => {
         console.error("Error loading favorite movies:", err);
         setLoading(false);
+        setLoaded(true);
       });
   }, []);
 
-  if (loading) return <p style={{ padding: "2rem" }}>Loading favorites...</p>;
+  if (loading) {
+  return <p style={{ padding: "2rem" }}>Loading favorites...</p>;
+}
+
 const token = localStorage.getItem("token");
 
-// user not logged in
+// If not logged in → stop here
 if (!token) {
   return (
     <p style={{ padding: "2rem" }}>
@@ -117,7 +124,12 @@ if (!token) {
   );
 }
 
-// user logged in but list empty
+// If logged in but favorites haven't loaded yet → wait
+if (!loaded) {
+  return <p style={{ padding: "2rem" }}>Loading favorites...</p>;
+}
+
+// If logged in and finished loading, but empty list → real empty state
 if (movies.length === 0) {
   return (
     <p style={{ padding: "2rem" }}>
@@ -125,6 +137,7 @@ if (movies.length === 0) {
     </p>
   );
 }
+
 
   return (
     <div style={{ padding: "2rem", maxWidth: "900px", margin: "0 auto" }}>

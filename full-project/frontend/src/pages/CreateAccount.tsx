@@ -1,5 +1,8 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 const API = import.meta.env.VITE_API_URL;
+
+
 
 export default function Register() {
   const [username, setUsername] = useState("");
@@ -9,7 +12,8 @@ export default function Register() {
   const [pw, setPassword] = useState("");
   const [age, setAge] = useState("");
   const [message, setMessage] = useState("");
-
+  const navigate = useNavigate();
+  
   // Clean labels for each backend field
   const fieldLabels: Record<string, string> = {
     username: "Username",
@@ -91,7 +95,7 @@ export default function Register() {
         setMessage("Account created successfully!");
 
         
-        window.location.href = "/homepage";
+        navigate("/");
       })
       .catch((err) => {
         console.error("Error creating account:", err);

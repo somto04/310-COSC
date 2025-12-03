@@ -35,7 +35,10 @@ function App() {
           path="/login"
           element={<Login updateAuth={updateAuth} />}
         />
-        <Route path="/logout" element={<Logout />} />
+        <Route 
+          path="/logout" 
+          element={<Logout updateAuth={updateAuth} />} 
+        />
 
         <Route path="/profile" element={<Profile />} />
         <Route path="/create-account" element={<CreateAccount />} />

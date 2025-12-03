@@ -2,7 +2,11 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { clearAuth, getToken } from "../utils/auth";
 
-export default function Logout() {
+type LogoutProps = {
+    updateAuth: () => void;
+};
+    
+export default function Logout({ updateAuth }: LogoutProps) {
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -18,8 +22,10 @@ export default function Logout() {
         // Clear local auth info
         clearAuth();
 
-        // After a tiny moment, redirect home
-        setTimeout(() => navigate("/"), 300);
+        updateAuth();
+        
+        // Redirect to home after logout
+        navigate("/");
     }, []);
 
     return (

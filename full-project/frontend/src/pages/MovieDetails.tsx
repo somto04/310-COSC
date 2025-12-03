@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import { getToken, getUserId } from "../utils/auth";
 
 const API = import.meta.env.VITE_API_URL;
 
@@ -254,8 +255,7 @@ export default function MovieDetails() {
   // --- FLAG REVIEW ---
   const handleFlagReview = async (reviewId: number) => {
     try {
-      const token = localStorage.getItem("token");
-
+      const token = getToken();
       const res = await fetch(`${API}/reviews/${reviewId}/flag`, {
         method: "PATCH",
         headers: {

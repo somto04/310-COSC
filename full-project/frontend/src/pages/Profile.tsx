@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { getToken, getUserId } from "../utils/auth";
+import { Link } from "react-router-dom";
 const API = import.meta.env.VITE_API_URL;
 
 export default function Profile() {
@@ -44,8 +46,8 @@ export default function Profile() {
   const [editEmail, setEditEmail] = useState("");
   const [watchlist, setWatchlist] = useState<WatchlistMovie[]>([]);
 
-  const userId = localStorage.getItem("userId");
-  const token = localStorage.getItem("token");
+  const userId = getUserId();
+  const token = getToken();
 
   // LOAD LOGGED-IN USER INFO
 useEffect(() => {
@@ -77,7 +79,7 @@ useEffect(() => {
 
   // LOAD WATCHLIST
 useEffect(() => {
-  const token = localStorage.getItem("token");
+  const token = getToken();
   if (!token) return;
 
  fetch(`${API}/users/watchlist`,
@@ -113,7 +115,7 @@ useEffect(() => {
 
   // LOAD FAVORITE MOVIES W/ POSTERS
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const token = getToken();
     if (!token) return;
 
     fetch(`${API}/favorites/`, {
@@ -144,7 +146,7 @@ useEffect(() => {
 
   // LOAD LIKED REVIEWS
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const token = getToken();
     if (!token) return;
 
 fetch(`${API}/likeReview/`,{
@@ -164,30 +166,7 @@ fetch(`${API}/likeReview/`,{
       <h1 style={{ marginBottom: "1rem" }}>Profile</h1>
 
       {/* LOGOUT BUTTON */}
-      <button
-        onClick={() => {
-          localStorage.removeItem("token");
-          localStorage.removeItem("userId");
-          const token = localStorage.getItem("token");
-          fetch(`${API}/default/logout`, {
-
-            method: "POST",
-            headers: { Authorization: `Bearer ${token}` },
-          }).catch(() => {});
-
-          
-          window.location.href = "/login";
-        }}
-        style={{
-          padding: "0.5rem 1rem",
-          border: "1px solid black",
-          background: "red",
-          cursor: "pointer",
-          marginTop: "1rem",
-        }}
-      >
-        Logout
-      </button>
+      <Link to="/logout">Logout</Link>
 
       {/* FORGOT PASSWORD BUTTON */}
       <button
@@ -247,8 +226,9 @@ fetch(`${API}/likeReview/`,{
           onSubmit={(e) => {
             e.preventDefault();
 
-            const token = localStorage.getItem("token");
-            const userId = localStorage.getItem("userId");
+            const token = getToken();
+            const userId = getUserId();
+            if (!token || !userId) return;
 
             fetch(`${API}/users/${userId}`, {
               method: "PUT",
@@ -268,8 +248,8 @@ fetch(`${API}/likeReview/`,{
               .then((res) => res.json())
               .then(() => {
   // After update, reload user profile
-  const token = localStorage.getItem("token");
-  const userId = localStorage.getItem("userId");
+  const token = getToken();
+  const userId = getUserId();
 
   fetch(`${API}/users/userProfile/${userId}`, {
     headers: {
@@ -405,7 +385,7 @@ fetch(`${API}/likeReview/`,{
 
                 <button
                   onClick={() => {
-                    const token = localStorage.getItem("token");
+                    const token = getToken();
 
                     fetch(`${API}/likeReview/${r.id}`, {
                       method: "DELETE",
@@ -482,7 +462,7 @@ fetch(`${API}/likeReview/`,{
 
           <button
             onClick={() => {
-              const token = localStorage.getItem("token");
+              const token = getToken();
               fetch(`${API}/users/watchlist/${movie.id}`, {
                 method: "DELETE",
                 headers: { Authorization: `Bearer ${token}` },
@@ -555,7 +535,7 @@ fetch(`${API}/likeReview/`,{
 
                 <button
                   onClick={() => {
-                    const token = localStorage.getItem("token");
+                    const token = getToken();
 
                     fetch(`${API}/favorites/${f.id}`, {
                       method: "DELETE",

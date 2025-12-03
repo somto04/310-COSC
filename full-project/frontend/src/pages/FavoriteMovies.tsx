@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { getToken } from "../utils/auth";
 const API = import.meta.env.VITE_API_URL;
 
 type Recommendation = {
@@ -33,7 +34,7 @@ export default function FavoriteMovies() {
   const [loaded, setLoaded] = useState(false);
 
   const handleRemove = async (movieId: number) => {
-  const token = localStorage.getItem("token");
+  const token = getToken();
 
 
   try {
@@ -50,7 +51,7 @@ export default function FavoriteMovies() {
 };
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const token = getToken();
     if (!token) return;
 
     fetch(`${API}/favorites/`,{

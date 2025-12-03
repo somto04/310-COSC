@@ -137,24 +137,16 @@ def getAdminDashboard(admin: CurrentUser = Depends(requireAdmin)):
     return {"message": "Welcome to the admin dashboard"}
 
 
-@router.post("/forgot-password")
-def forgotPassword(email: Annotated[Email, Form(...)]):
-    """
-    Simulate sending a password reset link to the user's email.
-
-    Raises:
-        HTTPException: if the email is not associated with a user.
-    """
+@router.post("/generate-reset-token")
+def generateResetTokenRoute(username: Annotated[Username, Form(...)]):
     try:
-        ensureUserExists(getUserByEmail(email))
+        user = ensureUserExists(getUserByUsername(username))
     except UserNotFoundError:
-        raise HTTPException(status_code=404, detail="Email not found")
+        raise HTTPException(status_code=404, detail="Username not found")
 
-    token = generateResetToken(email)
-    return RedirectResponse(
-        url=f"/reset-password?token={token}",
-        status_code=303
-    )
+    token = generateResetToken(user.email)  # your service expects email
+    return {"token": token}
+
 
 @router.post("/reset-password")
 def resettingPassword(

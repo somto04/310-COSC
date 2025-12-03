@@ -33,6 +33,7 @@ export default function FavoriteMovies() {
   const handleRemove = async (movieId: number) => {
   const token = localStorage.getItem("token");
 
+
   try {
     await fetch(`${API}/favorites/${movieId}`, {
       method: "DELETE",
@@ -105,6 +106,25 @@ export default function FavoriteMovies() {
   }, []);
 
   if (loading) return <p style={{ padding: "2rem" }}>Loading favorites...</p>;
+const token = localStorage.getItem("token");
+
+// user not logged in
+if (!token) {
+  return (
+    <p style={{ padding: "2rem" }}>
+      You must be logged in to view your favorite movies.
+    </p>
+  );
+}
+
+// user logged in but list empty
+if (movies.length === 0) {
+  return (
+    <p style={{ padding: "2rem" }}>
+      You have no favorite movies in your list.
+    </p>
+  );
+}
 
   return (
     <div style={{ padding: "2rem", maxWidth: "900px", margin: "0 auto" }}>

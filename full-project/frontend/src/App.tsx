@@ -1,6 +1,5 @@
 
 import Header from './components/Header'
-import Homepage from './pages/Homepage'
 import Login from './pages/Login'
 import CreateAccount from './pages/CreateAccount'
 import { BrowserRouter, Routes, Route } from "react-router-dom";
@@ -10,7 +9,6 @@ import FavoriteMovies from "./pages/FavoriteMovies";
 import Watchlist from "./pages/Watchlist";
 import ResetPassword from './pages/ResetPassword';
 import Homepage from './pages/Homepage';
-
 import './App.css'
 import TestPage from './pages/testPage'
 

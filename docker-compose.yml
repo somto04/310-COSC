@@ -1,4 +1,3 @@
-version: "3.9"
 
 services:
   backend:
@@ -14,7 +13,6 @@ services:
     restart: unless-stopped
     volumes:
       - ./full-project/backend/app/data:/app/data
-
 
   frontend:
     build:

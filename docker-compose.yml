@@ -12,6 +12,9 @@ services:
       - ./full-project/backend/.env
     working_dir: /app/full-project/backend
     restart: unless-stopped
+    volumes:
+      - full-project/backend/app/data:/app/full-project/backend/app/data
+
 
   frontend:
     build:
@@ -26,3 +29,4 @@ services:
       - backend
     environment:
       - VITE_API_URL=http://localhost:8000
+

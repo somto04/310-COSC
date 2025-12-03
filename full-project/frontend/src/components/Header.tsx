@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
-import { clearAuth, getToken } from "../utils/auth";
 
 import './Header.css'
+import { getUsername } from '../utils/auth';
 
 type HeaderProps = {
     token: string | null;
@@ -26,7 +26,7 @@ function Header({ token, isAdmin, updateAuth }: HeaderProps) {
 
         {token && (
           <>
-            <Link to="/profile">Profile</Link>
+            <Link to="/profile">{getUsername()}</Link>
             <Link to="/logout">Logout</Link>
           </>
         )}

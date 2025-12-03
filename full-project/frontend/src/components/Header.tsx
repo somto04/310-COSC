@@ -9,6 +9,11 @@ function Header() {
                 <Link to="/">Home</Link>
                 <Link to="/login">Login</Link>
                 <Link to="/create-account">Sign Up</Link>
+                <Link to="/profile">Profile</Link>
+                <Link to="/liked-reviews">Liked Reviews</Link>
+                <Link to="/watchlist">Watchlist</Link>
+                <Link to="/favorite-movies">Favorite Movies</Link>
+                <Link to="/reset-password">Reset Password</Link>
             </div>
         </nav>
     )

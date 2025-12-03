@@ -1,8 +1,13 @@
 import { use, useState } from "react";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
+import { setAuth } from "../utils/auth";
 
-export default function Login() {
+type LoginProps = {
+  updateAuth: () => void;
+};
+  
+export default function Login({ updateAuth }: LoginProps) {
   const [username, setUsername] = useState("");
   const [pw, setPw] = useState("");
   const [msg, setMsg] = useState("");
@@ -29,10 +34,9 @@ export default function Login() {
         console.log("LOGIN RESPONSE:", data);
 
         if (data.access_token) {
-          localStorage.setItem("token", data.access_token);
-          localStorage.setItem("userId", data.userId); 
-          localStorage.setItem("isAdmin", data.isAdmin);
-          
+          setAuth(data.access_token, data.user_id, data.is_admin);
+          updateAuth();
+
           setMsg("You Have Logged In Successfully!");
           navigate("/");
 

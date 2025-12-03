@@ -4,6 +4,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import { getToken, getUserId } from "../utils/auth";
 
 const API = import.meta.env.VITE_API_URL;
 
@@ -89,8 +90,8 @@ export default function MovieDetails() {
 
   // Check if this movie is already in user's favorites
 useEffect(() => {
-  const token = localStorage.getItem("token");
-  const userId = localStorage.getItem("userId");
+  const token = getToken();
+  const userId = getUserId();
 
   if (!movieId || !token || !userId) return;
 
@@ -140,7 +141,7 @@ useEffect(() => {
 
     setPosting(true);
     try {
-      const token = localStorage.getItem("token"); // Adjust auth method if needed
+      const token = getToken(); // Adjust auth method if needed
       const res = await fetch(`${API}/reviews/${movieId}`, {
         method: "POST",
         headers: {
@@ -170,7 +171,7 @@ useEffect(() => {
   // Flag a review as inappropriate
   const handleFlagReview = async (reviewId: number) => {
     try {
-      const token = localStorage.getItem("token");
+      const token = getToken();
       const res = await fetch(`${API}/reviews/${reviewId}/flag`, {
         method: "PATCH",
         headers: {
@@ -193,7 +194,7 @@ useEffect(() => {
   };
 // Add movie to favorites
 const addToFavorites = async () => {
-  const token = localStorage.getItem("token");
+  const token = getToken();
   if (!token || !movie) return;
 
   try {
@@ -207,7 +208,7 @@ const addToFavorites = async () => {
 
 // Remove movie from favorites
 const removeFromFavorites = async () => {
-  const token = localStorage.getItem("token");
+  const token = getToken();
   if (!token || !movie) return;
 
   try {

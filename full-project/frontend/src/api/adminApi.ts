@@ -1,7 +1,9 @@
+import { getToken } from "../utils/auth";
+
 const API_BASE = import.meta.env.VITE_API_URL;
 
 function getAuthHeaders(extra: HeadersInit = {}) {
-  const token = localStorage.getItem("token");
+  const token = getToken();
   if (!token) {
     throw new Error("Missing auth token");
   }

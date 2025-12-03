@@ -1,6 +1,6 @@
-
 import Header from './components/Header'
 import Login from './pages/Login'
+import Logout from './pages/Logout'
 import CreateAccount from './pages/CreateAccount'
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Profile from "./pages/Profile";
@@ -14,13 +14,29 @@ import TestPage from './pages/testPage'
 import AdminPage from './pages/AdminPage';
 import MovieDetails from './pages/MovieDetails';
 
+import { useState, useEffect } from "react";
+import { getToken, getIsAdmin } from "./utils/auth";
+
 function App() {
+  const [token, setToken] = useState(getToken());
+  const [isAdmin, setIsAdmin] = useState(getIsAdmin());
+
+  const updateAuth = () => {
+    setToken(getToken());
+    setIsAdmin(getIsAdmin());
+  };
+
   return (
     <BrowserRouter>
-      <Header />
+      <Header token={token} isAdmin={isAdmin} updateAuth={updateAuth} />
       <Routes>
         <Route path="/" element={<Homepage/>} />
-        <Route path="/login" element={<Login />} />
+        <Route
+          path="/login"
+          element={<Login updateAuth={updateAuth} />}
+        />
+        <Route path="/logout" element={<Logout />} />
+
         <Route path="/profile" element={<Profile />} />
         <Route path="/create-account" element={<CreateAccount />} />
         <Route path="/liked-reviews" element={<LikedReviews />} />

@@ -15,15 +15,21 @@ export default function WatchlistPage() {
   const [loading, setLoading] = useState(false);
 
   // Fetch initial watchlist
+  const token = localStorage.getItem("token");
   useEffect(() => {
       setLoading(true);
-      fetch(`${API}/users/watchlist`)
-          .then((res) => {
+      fetch(`${API}/users/watchlist`, {
+        headers: {
+        Authorization: `Bearer ${token}`},
+        credentials: "include",
+    })          
+    .then((res) => {
               if (!res.ok) throw new Error(`HTTP ${res.status}`);
               return res.json();
           })
-          .then(async (watchlist) => {
-              const watchlistWithPosters = await fetchWatchlistWithPosters(watchlist);
+          .then(async (response) => {
+            const watchlist = response.watchlist || [];
+            const watchlistWithPosters = await fetchWatchlistWithPosters(watchlist);
               setMovies(watchlistWithPosters);
               setLoading(false);
           })

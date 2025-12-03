@@ -51,6 +51,10 @@ export default function MovieDetails() {
   const [posting, setPosting] = useState(false);
   const [error, setError] = useState("");
 
+  //state for like and unlike reviews
+  const [likedReviewIds, setLikedReviewIds] = useState<number[]>([]);
+
+
   // Fetch movie details from backend
   useEffect(() => {
     if (!movieId) return;

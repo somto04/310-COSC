@@ -1,14 +1,17 @@
-import { useState } from "react";
+import { use, useState } from "react";
 import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 export default function Login() {
   const [username, setUsername] = useState("");
   const [pw, setPw] = useState("");
   const [msg, setMsg] = useState("");
   const API = import.meta.env.VITE_API_URL;
-
+  const navigate = useNavigate();
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
+
+  
 
     const formData = new URLSearchParams();
     formData.append("username", username);
@@ -27,8 +30,10 @@ export default function Login() {
 
         if (data.access_token) {
           localStorage.setItem("token", data.access_token);
-          localStorage.setItem("userId", data.userId); // your backend must return this
-          setMsg("Logged in! Token + userId saved.");
+          localStorage.setItem("userId", data.userId); 
+          setMsg("You Have Logged In Successfully!");
+          navigate("/");
+
         } else {
           setMsg("Login failed. Check username/password.");
         }

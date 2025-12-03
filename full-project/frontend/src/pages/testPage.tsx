@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { getToken } from "../utils/auth";
+import { getIsAdmin, getToken, getUserId } from "../utils/auth";
 
 const API = import.meta.env.VITE_API_URL;
 
@@ -96,6 +96,16 @@ export default function TestPage() {
             {getToken()
               ? "Token found in localStorage. Requests will be authenticated."
               : "No token in localStorage. Log in first if the endpoint needs auth."}
+          </div>
+          <div style={{ fontSize: "0.9rem", marginTop: "4px" }}>
+            {getUserId()
+              ? `User ID: ${getUserId()}`
+              : "No user ID in localStorage."}
+          </div>
+          <div style={{ fontSize: "0.9rem", marginTop: "4px" }}>
+            {getIsAdmin()
+              ? "User is admin."
+              : "User is not admin."}
           </div>
         </div>
 

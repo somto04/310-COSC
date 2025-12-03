@@ -87,7 +87,9 @@ export default function MovieDetails() {
   // Fetch reviews by page
   const fetchReviews = async (page: number) => {
     try {
-      const res = await fetch(`${API}/reviews/search?query=${movieId}&page=${page}&limit=10`);
+      const res = await fetch(
+        `${API}/reviews/search?query=${movieId}&page=${page}&limit=10`
+      );
       if (!res.ok) throw new Error("Failed to fetch reviews");
       const data: Review[] = await res.json();
 
@@ -143,6 +145,31 @@ export default function MovieDetails() {
     }
   };
 
+  // Flag a review as inappropriate
+  const handleFlagReview = async (reviewId: number) => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${API}/reviews/${reviewId}/flag`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!res.ok) throw new Error("Failed to flag review");
+
+      // Update UI
+      setReviews((prev) =>
+        prev.map((rev) =>
+          rev.id === reviewId ? { ...rev, flagged: true } : rev
+        )
+      );
+    } catch (err) {
+      console.error(err);
+      alert("Failed to flag review");
+    }
+  };
+
   if (loading) return <p>Loading movie details...</p>;
   if (!movie) return <p>Movie not found</p>;
 
@@ -173,19 +200,35 @@ export default function MovieDetails() {
         )}
 
         <div>
-          <p><strong>Genres:</strong> {movie.movieGenres?.join(", ") || "N/A"}</p>
-          <p><strong>Directors:</strong> {movie.directors?.join(", ") || "N/A"}</p>
-          <p><strong>Main Stars:</strong> {movie.mainStars?.join(", ") || "N/A"}</p>
-          <p><strong>Year:</strong> {movie.yearReleased || "N/A"}</p>
-          <p><strong>Duration:</strong> {tmdb?.runtime || movie.duration || "N/A"} min</p>
-          <p><strong>Description:</strong> {tmdb?.overview || movie.description || "N/A"}</p>
+          <p>
+            <strong>Genres:</strong> {movie.movieGenres?.join(", ") || "N/A"}
+          </p>
+          <p>
+            <strong>Directors:</strong> {movie.directors?.join(", ") || "N/A"}
+          </p>
+          <p>
+            <strong>Main Stars:</strong> {movie.mainStars?.join(", ") || "N/A"}
+          </p>
+          <p>
+            <strong>Year:</strong> {movie.yearReleased || "N/A"}
+          </p>
+          <p>
+            <strong>Duration:</strong> {tmdb?.runtime || movie.duration || "N/A"}{" "}
+            min
+          </p>
+          <p>
+            <strong>Description:</strong> {tmdb?.overview || movie.description || "N/A"}
+          </p>
         </div>
       </div>
 
       <section style={{ marginTop: "2rem" }}>
         <h2>Add a Review</h2>
         {error && <p style={{ color: "red" }}>{error}</p>}
-        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+        <form
+          onSubmit={handleSubmit}
+          style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}
+        >
           <input
             type="text"
             placeholder="Review Title"
@@ -230,6 +273,18 @@ export default function MovieDetails() {
               >
                 <strong>{r.reviewTitle}</strong> <em>({r.datePosted})</em>
                 <p>{r.reviewBody}</p>
+                <button
+                  onClick={() => handleFlagReview(r.id)}
+                  disabled={r.flagged}
+                  style={{
+                    padding: "0.25rem 0.5rem",
+                    fontSize: "0.8rem",
+                    cursor: r.flagged ? "not-allowed" : "pointer",
+                    marginTop: "0.25rem",
+                  }}
+                >
+                  {r.flagged ? "Flagged" : "Flag Review"}
+                </button>
               </li>
             ))}
           </ul>
@@ -237,7 +292,12 @@ export default function MovieDetails() {
         {hasMoreReviews && (
           <button
             onClick={() => setReviewsPage((prev) => prev + 1)}
-            style={{ padding: "0.5rem", fontWeight: "bold", cursor: "pointer", marginTop: "1rem" }}
+            style={{
+              padding: "0.5rem",
+              fontWeight: "bold",
+              cursor: "pointer",
+              marginTop: "1rem",
+            }}
           >
             Load More
           </button>

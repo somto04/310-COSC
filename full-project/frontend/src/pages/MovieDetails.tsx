@@ -50,6 +50,9 @@ export default function MovieDetails() {
   const [newBody, setNewBody] = useState("");
   const [posting, setPosting] = useState(false);
   const [error, setError] = useState("");
+  
+  const [isFavorite, setIsFavorite] = useState(false);
+ 
 
   // Fetch movie details from backend
   useEffect(() => {
@@ -83,6 +86,25 @@ export default function MovieDetails() {
 
     fetchData();
   }, [movieId]);
+
+  // Check if this movie is already in user's favorites
+useEffect(() => {
+  const token = localStorage.getItem("token");
+  const userId = localStorage.getItem("userId");
+
+  if (!movieId || !token || !userId) return;
+
+  fetch(`${API}/favorites/`, {
+    headers: { Authorization: `Bearer ${token}` }
+  })
+    .then(res => res.json())
+    .then(data => {
+      // backend returns list of favorite movies
+      const favIds = data.map((m: any) => m.id);
+      setIsFavorite(favIds.includes(Number(movieId)));
+    })
+    .catch(() => {});
+}, [movieId]);
 
   // Fetch reviews by page
   const fetchReviews = async (page: number) => {
@@ -169,6 +191,34 @@ export default function MovieDetails() {
       alert("Failed to flag review");
     }
   };
+// Add movie to favorites
+const addToFavorites = async () => {
+  const token = localStorage.getItem("token");
+  if (!token || !movie) return;
+
+  try {
+    await fetch(`${API}/favorites/${movie.id}`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    setIsFavorite(true);
+  } catch {}
+};
+
+// Remove movie from favorites
+const removeFromFavorites = async () => {
+  const token = localStorage.getItem("token");
+  if (!token || !movie) return;
+
+  try {
+    await fetch(`${API}/favorites/${movie.id}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    setIsFavorite(false);
+  } catch {}
+};
+
 
   if (loading) return <p>Loading movie details...</p>;
   if (!movie) return <p>Movie not found</p>;
@@ -221,6 +271,22 @@ export default function MovieDetails() {
           </p>
         </div>
       </div>
+      <button
+  onClick={isFavorite ? removeFromFavorites : addToFavorites}
+  style={{
+    marginTop: "1rem",
+    padding: "0.6rem 1rem",
+    fontWeight: "bold",
+    border: "1px solid black",
+    backgroundColor: isFavorite ? "red" : "black",
+    cursor: "pointer",
+    borderRadius: "4px"
+  }}
+>
+  {isFavorite ? "Remove from Favorites" : "Add to Favorites ⭐"}
+</button>
+
+
 
       <section style={{ marginTop: "2rem" }}>
         <h2>Add a Review</h2>

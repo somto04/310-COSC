@@ -42,9 +42,10 @@ export default function MovieDetails() {
   const [movie, setMovie] = useState<Movie | null>(null);
   const [tmdb, setTmdb] = useState<TMDbMovie | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
-  const [visibleReviews, setVisibleReviews] = useState<Review[]>([]);
-  const [reviewsToShow, setReviewsToShow] = useState(10); // initially show 10 reviews
   const [loading, setLoading] = useState(true);
+  const [reviewsLoading, setReviewsLoading] = useState(false);
+  const [reviewsPage, setReviewsPage] = useState(1);
+  const [hasMoreReviews, setHasMoreReviews] = useState(true);
 
   const [newTitle, setNewTitle] = useState("");
   const [newBody, setNewBody] = useState("");
@@ -71,12 +72,8 @@ export default function MovieDetails() {
           setTmdb(tmdbData);
         }
 
-        // Fetch reviews by movieId
-        const reviewsRes = await fetch(`${API}/reviews/search?query=${movieId}`);
-        if (reviewsRes.ok) {
-          const reviewsData: Review[] = await reviewsRes.json();
-          setReviews(reviewsData);
-        }
+        // Fetch first page of reviews
+        fetchReviews(1);
       } catch (err) {
         console.error(err);
         setError("Error loading movie details");
@@ -88,10 +85,23 @@ export default function MovieDetails() {
     fetchData();
   }, [movieId]);
 
-  // Update visibleReviews whenever reviews or reviewsToShow changes
-  useEffect(() => {
-    setVisibleReviews(reviews.slice(0, reviewsToShow));
-  }, [reviews, reviewsToShow]);
+  // Fetch reviews with backend pagination
+  const fetchReviews = async (page: number) => {
+    if (!movieId || !hasMoreReviews) return;
+    setReviewsLoading(true);
+    try {
+      const res = await fetch(`${API}/reviews/search?query=${movieId}&page=${page}&limit=10`);
+      if (!res.ok) throw new Error("Failed to fetch reviews");
+      const data: Review[] = await res.json();
+      if (data.length < 10) setHasMoreReviews(false); // no more reviews
+      setReviews((prev) => [...prev, ...data]);
+    } catch (err) {
+      console.error(err);
+      setError("Error fetching reviews");
+    } finally {
+      setReviewsLoading(false);
+    }
+  };
 
   // Post a new review
   const handleSubmit = async (e: React.FormEvent) => {
@@ -166,38 +176,7 @@ export default function MovieDetails() {
         </div>
       </div>
 
-      <section style={{ marginTop: "2rem" }}>
-        <h2>Reviews</h2>
-        {visibleReviews.length === 0 ? (
-          <p>No reviews yet. Be the first to review!</p>
-        ) : (
-          <ul style={{ listStyle: "none", padding: 0 }}>
-            {visibleReviews.map((r) => (
-              <li
-                key={r.id}
-                style={{
-                  border: "1px solid #ddd",
-                  padding: "0.5rem",
-                  marginBottom: "0.5rem",
-                  borderRadius: "4px",
-                }}
-              >
-                <strong>{r.reviewTitle}</strong> <em>({r.datePosted})</em>
-                <p>{r.reviewBody}</p>
-              </li>
-            ))}
-          </ul>
-        )}
-        {reviewsToShow < reviews.length && (
-          <button
-            onClick={() => setReviewsToShow(reviewsToShow + 10)}
-            style={{ padding: "0.5rem", marginTop: "1rem", cursor: "pointer" }}
-          >
-            Load More
-          </button>
-        )}
-      </section>
-
+      {/* Add a Review Section first */}
       <section style={{ marginTop: "2rem" }}>
         <h2>Add a Review</h2>
         {error && <p style={{ color: "red" }}>{error}</p>}
@@ -226,6 +205,40 @@ export default function MovieDetails() {
             {posting ? "Posting..." : "Submit Review"}
           </button>
         </form>
+      </section>
+
+      {/* Reviews Section below */}
+      <section style={{ marginTop: "2rem" }}>
+        <h2>Reviews</h2>
+        {reviews.length === 0 ? (
+          <p>No reviews yet. Be the first to review!</p>
+        ) : (
+          <ul style={{ listStyle: "none", padding: 0 }}>
+            {reviews.map((r) => (
+              <li
+                key={r.id}
+                style={{
+                  border: "1px solid #ddd",
+                  padding: "0.5rem",
+                  marginBottom: "0.5rem",
+                  borderRadius: "4px",
+                }}
+              >
+                <strong>{r.reviewTitle}</strong> <em>({r.datePosted})</em>
+                <p>{r.reviewBody}</p>
+              </li>
+            ))}
+          </ul>
+        )}
+        {hasMoreReviews && (
+          <button
+            onClick={() => setReviewsPage((prev) => prev + 1)}
+            disabled={reviewsLoading}
+            style={{ padding: "0.5rem", marginTop: "1rem", cursor: "pointer" }}
+          >
+            {reviewsLoading ? "Loading..." : "Load More"}
+          </button>
+        )}
       </section>
     </div>
   );

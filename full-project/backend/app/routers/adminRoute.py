@@ -1,35 +1,19 @@
 from fastapi import APIRouter, Depends, HTTPException
-from typing import List
-from ..repos.reviewRepo import loadReviews, saveReviews
-from ..services.reviewService import deleteReview
+from ..services.reviewService import (
+    deleteReview,
+    getReviewById,
+    ReviewNotFoundError,
+    unflagReview,
+    getFlaggedReviews,
+)
 from ..utilities.penalties import incrementPenaltyForUser
 from ..schemas.user import CurrentUser
 from .authRoute import requireAdmin
 from ..schemas.admin import AdminFlagResponse, PaginatedFlaggedReviewsResponse
-from ..schemas.review import Review
 from ..services.adminService import grantAdmin, revokeAdmin, AdminActionError
 from app.services.userService import UserNotFoundError
 
 router = APIRouter(prefix="/admin", tags=["admin"])
-
-
-# ---------------------------
-# Helper functions
-# ---------------------------
-
-
-def getFlaggedReviews() -> List[Review]:
-    reviewList = loadReviews()
-    return [review for review in reviewList if review.flagged]
-
-
-def getReviewById(reviewId: int):
-    """Return full list and the review object for the given ID."""
-    reviewList = loadReviews()
-    review = next((review for review in reviewList if review.id == reviewId), None)
-    if review is None:
-        raise HTTPException(404, "Review not found")
-    return reviewList, review
 
 
 # ---------------------------
@@ -40,12 +24,17 @@ def getReviewById(reviewId: int):
 @router.post("/reviews/{reviewId}/acceptFlag", response_model=AdminFlagResponse)
 def acceptReviewFlag(reviewId: int, currentAdmin: CurrentUser = Depends(requireAdmin)):
     """Accept a review flag, delete the review, and penalize the user."""
-    _, review = getReviewById(reviewId)
+    try:
+        review = getReviewById(reviewId)
+    except ReviewNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
 
-    # Penalize the user
+    if not review.flagged:
+        raise HTTPException(
+            status_code=400, detail="Cannot accept flag. Review is not flagged."
+        )
+
     updatedUser = incrementPenaltyForUser(review.userId)
-
-    # Delete the review
     deleteReview(reviewId)
 
     return AdminFlagResponse(
@@ -64,43 +53,24 @@ def acceptReviewFlag(reviewId: int, currentAdmin: CurrentUser = Depends(requireA
 @router.post("/reviews/{reviewId}/rejectFlag", response_model=AdminFlagResponse)
 def rejectReviewFlag(reviewId: int, currentAdmin: CurrentUser = Depends(requireAdmin)):
     """Reject a review flag and unflag the review."""
-    reviewList, review = getReviewById(reviewId)
+    try:
+        review = getReviewById(reviewId)
+    except ReviewNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
 
-    # Simply unflag the review
-    review.flagged = False
-    saveReviews(reviewList)
+    if not review.flagged:
+        raise HTTPException(
+            status_code=400,
+            detail="Cannot reject flag. Review is not flagged.",
+        )
 
-    # We can still return a user-like response with dummy values if needed
+    updatedReview = unflagReview(reviewId)
+
     return AdminFlagResponse(
         message="Flag rejected. Review unflagged (no penalty applied).",
-        userId=review.userId,
+        userId=updatedReview.userId,
         penaltyCount=0,
         isBanned=False,
-    )
-
-
-# ---------------------------
-# Mark review inappropriate
-# ---------------------------
-
-
-@router.post("/reviews/{reviewId}/markInappropriate", response_model=AdminFlagResponse)
-def markReviewInappropriate(
-    reviewId: int, currentAdmin: CurrentUser = Depends(requireAdmin)
-):
-    """Mark a review as inappropriate and penalize the user."""
-    reviewList, review = getReviewById(reviewId)
-
-    reviewList = [review for review in reviewList if review.id != reviewId]
-    saveReviews(reviewList)
-
-    updatedUser = incrementPenaltyForUser(review.userId)
-
-    return AdminFlagResponse(
-        message="Review flagged and user penalized",
-        userId=updatedUser.id,
-        penaltyCount=updatedUser.penalties,
-        isBanned=updatedUser.isBanned,
     )
 
 

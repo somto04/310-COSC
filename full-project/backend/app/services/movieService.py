@@ -52,7 +52,7 @@ def getMovieByFilter(
     star: str | None = None,
 ) -> List[Movie]:
     """
-    Filters movies based on genre, year, director, and star.
+    Filters movies based on genre, decade, director, and star.
 
     Returns:
         List of Movie models that match the filters.
@@ -77,8 +77,11 @@ def getMovieByFilter(
                 continue
 
         # Year filter
-        if yearQuery and movieYear != yearQuery:
-            continue
+        if yearQuery:
+            startYear = int(yearQuery)
+            endYear = startYear + 10
+            if not (startYear <= int(movieYear) < endYear):
+                continue
 
         # Director filter
         if directorQuery:

@@ -19,7 +19,7 @@ def fakeReviews():
             reviewBody= "Excellent really made me love Thor, answered a bunch of questions and tied things together. A must see.",
             rating= 10,
             datePosted= "8 April 2018",
-            flagged= False
+            flagged= True
         ),
         Review(
             id= 2,
@@ -30,15 +30,25 @@ def fakeReviews():
             rating= 8,
             datePosted= "10 April 2018",
             flagged= False
-        )
+        ),
+        Review(
+            id= 3,
+            movieId= 10,
+            userId= 40848,
+            reviewTitle= "Not my type of movie",
+            reviewBody= "I found this movie quite boring and predictable.",
+            rating= 5,
+            datePosted= "12 April 2018",
+            flagged= True
+        ),
     ]
 
 @pytest.fixture
 def fakeMovies():
     """this fixture provides mock movies data for testing"""
     return [
-        {"id":10, "title":"Avengers", "movieGenre" :["Action"], "duration": 143},
-        {"id":11, "title":"Batman", "movieGenre" :["Action"], "duration":126},
+        Movie(id=10, title="Avengers", movieGenres =["Action"], duration= 143),
+        Movie(id=11, title="Batman", movieGenres =["Action"], duration=126),
     ]
 
 # patching the loadReviews and saveReviews methods to avoid actual file I/O during tests
@@ -54,7 +64,7 @@ def test_searchByMovieId(mockMovieLoad, mockReviewLoad, fakeReviews, fakeMovies)
 
     result = reviewService.searchReviews("10")
 
-    assert len(result) == 1
+    assert len(result) == 2
     assert result[0].reviewTitle == "Good movie"
 
 @patch("app.services.reviewService.loadReviews")
@@ -73,7 +83,7 @@ def test_listReviews(mockLoad, fakeReviews):
     """this test checks that all reviews are listed correctly"""
     mockLoad.return_value = fakeReviews
     result = reviewService.listReviews()
-    assert len(result) == 2
+    assert len(result) == 3
     assert all(isinstance(review, Review) for review in result)
 
 @patch("app.services.reviewService.getNextReviewId")
@@ -163,3 +173,35 @@ def test_deleteReviewNotFound(mockLoad, mockSave, fakeReviews):
     mockLoad.return_value = fakeReviews
     with pytest.raises(ReviewNotFoundError) as exc:
         reviewService.deleteReview(999)
+
+
+@patch("app.services.reviewService.saveReviews")
+@patch("app.services.reviewService.loadReviews")
+def test_flagReviewSuccess(mockLoad, mockSave, fakeReviews):
+    mockLoad.return_value = fakeReviews
+
+    updated = reviewService.flagReview(2)
+
+    assert updated.id == 2
+    assert updated.flagged is True
+    mockSave.assert_called_once()
+
+
+@patch("app.services.reviewService.saveReviews")
+@patch("app.services.reviewService.loadReviews")
+def test_flagReviewNotFound(mockLoad, mockSave):
+    mockLoad.return_value = []
+
+    with pytest.raises(ReviewNotFoundError):
+        reviewService.flagReview(999)
+
+    mockSave.assert_not_called()
+
+@patch("app.services.reviewService.loadReviews")
+def test_getFlaggedReviews(mockLoad, fakeReviews):
+    """this test checks retrieving all flagged reviews"""
+    mockLoad.return_value = fakeReviews
+    flagged = reviewService.getFlaggedReviews()
+
+    assert len(flagged) == 2
+    assert all(review.flagged is True for review in flagged)

@@ -113,14 +113,14 @@ export default function MovieDetails() {
     if (!movieId || !token) return;
 
     try {
-      const res = await fetch(`${API}/users/watchlist/`, {
+      const res = await fetch(`${API}/users/watchlist`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
       if (!res.ok) return;
 
       const data = await res.json();
-      const watchlistIds = data.map((movie: any) => movie.id);
+      const watchlistIds = data.watchlist.map((movie: any) => movie.id);
 
       setInWatchlist(watchlistIds.includes(Number(movieId)));
     } catch (err) {

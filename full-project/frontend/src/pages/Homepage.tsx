@@ -91,7 +91,6 @@ export default function Homepage() {
                 return res.json();
             })
             .then(data => {
-                console.log("Metadata received:", data);
                 setGenres(data.genres || []);
                 setDecades(data.decades || []);
                 setDirectors(data.directors || []);
@@ -116,8 +115,6 @@ export default function Homepage() {
                 if (filterStar) params.append("star", filterStar);
 
                 const url = `${API}/movies/filter?${params.toString()}`;
-                console.log("Fetching:", url);
-
                 const res = await fetch(url);
 
                 if (res.status === 404) {

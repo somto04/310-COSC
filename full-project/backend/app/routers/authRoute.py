@@ -95,6 +95,8 @@ def login(
         "access_token": username,  # should be token when implemented
         "token_type": "bearer",
         "userId": user.id,
+        "role": user.role,
+        "isAdmin": user.role == Role.ADMIN,
     }
 
 

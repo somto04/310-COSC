@@ -31,6 +31,8 @@ export default function Login() {
         if (data.access_token) {
           localStorage.setItem("token", data.access_token);
           localStorage.setItem("userId", data.userId); 
+          localStorage.setItem("isAdmin", data.isAdmin);
+          
           setMsg("You Have Logged In Successfully!");
           navigate("/");
 

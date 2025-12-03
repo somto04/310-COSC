@@ -6,10 +6,9 @@ import { getUsername } from '../utils/auth';
 type HeaderProps = {
     token: string | null;
     isAdmin: boolean;
-    updateAuth: () => void;
 };
 
-function Header({ token, isAdmin, updateAuth }: HeaderProps) {
+function Header({ token, isAdmin }: HeaderProps) {
   return (
     <nav className="header">
       <div className="nav-links">

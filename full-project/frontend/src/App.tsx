@@ -28,7 +28,7 @@ function App() {
 
   return (
     <BrowserRouter>
-      <Header token={token} isAdmin={isAdmin} updateAuth={updateAuth} />
+      <Header token={token} isAdmin={isAdmin} />
 
       <Routes>
         <Route path="/" element={<Homepage/>} />

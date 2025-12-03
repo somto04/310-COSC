@@ -1,4 +1,5 @@
 import { useState } from "react";
+const API = import.meta.env.VITE_API_URL;
 
 export default function Register() {
   const [username, setUsername] = useState("");
@@ -19,21 +20,21 @@ export default function Register() {
     pw: "Password",
   };
 
-  // Convert backend error messages into regular english
+  // Convert backend error messages into user-friendly format
   function formatError(field: string, msg: string, ctx: any) {
     const label = fieldLabels[field] || field;
 
-    // empty / too short (1 character)
+    
     if (msg.includes("at least 1 character") || msg.includes("too_short")) {
       return `${label} cannot be empty.`;
     }
 
-    // string minimum length: at least N characters
+    
     if (msg.includes("at least") && msg.includes("characters")) {
       return `${label} must be at least ${ctx?.min_length} characters.`;
     }
 
-    // numeric minimum: greater than or equal
+    
     if (msg.includes("greater than or equal")) {
       return `${label} must be at least ${ctx?.ge}.`;
     }
@@ -49,20 +50,21 @@ export default function Register() {
   const handleRegister = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    fetch("http://localhost:8000/users", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        username,
-        firstName,
-        lastName,
-        email,
-        age: Number(age),
-        pw,
-      }),
-    })
+    fetch(`${API}/users`, {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    username,
+    firstName,
+    lastName,
+    email,
+    age: Number(age),
+    pw,
+  }),
+})
+
       .then(async (res) => {
         const data = await res.json();
 
@@ -88,8 +90,8 @@ export default function Register() {
         
         setMessage("Account created successfully!");
 
-        // TODO: redirect when login page is ready
-        // window.location.href = "/login";
+        
+        window.location.href = "/homepage";
       })
       .catch((err) => {
         console.error("Error creating account:", err);

@@ -11,6 +11,7 @@ import ResetPassword from './pages/ResetPassword';
 import Homepage from './pages/Homepage';
 import './App.css'
 import TestPage from './pages/testPage'
+import AdminPage from './pages/AdminPage';
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
         <Route path="/watchlist" element={<Watchlist />} />
         <Route path="/favorite-movies" element={<FavoriteMovies />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/admin" element={<AdminPage />} />
 
         <Route path="/test" element={<TestPage />} />
       </Routes>

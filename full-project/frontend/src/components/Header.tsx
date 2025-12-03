@@ -14,6 +14,7 @@ function Header() {
                 <Link to="/watchlist">Watchlist</Link>
                 <Link to="/favorite-movies">Favorite Movies</Link>
                 <Link to="/reset-password">Reset Password</Link>
+                <Link to="/admin">Admin</Link>
             </div>
         </nav>
     )

@@ -42,6 +42,8 @@ export default function MovieDetails() {
   const [movie, setMovie] = useState<Movie | null>(null);
   const [tmdb, setTmdb] = useState<TMDbMovie | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
+  const [visibleReviews, setVisibleReviews] = useState<Review[]>([]);
+  const [reviewsToShow, setReviewsToShow] = useState(10); // initially show 10 reviews
   const [loading, setLoading] = useState(true);
 
   const [newTitle, setNewTitle] = useState("");
@@ -85,6 +87,11 @@ export default function MovieDetails() {
 
     fetchData();
   }, [movieId]);
+
+  // Update visibleReviews whenever reviews or reviewsToShow changes
+  useEffect(() => {
+    setVisibleReviews(reviews.slice(0, reviewsToShow));
+  }, [reviews, reviewsToShow]);
 
   // Post a new review
   const handleSubmit = async (e: React.FormEvent) => {
@@ -161,11 +168,11 @@ export default function MovieDetails() {
 
       <section style={{ marginTop: "2rem" }}>
         <h2>Reviews</h2>
-        {reviews.length === 0 ? (
+        {visibleReviews.length === 0 ? (
           <p>No reviews yet. Be the first to review!</p>
         ) : (
           <ul style={{ listStyle: "none", padding: 0 }}>
-            {reviews.map((r) => (
+            {visibleReviews.map((r) => (
               <li
                 key={r.id}
                 style={{
@@ -180,6 +187,14 @@ export default function MovieDetails() {
               </li>
             ))}
           </ul>
+        )}
+        {reviewsToShow < reviews.length && (
+          <button
+            onClick={() => setReviewsToShow(reviewsToShow + 10)}
+            style={{ padding: "0.5rem", marginTop: "1rem", cursor: "pointer" }}
+          >
+            Load More
+          </button>
         )}
       </section>
 

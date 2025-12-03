@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom"; // Added for navigation
+
 const API = import.meta.env.VITE_API_URL;
+
 
 export default function Homepage() {
     type Movie = {

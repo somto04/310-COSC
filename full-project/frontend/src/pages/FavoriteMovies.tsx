@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+const API = import.meta.env.VITE_API_URL;
 
 type Recommendation = {
   id: number;
@@ -33,7 +34,7 @@ export default function FavoriteMovies() {
   const token = localStorage.getItem("token");
 
   try {
-    await fetch(`http://localhost:8000/favorites/${movieId}`, {
+    await fetch(`${API}/favorites/${movieId}`, {
       method: "DELETE",
       headers: { Authorization: `Bearer ${token}` },
     });
@@ -49,7 +50,7 @@ export default function FavoriteMovies() {
     const token = localStorage.getItem("token");
     if (!token) return;
 
-    fetch("http://localhost:8000/favorites/", {
+    fetch(`${API}/favorites/`,{
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => res.json())
@@ -58,19 +59,19 @@ export default function FavoriteMovies() {
           favorites.map(async (fav: any) => {
             // LOCAL DB DETAILS
             const localRes = await fetch(
-              `http://localhost:8000/movies/${fav.id}`
+              `${API}/movies/${fav.id}`
             );
             const localMovie = await localRes.json();
 
             // TMDB DETAILS
             const tmdbRes = await fetch(
-              `http://localhost:8000/tmdb/details/${fav.id}`
+              `${API}/tmdb/details/${fav.id}`
             );
             const tmdb = await tmdbRes.json();
 
             // TMDB RECOMMENDATIONS
             const recRes = await fetch(
-              `http://localhost:8000/tmdb/recommendations/${fav.id}`
+              `${API}/tmdb/recommendations/${fav.id}`
             );
             const recs = await recRes.json();
 

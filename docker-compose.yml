@@ -17,8 +17,6 @@ services:
     build:
       context: ./full-project/frontend
       dockerfile: Dockerfile
-      args:
-        - VITE_API_URL=http://backend:8000
     container_name: movie-review-frontend
     ports:
       - "5173:5173"

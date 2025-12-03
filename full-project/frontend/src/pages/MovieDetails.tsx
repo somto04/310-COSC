@@ -43,9 +43,8 @@ export default function MovieDetails() {
   const [tmdb, setTmdb] = useState<TMDbMovie | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
-  const [reviewsLoading, setReviewsLoading] = useState(false);
   const [reviewsPage, setReviewsPage] = useState(1);
-  const [hasMoreReviews, setHasMoreReviews] = useState(true);
+  const [hasMoreReviews, setHasMoreReviews] = useState(false);
 
   const [newTitle, setNewTitle] = useState("");
   const [newBody, setNewBody] = useState("");
@@ -85,23 +84,30 @@ export default function MovieDetails() {
     fetchData();
   }, [movieId]);
 
-  // Fetch reviews with backend pagination
+  // Fetch reviews by page
   const fetchReviews = async (page: number) => {
-    if (!movieId || !hasMoreReviews) return;
-    setReviewsLoading(true);
     try {
       const res = await fetch(`${API}/reviews/search?query=${movieId}&page=${page}&limit=10`);
       if (!res.ok) throw new Error("Failed to fetch reviews");
       const data: Review[] = await res.json();
-      if (data.length < 10) setHasMoreReviews(false); // no more reviews
-      setReviews((prev) => [...prev, ...data]);
+
+      if (page === 1) {
+        setReviews(data);
+      } else {
+        setReviews((prev) => [...prev, ...data]);
+      }
+
+      setHasMoreReviews(data.length === 10); // if less than 10, no more pages
     } catch (err) {
       console.error(err);
-      setError("Error fetching reviews");
-    } finally {
-      setReviewsLoading(false);
     }
   };
+
+  // Load more reviews when reviewsPage changes (after page 1)
+  useEffect(() => {
+    if (reviewsPage === 1) return; // first page already fetched
+    fetchReviews(reviewsPage);
+  }, [reviewsPage]);
 
   // Post a new review
   const handleSubmit = async (e: React.FormEvent) => {
@@ -176,7 +182,6 @@ export default function MovieDetails() {
         </div>
       </div>
 
-      {/* Add a Review Section first */}
       <section style={{ marginTop: "2rem" }}>
         <h2>Add a Review</h2>
         {error && <p style={{ color: "red" }}>{error}</p>}
@@ -207,7 +212,6 @@ export default function MovieDetails() {
         </form>
       </section>
 
-      {/* Reviews Section below */}
       <section style={{ marginTop: "2rem" }}>
         <h2>Reviews</h2>
         {reviews.length === 0 ? (
@@ -233,10 +237,9 @@ export default function MovieDetails() {
         {hasMoreReviews && (
           <button
             onClick={() => setReviewsPage((prev) => prev + 1)}
-            disabled={reviewsLoading}
-            style={{ padding: "0.5rem", marginTop: "1rem", cursor: "pointer" }}
+            style={{ padding: "0.5rem", fontWeight: "bold", cursor: "pointer", marginTop: "1rem" }}
           >
-            {reviewsLoading ? "Loading..." : "Load More"}
+            Load More
           </button>
         )}
       </section>

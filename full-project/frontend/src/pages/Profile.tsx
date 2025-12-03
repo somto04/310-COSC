@@ -250,6 +250,7 @@ fetch(`${API}/likeReview/`,{
   // After update, reload user profile
   const token = getToken();
   const userId = getUserId();
+  if (!userId || !token) return;
 
   fetch(`${API}/users/userProfile/${userId}`, {
     headers: {

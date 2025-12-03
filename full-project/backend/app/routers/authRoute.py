@@ -144,7 +144,7 @@ def generateResetTokenRoute(username: Annotated[Username, Form(...)]):
     except UserNotFoundError:
         raise HTTPException(status_code=404, detail="Username not found")
 
-    token = generateResetToken(user.email)  # your service expects email
+    token = generateResetToken(user.email) 
     return {"token": token}
 
 

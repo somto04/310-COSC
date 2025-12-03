@@ -5,7 +5,6 @@ const API = import.meta.env.VITE_API_URL;
 
 export default function ResetPassword() {
   const [username, setUsername] = useState("");
-  const [resetToken, setResetToken] = useState<string | null>(null);
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [message, setMessage] = useState("");
@@ -13,107 +12,107 @@ export default function ResetPassword() {
 
   const navigate = useNavigate();
 
-  async function handleSubmit(e: React.FormEvent) {
+  const handleReset = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
+    setMessage("");
 
-    // Step 1: NO TOKEN YET → generate token
-    if (!resetToken) {
-      const formData = new FormData();
-      formData.append("username", username);
-
-      try {
-        const res = await fetch(`${API}/generate-reset-token`, {
-          method: "POST",
-          body: formData,
-        });
-
-        const data = await res.json();
-
-        if (!res.ok) {
-          setError(data.detail || "Could not generate reset token");
-          return;
-        }
-
-        setResetToken(data.token); // browser stores the token safely in state!
-        setMessage("Token generated. Enter your new password.");
-        setError("");
-      } catch (err) {
-        setError("Network error");
-      }
-
+    if (!username || !newPassword || !confirmPassword) {
+      setError("All fields are required");
       return;
     }
 
-    // Step 2: TOKEN EXISTS → allow password reset
     if (newPassword !== confirmPassword) {
       setError("Passwords do not match");
       return;
     }
 
-    const formData = new FormData();
-    formData.append("token", resetToken);
-    formData.append("newPassword", newPassword);
-
     try {
-      const res = await fetch(`${API}/reset-password`, {
+      // 1️⃣ Generate reset token
+      const tokenRes = await fetch(`${API}/generate-reset-token`, {
         method: "POST",
-        body: formData,
+        body: new URLSearchParams({ username }),
       });
 
-      const data = await res.json();
+      if (!tokenRes.ok) {
+        const data = await tokenRes.json();
+        setError(data.detail || "Failed to generate reset token");
+        return;
+      }
 
-      if (!res.ok) {
-        setError(data.detail || "Failed to reset password");
+      const { token } = await tokenRes.json();
+
+      // 2️⃣ Reset password using token
+      const resetRes = await fetch(`${API}/reset-password`, {
+        method: "POST",
+        body: new URLSearchParams({ token, new_password: newPassword }),
+      });
+
+      const resetData = await resetRes.json();
+
+      if (!resetRes.ok) {
+        setError(resetData.detail || "Failed to reset password");
         return;
       }
 
       setMessage("Password reset successful!");
-      setTimeout(() => navigate("/login"), 1500);
+      setTimeout(() => navigate("/login"), 1200);
+
     } catch (err) {
-      setError("Network error");
+      setError("Network error. Try again.");
     }
-  }
+  };
 
   return (
     <div style={{ padding: "2rem", maxWidth: "400px", margin: "0 auto" }}>
       <h1>Reset Password</h1>
 
-      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-        {/* Username field (only before token is generated) */}
-        {!resetToken && (
-          <input
-            type="text"
-            placeholder="Enter your username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-          />
-        )}
+      <form
+        onSubmit={handleReset}
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "1rem",
+          marginTop: "1rem",
+        }}
+      >
+        {/* Username Field*/}
+        <input
+          type="text"
+          placeholder="Enter your username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          style={{ padding: "0.5rem", border: "1px solid black" }}
+        />
 
-        {/* New password fields (only after token is generated) */}
-        {resetToken && (
-          <>
-            <input
-              type="password"
-              placeholder="New password"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-            />
-            <input
-              type="password"
-              placeholder="Confirm password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-            />
-          </>
-        )}
+        {/* NEW PASSWORD */}
+        <input
+          type="password"
+          placeholder="New password"
+          value={newPassword}
+          onChange={(e) => setNewPassword(e.target.value)}
+          style={{ padding: "0.5rem", border: "1px solid black" }}
+        />
 
-        <button type="submit">
-          {!resetToken ? "Generate Token" : "Reset Password"}
+        {/* CONFIRM PASSWORD */}
+        <input
+          type="password"
+          placeholder="Confirm new password"
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+          style={{ padding: "0.5rem", border: "1px solid black" }}
+        />
+
+        <button
+          type="submit"
+          style={{ padding: "0.6rem", border: "1px solid black" }}
+        >
+          Reset Password
         </button>
       </form>
 
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      {message && <p style={{ color: "green" }}>{message}</p>}
+      {error && <p style={{ color: "red", marginTop: "1rem" }}>{error}</p>}
+      {message && <p style={{ color: "green", marginTop: "1rem" }}>{message}</p>}
     </div>
   );
 }

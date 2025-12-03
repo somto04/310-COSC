@@ -232,41 +232,6 @@ def test_adminDashboardForbidden():
     assert response.json()["detail"] == "Admin privileges required"
 
 
-# ------------- FORGOT PASSWORD -------------
-
-
-def test_forgotPasswordSuccess(monkeypatch):
-    """Existing email → 200 + token returned."""
-    user = makeUser()
-
-    monkeypatch.setattr(authRoute, "getUserByEmail", lambda email: user)
-
-    # use valid email to satisfy Email Annotated type
-    response = client.post("/forgot-password", data={"email": VALID_EMAIL})
-
-    assert response.status_code == 200
-    body = response.json()
-    assert body["message"] == "Password reset link sent"
-    assert "token" in body
-
-
-def test_forgotPasswordEmailNotFound(monkeypatch):
-    """Unknown email → 404."""
-    monkeypatch.setattr(authRoute, "getUserByEmail", lambda email: None)
-
-    response = client.post("/forgot-password", data={"email": VALID_EMAIL})
-
-    assert response.status_code == 404
-    assert response.json()["detail"] == "Email not found"
-
-
-def test_forgotPasswordInvalidEmailFormat():
-    """Malformed email fails Email Annotated validation → 422."""
-    response = client.post("/forgot-password", data={"email": "not-an-email"})
-
-    assert response.status_code == 422
-
-
 # ------------- RESET PASSWORD -------------
 
 

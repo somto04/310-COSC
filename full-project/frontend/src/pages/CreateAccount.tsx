@@ -108,7 +108,6 @@ export default function Register({updateAuth}: {updateAuth: () => void}) {
     });
 
     const loginData = await loginRes.json();
-    console.log("AUTO-LOGIN AFTER REGISTER:", loginData);
 
     if (loginRes.ok && loginData.access_token) {
       setAuth({

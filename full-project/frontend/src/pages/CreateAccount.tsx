@@ -4,8 +4,11 @@ import { setAuth } from "../utils/auth";
 const API = import.meta.env.VITE_API_URL;
 
 
+type LoginProps = {
+  updateAuth: () => void;
+};
 
-export default function Register({updateAuth}: {updateAuth: () => void}) {
+export default function Register({updateAuth}: LoginProps) {
   const [username, setUsername] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -110,12 +113,12 @@ export default function Register({updateAuth}: {updateAuth: () => void}) {
     const loginData = await loginRes.json();
 
     if (loginRes.ok && loginData.access_token) {
-      setAuth({
-        token: loginData.access_token,
-        userId: loginData.userId,
-        isAdmin: loginData.isAdmin,
-        username: loginData.username,
-      });
+      setAuth(
+        loginData.access_token,
+        loginData.userId,
+        loginData.isAdmin,
+        loginData.username
+      );
       updateAuth();
       setMessage("Account created & logged in!");
       navigate("/"); // or "/homepage", both route to Homepage

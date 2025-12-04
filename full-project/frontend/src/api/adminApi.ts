@@ -51,4 +51,21 @@ export async function authDelete(path: string) {
 
     return res.json();
 }
-// add authPatch, etc if needed
+
+export async function authPut(path: string, body?: unknown) {
+    const options: RequestInit = {
+        method: "PUT",
+        headers: getAuthHeaders(),
+    };
+
+    if (body !== undefined) {
+        options.body = JSON.stringify(body);
+    }
+
+    const res = await fetch(`${API_BASE}${path}`, options);
+
+    if (!res.ok) throw new Error(`PUT failed: ${res.status}`);
+
+    return res.json();
+}
+

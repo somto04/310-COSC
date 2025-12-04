@@ -174,39 +174,70 @@ export default function MovieDetails() {
     fetchReviews(reviewsPage);
   }, [reviewsPage]);
 
-  // Post a new review
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newTitle || !newBody) return;
+  e.preventDefault();
+  setError("");
 
-    setPosting(true);
-    try {
-      const token = getToken();
-      const res = await fetch(`${API}/reviews/${movieId}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          reviewTitle: newTitle,
-          reviewBody: newBody,
-          rating: 5, // default until star selection is added
-        }),
-      });
+  // client-side validation
+  if (newTitle.trim().length < 3) {
+    setError("Title must be at least 3 characters.");
+    return;
+  }
 
-      if (!res.ok) throw new Error("Failed to post review");
-      const created: Review = await res.json();
-      setReviews((prev) => [created, ...prev]);
-      setNewTitle("");
-      setNewBody("");
-    } catch (err) {
-      console.error(err);
-      setError("Failed to post review");
-    } finally {
-      setPosting(false);
+  if (newBody.trim().length < 10) {
+    setError("Review body must be at least 10 characters.");
+    return;
+  }
+
+  if (rating < 1 || rating > 10) {
+    setError("Rating must be between 1 and 10.");
+    return;
+  }
+
+  const token = localStorage.getItem("token");
+  if (!token) {
+    setError("You must be logged in to post a review.");
+    return;
+  }
+
+  setPosting(true);
+  try {
+    const res = await fetch(`${API}/reviews/${movieId}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        reviewTitle: newTitle.trim(),
+        reviewBody: newBody.trim(),
+        rating,
+      }),
+    });
+
+    const text = await res.text();
+    console.log("Review POST response:", res.status, text);
+
+    if (!res.ok) {
+      setError(`Failed to post review (status ${res.status}).`);
+      return;
     }
-  };
+
+    const newReview = JSON.parse(text);
+    setReviews(prev => [newReview, ...prev]);
+
+    setNewTitle("");
+    setNewBody("");
+    setRating(5);
+
+  } catch (err: any) {
+    console.error("Error posting review:", err);
+    setError("Network/server error posting review.");
+  } finally {
+    setPosting(false);
+  }
+};
+
 
   // Flag a review as inappropriate
   const handleFlagReview = async (reviewId: number) => {
@@ -286,36 +317,74 @@ export default function MovieDetails() {
       </div>
 
       <section style={{ marginTop: "2rem" }}>
-        <h2>Add a Review</h2>
-        {error && <p style={{ color: "red" }}>{error}</p>}
-        <form
-          onSubmit={handleSubmit}
-          style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}
-        >
-          <input
-            type="text"
-            placeholder="Review Title"
-            value={newTitle}
-            onChange={(e) => setNewTitle(e.target.value)}
-            required
-            style={{ padding: "0.5rem" }}
-          />
-          <textarea
-            placeholder="Write your review..."
-            value={newBody}
-            onChange={(e) => setNewBody(e.target.value)}
-            required
-            rows={4}
-            style={{ padding: "0.5rem" }}
-          />
-          <button
-            type="submit"
-            disabled={posting}
-            style={{ padding: "0.5rem", fontWeight: "bold", cursor: "pointer" }}
-          >
-            {posting ? "Posting..." : "Submit Review"}
-          </button>
-        </form>
+        {/* --- Add Review Form --- */}
+<form onSubmit={handleSubmit} style={{ marginBottom: "1.5rem" }}>
+  <h3>Add a Review</h3>
+
+  {error && (
+    <p style={{ color: "red", marginBottom: "0.5rem" }}>
+      {error}
+    </p>
+  )}
+
+  <input
+    type="text"
+    placeholder="Review title (min 3 chars)"
+    value={newTitle}
+    onChange={(e) => setNewTitle(e.target.value)}
+    style={{
+      width: "100%",
+      padding: "0.5rem",
+      marginBottom: "0.5rem",
+      border: "1px solid #ccc",
+    }}
+  />
+
+  <textarea
+    placeholder="Write your review (min 10 chars)"
+    value={newBody}
+    onChange={(e) => setNewBody(e.target.value)}
+    style={{
+      width: "100%",
+      padding: "0.5rem",
+      height: "120px",
+      marginBottom: "0.5rem",
+      border: "1px solid #ccc",
+    }}
+  />
+
+  <label style={{ display: "block", marginBottom: "0.5rem" }}>
+    Rating (1–10):
+    <input
+      type="number"
+      min={1}
+      max={10}
+      value={rating}
+      onChange={(e) => setRating(Number(e.target.value))}
+      style={{
+        marginLeft: "0.5rem",
+        width: "60px",
+        padding: "0.3rem",
+        border: "1px solid #ccc",
+      }}
+    />
+  </label>
+
+  <button
+    type="submit"
+    disabled={posting}
+    style={{
+      padding: "0.5rem 1rem",
+      background: "black",
+      color: "white",
+      border: "none",
+      cursor: "pointer",
+    }}
+  >
+    {posting ? "Posting..." : "Add Review"}
+  </button>
+</form>
+
       </section>
 
       <section style={{ marginTop: "2rem" }}>

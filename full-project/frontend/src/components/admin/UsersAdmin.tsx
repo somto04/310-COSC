@@ -163,20 +163,25 @@ export default function UsersAdmin() {
     </button>
 
     <button
-      disabled={page <= 1}
-      onClick={() => loadPage(page - 1)}
-      style={{ padding: "0.3rem 0.8rem" }}
+        disabled={page <= 1}
+        aria-label={page <= 1 ? "Already on the first page" : "Go to previous page"}
+        onClick={() => loadPage(page - 1)}
+        style={{ padding: "0.3rem 0.8rem" }}
     >
-      Prev
+        Prev
     </button>
 
     <button
-      disabled={!hasNextPage}
-      onClick={() => loadPage(page + 1)}
-      style={{ padding: "0.3rem 0.8rem" }}
+        disabled={!hasNextPage}
+        aria-label={
+            !hasNextPage ? "No more pages after this" : "Go to next page"
+        }
+        onClick={() => loadPage(page + 1)}
+        style={{ padding: "0.3rem 0.8rem" }}
     >
-      Next
+        Next
     </button>
+
   </div>
 );
 

@@ -130,18 +130,23 @@ export default function ReviewsAdmin() {
 
         // users
         if (missingUserIds.length > 0) {
-          const userResults = await Promise.all(
+          const userResults = await Promise.allSettled(
             missingUserIds.map((id) =>
               authGet(`/users/userProfile?userId=${id}`)
             )
           );
           setUsernames((prev) => {
             const next = { ...prev };
-            userResults.forEach((res, idx) => {
+            userResults.forEach((result, idx) => {
               const id = missingUserIds[idx];
-              const username =
-                res.user?.username || res.username || `User #${id}`;
-              next[id] = username;
+              if (result.status === "fulfilled") {
+                const res = result.value;
+                const username =
+                  res.user?.username || res.username || `User #${id}`;
+                next[id] = username;
+              } else {
+                next[id] = `User #${id}`;
+              }
             });
             return next;
           });

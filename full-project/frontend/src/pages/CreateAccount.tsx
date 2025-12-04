@@ -4,11 +4,11 @@ import { setAuth } from "../utils/auth";
 const API = import.meta.env.VITE_API_URL;
 
 
-type LoginProps = {
+type CreateAccountProps = {
   updateAuth: () => void;
 };
 
-export default function Register({updateAuth}: LoginProps) {
+export default function Register({updateAuth}: CreateAccountProps) {
   const [username, setUsername] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");

@@ -152,7 +152,7 @@ export default function ReviewsAdmin() {
     }
 
     fetchExtras();
-  }, [data, movieTitles, usernames]);
+  }, [data]);
 
   const renderPagination = () =>
     data && (

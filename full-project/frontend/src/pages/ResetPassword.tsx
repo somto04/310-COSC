@@ -1,22 +1,66 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+const API = import.meta.env.VITE_API_URL;
+
 export default function ResetPassword() {
   const [username, setUsername] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [message, setMessage] = useState("");
-  
+  const [error, setError] = useState("");
+
   const navigate = useNavigate();
 
-  const handleReset = (e: React.FormEvent) => {
+  const handleReset = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
+    setMessage("");
 
-    // placeholder for future fetch call
-    // will do API call here later
-    // then redirect:
-    setMessage("Password reset successful!");
-    setTimeout(() => navigate("/login"), 1200);
+    if (!username || !newPassword || !confirmPassword) {
+      setError("All fields are required");
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+
+    try {
+      // 1️⃣ Generate reset token
+      const tokenRes = await fetch(`${API}/generate-reset-token`, {
+        method: "POST",
+        body: new URLSearchParams({ username }),
+      });
+
+      if (!tokenRes.ok) {
+        const data = await tokenRes.json();
+        setError(data.detail || "Failed to generate reset token");
+        return;
+      }
+
+      const { token } = await tokenRes.json();
+
+      // 2️⃣ Reset password using token
+      const resetRes = await fetch(`${API}/reset-password`, {
+        method: "POST",
+        body: new URLSearchParams({ token, new_password: newPassword }),
+      });
+
+      const resetData = await resetRes.json();
+
+      if (!resetRes.ok) {
+        setError(resetData.detail || "Failed to reset password");
+        return;
+      }
+
+      setMessage("Password reset successful!");
+      setTimeout(() => navigate("/login"), 1200);
+
+    } catch (err) {
+      setError("Network error. Try again.");
+    }
   };
 
   return (
@@ -32,10 +76,9 @@ export default function ResetPassword() {
           marginTop: "1rem",
         }}
       >
-
         {/* Username Field*/}
         <input
-          type="username"
+          type="text"
           placeholder="Enter your username"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
@@ -68,9 +111,8 @@ export default function ResetPassword() {
         </button>
       </form>
 
-      {message && (
-        <p style={{ color: "green", marginTop: "1rem" }}>{message}</p>
-      )}
+      {error && <p style={{ color: "red", marginTop: "1rem" }}>{error}</p>}
+      {message && <p style={{ color: "green", marginTop: "1rem" }}>{message}</p>}
     </div>
   );
 }

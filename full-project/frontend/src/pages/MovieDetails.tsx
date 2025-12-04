@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import { getToken, getUserId } from "../utils/auth";
 
 const API = import.meta.env.VITE_API_URL;
 
@@ -101,6 +102,70 @@ export default function MovieDetails() {
       );
 
       alert("Error updating like.");
+    }
+  };
+
+  // ---  WATCHLIST SYSTEM ---
+  const [isInWatchlist, setInWatchlist] = useState(false);
+
+  const checkWatchlistStatus = async () => {
+    const token = getToken();
+
+    if (!movieId || !token) return;
+
+    try {
+      const res = await fetch(`${API}/users/watchlist`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!res.ok) return;
+
+      const data = await res.json();
+      const watchlistIds = data.watchlist.map((movie: any) => movie.id);
+
+      setInWatchlist(watchlistIds.includes(Number(movieId)));
+    } catch (err) {
+      console.error("Failed to load watchlist", err);
+    }
+  };
+
+  const addToWatchlist = async () => {
+    const token = getToken;
+    if (!token || !movie) return;
+
+    try {
+      const res = await fetch(`${API}/users/watchlist/${movie.id}`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      });
+
+      if (!res.ok) {
+        console.error("Backend failed to add movie:", res.status);
+        return;
+      }
+
+      setInWatchlist(true);
+    } catch (err) {
+      console.error("Failed to add to watchlist", err);
+    }
+  };
+
+
+  const removeFromWatchlist = async () => {
+    const token = getToken();
+    if (!token || !movie) return;
+
+    try {
+      await fetch(`${API}/users/watchlist/${movie.id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setInWatchlist(false);
+    } catch (err) {
+      console.error("Failed to remove from watchlist", err);
     }
   };
 
@@ -263,7 +328,7 @@ export default function MovieDetails() {
   // Flag a review as inappropriate
   const handleFlagReview = async (reviewId: number) => {
     try {
-      const token = localStorage.getItem("token");
+      const token = getToken();
       const res = await fetch(`${API}/reviews/${reviewId}/flag`, {
         method: "PATCH",
         headers: {

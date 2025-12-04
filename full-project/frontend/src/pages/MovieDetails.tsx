@@ -40,6 +40,7 @@ type Review = {
 
 export default function MovieDetails() {
   const { movieId } = useParams();
+  const [liked, isLiked] = 
   const [movie, setMovie] = useState<Movie | null>(null);
   const [tmdb, setTmdb] = useState<TMDbMovie | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -329,6 +330,21 @@ export default function MovieDetails() {
                   borderRadius: "4px",
                 }}
               >
+                {/* Like button */}
+                  <button
+                    onClick={() => handleToggleLike(r.id)}
+                    style={{
+                      padding: "0.25rem 0.5rem",
+                      cursor: "pointer",
+                      backgroundColor: isLiked ? "#ffcccc" : "#eee",
+                      border: "1px solid #aaa",
+                      borderRadius: "4px",
+                      marginRight: "0.5rem",
+                    }}
+                  >
+                    {isLiked ? "❤️ Liked" : "🤍 Like"}
+                  </button>
+
                 <strong>{r.reviewTitle}</strong> <em>({r.datePosted})</em>
                 <p>{r.reviewBody}</p>
                 <button

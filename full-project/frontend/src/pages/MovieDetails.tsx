@@ -1,6 +1,6 @@
 //this page will show movie details once the user clicks on a movie from the home page. 
 //it will fetch movie details from the backend using the movie ID passed in the URL parameters.
-//it will also display the reviews correspoinding to that movie.
+//it will also display the reviews corresponding to that movie.
 
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
@@ -40,7 +40,6 @@ type Review = {
 
 export default function MovieDetails() {
   const { movieId } = useParams();
-  const [liked, isLiked] = 
   const [movie, setMovie] = useState<Movie | null>(null);
   const [tmdb, setTmdb] = useState<TMDbMovie | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -129,9 +128,6 @@ export default function MovieDetails() {
           const tmdbData: TMDbMovie = await tmdbRes.json();
           setTmdb(tmdbData);
         }
-
-        // Fetch first page of reviews
-        fetchReviews(1);
       } catch (err) {
         console.error(err);
         setError("Error loading movie details");
@@ -141,6 +137,10 @@ export default function MovieDetails() {
     };
 
     fetchData();
+    
+    // Fetch reviews and liked reviews separately
+    fetchReviews(1);
+    fetchLikedReviews();
   }, [movieId]);
 
   // Fetch reviews by page
@@ -177,7 +177,7 @@ export default function MovieDetails() {
 
     setPosting(true);
     try {
-      const token = getToken(); // Adjust auth method if needed
+      const token = getToken();
       const res = await fetch(`${API}/reviews/${movieId}`, {
         method: "POST",
         headers: {
@@ -320,17 +320,20 @@ export default function MovieDetails() {
           <p>No reviews yet. Be the first to review!</p>
         ) : (
           <ul style={{ listStyle: "none", padding: 0 }}>
-            {reviews.map((r) => (
-              <li
-                key={r.id}
-                style={{
-                  border: "1px solid #ddd",
-                  padding: "0.5rem",
-                  marginBottom: "0.5rem",
-                  borderRadius: "4px",
-                }}
-              >
-                {/* Like button */}
+            {reviews.map((r) => {
+              const isLiked = likedReviewIds.includes(r.id);
+              
+              return (
+                <li
+                  key={r.id}
+                  style={{
+                    border: "1px solid #ddd",
+                    padding: "0.5rem",
+                    marginBottom: "0.5rem",
+                    borderRadius: "4px",
+                  }}
+                >
+                  {/* Like button */}
                   <button
                     onClick={() => handleToggleLike(r.id)}
                     style={{
@@ -345,22 +348,23 @@ export default function MovieDetails() {
                     {isLiked ? "❤️ Liked" : "🤍 Like"}
                   </button>
 
-                <strong>{r.reviewTitle}</strong> <em>({r.datePosted})</em>
-                <p>{r.reviewBody}</p>
-                <button
-                  onClick={() => handleFlagReview(r.id)}
-                  disabled={r.flagged}
-                  style={{
-                    padding: "0.25rem 0.5rem",
-                    fontSize: "0.8rem",
-                    cursor: r.flagged ? "not-allowed" : "pointer",
-                    marginTop: "0.25rem",
-                  }}
-                >
-                  {r.flagged ? "Flagged" : "Flag Review"}
-                </button>
-              </li>
-            ))}
+                  <strong>{r.reviewTitle}</strong> <em>({r.datePosted})</em>
+                  <p>{r.reviewBody}</p>
+                  <button
+                    onClick={() => handleFlagReview(r.id)}
+                    disabled={r.flagged}
+                    style={{
+                      padding: "0.25rem 0.5rem",
+                      fontSize: "0.8rem",
+                      cursor: r.flagged ? "not-allowed" : "pointer",
+                      marginTop: "0.25rem",
+                    }}
+                  >
+                    {r.flagged ? "Flagged" : "Flag Review"}
+                  </button>
+                </li>
+              );
+            })}
           </ul>
         )}
         {hasMoreReviews && (

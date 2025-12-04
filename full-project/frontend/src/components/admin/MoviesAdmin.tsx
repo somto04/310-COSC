@@ -221,7 +221,7 @@ export default function MoviesAdmin() {
         throw new Error(body?.detail || `Delete failed (${res.status})`);
       }
 
-      setMovies((prev) => prev.filter((m) => m.id !== id));
+      await loadMovies();
       setMsg(`Deleted movie #${id}.`);
     } catch (e: any) {
       setError(e.message || "Failed to delete movie.");

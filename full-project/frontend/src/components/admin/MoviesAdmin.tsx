@@ -108,7 +108,7 @@ export default function MoviesAdmin() {
 
   useEffect(() => {
     loadMovies();
-  }, []);
+  }, [token]);
 
   function startEdit(movie: Movie) {
     setMsg(null);

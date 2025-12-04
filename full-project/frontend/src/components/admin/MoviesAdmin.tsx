@@ -72,16 +72,19 @@ export default function MoviesAdmin() {
   }, []);
 
   function authHeaders(extra?: HeadersInit): Headers {
-        const headers = new Headers(extra);
+    const headers = new Headers(extra);
 
-        headers.set("Content-Type", "application/json");
-
-        if (token) {
-            headers.set("Authorization", `Bearer ${token}`);
-        }
-
-        return headers;
+    // Only set Content-Type if it wasn't provided
+    if (!headers.has("Content-Type")) {
+      headers.set("Content-Type", "application/json");
     }
+
+    if (token) {
+      headers.set("Authorization", `Bearer ${token}`);
+    }
+
+    return headers;
+  }
 
   async function loadMovies() {
     try {

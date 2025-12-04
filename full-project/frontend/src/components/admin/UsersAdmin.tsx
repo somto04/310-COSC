@@ -159,6 +159,7 @@ export default function UsersAdmin() {
         padding: "0.3rem 0.8rem",
         cursor: "pointer",
       }}
+      aria-label="Navigate to page"
     >
       Go
     </button>

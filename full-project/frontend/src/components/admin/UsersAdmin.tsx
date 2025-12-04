@@ -139,6 +139,7 @@ export default function UsersAdmin() {
       placeholder="Go to page"
       value={pageInput}
       onChange={(e) => setPageInput(e.target.value)}
+      aria-label="Page number"
       style={{
         width: "80px",
         padding: "0.3rem",

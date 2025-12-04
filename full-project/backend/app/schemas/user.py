@@ -256,3 +256,4 @@ class SafeUser(BaseModel):
     firstName: str
     isBanned: bool
     watchlist: List[int]
+    role: Role

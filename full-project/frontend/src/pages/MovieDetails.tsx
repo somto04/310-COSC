@@ -52,6 +52,63 @@ export default function MovieDetails() {
   const [posting, setPosting] = useState(false);
   const [error, setError] = useState("");
 
+  // --- LIKE SYSTEM ---
+  const [likedReviewIds, setLikedReviewIds] = useState<number[]>([]);
+
+  const fetchLikedReviews = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      const res = await fetch(`${API}/likeReview/`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!res.ok) return;
+
+      const data = await res.json();
+      const ids = data.map((item: { id: number }) => item.id);
+      setLikedReviewIds(ids);
+    } catch (err) {
+      console.error("Failed to load liked reviews", err);
+    }
+  };
+
+  const handleToggleLike = async (reviewId: number) => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("Please log in to like reviews.");
+      return;
+    }
+
+    const isLiked = likedReviewIds.includes(reviewId);
+
+    // Optimistic UI
+    setLikedReviewIds((prev) =>
+      isLiked ? prev.filter((id) => id !== reviewId) : [...prev, reviewId]
+    );
+
+    try {
+      const method = isLiked ? "DELETE" : "POST";
+
+      const res = await fetch(`${API}/likeReview/${reviewId}`, {
+        method,
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!res.ok) throw new Error("Failed to toggle like");
+    } catch (err) {
+      console.error(err);
+
+      // Revert UI on failure
+      setLikedReviewIds((prev) =>
+        isLiked ? [...prev, reviewId] : prev.filter((id) => id !== reviewId)
+      );
+
+      alert("Error updating like.");
+    }
+  };
+  
   // Fetch movie details from backend
   useEffect(() => {
     if (!movieId) return;

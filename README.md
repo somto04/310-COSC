@@ -77,13 +77,9 @@ Then start again:
 |                       | Docker Compose         | v2.39.4-desktop.1      |
 | **External API**      | TMDB API               | V3                     |
 
-
-
-
-
-## pip list
+## Backend Requirements
 | Package           | Version   |
-|-------------------|-----------|
+| ----------------- | --------- |
 | annotated-types   | 0.7.0     |
 | anyio             | 4.11.0    |
 | bandit            | 1.8.6     |
@@ -115,5 +111,24 @@ Then start again:
 | typing_extensions | 4.15.0    |
 | typing-inspection | 0.4.2     |
 | uvicorn           | 0.38.0    |
-| python-jose[cryptography]  
 
+## Frontend Requirements
+
+| Package                     | Version |
+| --------------------------- | ------- |
+| @eslint/js                  | 9.39.1  |
+| @types/node                 | 24.10.1 |
+| @types/react-dom            | 19.2.3  |
+| @types/react-router-dom     | 5.3.3   |
+| @types/react                | 19.2.7  |
+| @vitejs/plugin-react        | 5.1.1   |
+| eslint-plugin-react-hooks   | 7.0.1   |
+| eslint-plugin-react-refresh | 0.4.24  |
+| eslint                      | 9.39.1  |
+| globals                     | 16.5.0  |
+| react-dom                   | 19.2.0  |
+| react-router-dom            | 7.10.0  |
+| react                       | 19.2.0  |
+| typescript-eslint           | 8.48.0  |
+| typescript                  | 5.9.3   |
+| vite                        | 7.2.4   |

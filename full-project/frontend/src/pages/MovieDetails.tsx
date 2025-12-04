@@ -50,6 +50,11 @@ export default function MovieDetails() {
   const [newTitle, setNewTitle] = useState("");
   const [newBody, setNewBody] = useState("");
   const [posting, setPosting] = useState(false);
+  const [rating, setRating] = useState(5);
+
+
+  // UI + Errors
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   // --- LIKE SYSTEM ---

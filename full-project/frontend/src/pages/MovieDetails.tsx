@@ -51,6 +51,8 @@ export default function MovieDetails() {
   const [newTitle, setNewTitle] = useState("");
   const [newBody, setNewBody] = useState("");
   const [posting, setPosting] = useState(false);
+  const [rating, setRating] = useState(5);
+
 
   // UI + Errors
   const [loading, setLoading] = useState(true);
@@ -281,40 +283,69 @@ export default function MovieDetails() {
 
   // --- POST REVIEW ---
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newTitle || !newBody) return;
+  e.preventDefault();
+  setError("");
 
-    setPosting(true);
-    try {
-      const token = localStorage.getItem("token");
+  // client-side validation
+  if (newTitle.trim().length < 3) {
+    setError("Title must be at least 3 characters.");
+    return;
+  }
 
-      const res = await fetch(`${API}/reviews/${movieId}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          reviewTitle: newTitle,
-          reviewBody: newBody,
-          rating: 5,
-        }),
-      });
+  if (newBody.trim().length < 10) {
+    setError("Review body must be at least 10 characters.");
+    return;
+  }
 
-      if (!res.ok) throw new Error();
+  if (rating < 1 || rating > 10) {
+    setError("Rating must be between 1 and 10.");
+    return;
+  }
 
-      const newReview = await res.json();
-      setReviews(prev => [newReview, ...prev]);
+  const token = localStorage.getItem("token");
+  if (!token) {
+    setError("You must be logged in to post a review.");
+    return;
+  }
 
-      setNewTitle("");
-      setNewBody("");
+  setPosting(true);
+  try {
+    const res = await fetch(`${API}/reviews/${movieId}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        reviewTitle: newTitle.trim(),
+        reviewBody: newBody.trim(),
+        rating,
+      }),
+    });
 
-    } catch {
-      setError("Failed to post review");
-    } finally {
-      setPosting(false);
+    const text = await res.text();
+    console.log("Review POST response:", res.status, text);
+
+    if (!res.ok) {
+      setError(`Failed to post review (status ${res.status}).`);
+      return;
     }
-  };
+
+    const newReview = JSON.parse(text);
+    setReviews(prev => [newReview, ...prev]);
+
+    setNewTitle("");
+    setNewBody("");
+    setRating(5);
+
+  } catch (err: any) {
+    console.error("Error posting review:", err);
+    setError("Network/server error posting review.");
+  } finally {
+    setPosting(false);
+  }
+};
+
 
 
   // --- FLAG REVIEW ---
@@ -421,6 +452,75 @@ export default function MovieDetails() {
 
       {/* ---- Reviews UI ---- */}
       <section style={{ marginTop: "2rem" }}>
+       {/* --- Add Review Form --- */}
+<form onSubmit={handleSubmit} style={{ marginBottom: "1.5rem" }}>
+  <h3>Add a Review</h3>
+
+  {error && (
+    <p style={{ color: "red", marginBottom: "0.5rem" }}>
+      {error}
+    </p>
+  )}
+
+  <input
+    type="text"
+    placeholder="Review title (min 3 chars)"
+    value={newTitle}
+    onChange={(e) => setNewTitle(e.target.value)}
+    style={{
+      width: "100%",
+      padding: "0.5rem",
+      marginBottom: "0.5rem",
+      border: "1px solid #ccc",
+    }}
+  />
+
+  <textarea
+    placeholder="Write your review (min 10 chars)"
+    value={newBody}
+    onChange={(e) => setNewBody(e.target.value)}
+    style={{
+      width: "100%",
+      padding: "0.5rem",
+      height: "120px",
+      marginBottom: "0.5rem",
+      border: "1px solid #ccc",
+    }}
+  />
+
+  <label style={{ display: "block", marginBottom: "0.5rem" }}>
+    Rating (1–10):
+    <input
+      type="number"
+      min={1}
+      max={10}
+      value={rating}
+      onChange={(e) => setRating(Number(e.target.value))}
+      style={{
+        marginLeft: "0.5rem",
+        width: "60px",
+        padding: "0.3rem",
+        border: "1px solid #ccc",
+      }}
+    />
+  </label>
+
+  <button
+    type="submit"
+    disabled={posting}
+    style={{
+      padding: "0.5rem 1rem",
+      background: "black",
+      color: "white",
+      border: "none",
+      cursor: "pointer",
+    }}
+  >
+    {posting ? "Posting..." : "Add Review"}
+  </button>
+</form>
+
+
         <h2>Reviews</h2>
 
         {reviews.map((r) => {

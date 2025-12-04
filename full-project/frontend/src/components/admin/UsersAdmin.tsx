@@ -40,6 +40,7 @@ export default function UsersAdmin() {
       setLoading(true);
       setError(null);
       setMsg(null);
+      setConfirmAction(null);
 
       const query = `?page=${p}&limit=${pageSize}`;
       const result = await authGet(`/users${query}`);

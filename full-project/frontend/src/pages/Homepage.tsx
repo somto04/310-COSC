@@ -122,7 +122,7 @@ export default function Homepage() {
                 if (filterDirector) params.append("director", filterDirector);
                 if (filterStar) params.append("star", filterStar);
 
-                const url = `${API}/movies/filter?${params.toString()}`;
+                 url = `${API}/movies/filter?${params.toString()}`;
                 const res = await fetch(url);
 
                 if (res.status === 404) {

@@ -6,8 +6,12 @@ import { authGet, authPut } from "../../api/adminApi";
 type UserRow = {
   id: number;
   username: string;
-  isAdmin?: boolean;
+  firstName?: string;   // if you want it
+  isBanned?: boolean;
+  watchList?: number[];
+  role: "admin" | "user";
 };
+
 
 export default function UsersAdmin() {
     const [page, setPage] = useState(1);
@@ -67,7 +71,7 @@ export default function UsersAdmin() {
 
       setUsers((prev) =>
         prev.map((u) =>
-          u.id === user.id ? { ...u, isAdmin: true } : u
+          u.id === user.id ? { ...u, role: "admin" } : u
         )
       );
     } catch (err: any) {
@@ -83,7 +87,7 @@ export default function UsersAdmin() {
 
       setUsers((prev) =>
         prev.map((u) =>
-          u.id === user.id ? { ...u, isAdmin: false } : u
+          u.id === user.id ? { ...u, role: "user" } : u
         )
       );
     } catch (err: any) {
@@ -202,7 +206,7 @@ export default function UsersAdmin() {
       {users.length > 0 ? (
         <ul style={{ listStyle: "none", padding: 0 }}>
           {users.map((u) => {
-            const isAdmin = !!u.isAdmin;
+            const isAdmin = u.role === "admin";
 
             const isConfirmGrant =
               confirmAction &&
@@ -257,31 +261,23 @@ export default function UsersAdmin() {
                     justifyContent: "flex-end",
                   }}
                 >
-                  {!isAdmin && (
-                    <button
-                      onClick={() => handleGrantClick(u)}
-                      style={{
-                        padding: "0.3rem 0.8rem",
-                        cursor: "pointer",
-                      }}
-                    >
-                      {isConfirmGrant ? "Sure? Click again" : "Grant admin"}
-                    </button>
-                  )}
 
-                  {isAdmin && (
+                    {!isAdmin && (
                     <button
-                      onClick={() => handleRevokeClick(u)}
-                      style={{
-                        padding: "0.3rem 0.8rem",
-                        cursor: "pointer",
-                      }}
+                        onClick={() => handleGrantClick(u)}
                     >
-                      {isConfirmRevoke
-                        ? "Sure? Click again"
-                        : "Revoke admin"}
+                        {isConfirmGrant ? "Sure? Click again" : "Grant admin"}
                     </button>
-                  )}
+                    )}
+
+                    {isAdmin && (
+                    <button
+                        onClick={() => handleRevokeClick(u)}
+                    >
+                        {isConfirmRevoke ? "Sure? Click again" : "Revoke admin"}
+                    </button>
+                    )}
+
                 </div>
               </li>
             );

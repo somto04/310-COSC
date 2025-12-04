@@ -44,7 +44,7 @@ function App() {
         />
 
         <Route path="/profile" element={requireAuth(<Profile />)} />
-        <Route path="/create-account" element={<CreateAccount />} />
+        <Route path="/create-account" element={<CreateAccount updateAuth={updateAuth}/>} />
         <Route path="/liked-reviews" element={requireAuth(<LikedReviews />)} />
         <Route path="/watchlist" element={requireAuth(<Watchlist />)} />
         <Route path="/favorite-movies" element={requireAuth(<FavoriteMovies />)} />

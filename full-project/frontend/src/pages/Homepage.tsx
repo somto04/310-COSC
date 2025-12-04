@@ -134,7 +134,6 @@ export default function Homepage() {
                     throw new Error(`HTTP ${res.status}`);
                 }
                 
-                url = `${API}/movies/filter?${params.toString()}`;
             }
             // search and filters so uses filter endpoint with query
             else if (searchTerm && (filterGenre || filterYear || filterDirector || filterStar)) {
@@ -166,6 +165,8 @@ export default function Homepage() {
             const data = await res.json();
             const moviesWithPosters = await fetchMoviesWithPosters(data);
             setMovies(moviesWithPosters);
+            return;
+            
         } catch (err) {
             console.error("Error fetching movies:", err);
         } finally {

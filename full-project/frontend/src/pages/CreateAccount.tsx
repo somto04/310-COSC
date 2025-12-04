@@ -111,8 +111,12 @@ export default function Register({updateAuth}: {updateAuth: () => void}) {
     console.log("AUTO-LOGIN AFTER REGISTER:", loginData);
 
     if (loginRes.ok && loginData.access_token) {
-      localStorage.setItem("token", loginData.access_token);
-      localStorage.setItem("userId", loginData.userId);
+      setAuth({
+        token: loginData.access_token,
+        userId: loginData.userId,
+        isAdmin: loginData.isAdmin,
+        username: loginData.username,
+      });
       updateAuth();
       setMessage("Account created & logged in!");
       navigate("/"); // or "/homepage", both route to Homepage

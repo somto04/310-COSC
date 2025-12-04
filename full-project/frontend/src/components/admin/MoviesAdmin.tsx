@@ -153,7 +153,7 @@ export default function MoviesAdmin() {
 
     const yr = Number(editForm.yearReleased);
 
-    if (!editForm.yearReleased.trim() || Number.isNaN(yr)) {
+    if (!editForm.yearReleased.trim() || Number.isNaN(yr) || yr < 1888) {
         setError("Year Released is required and must be a number ≥ 1888.");
         setLoading(false);
         return;

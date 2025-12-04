@@ -109,7 +109,7 @@ export default function MovieDetails() {
   const [isInWatchlist, setInWatchlist] = useState(false);
 
   const checkWatchlistStatus = async () => {
-    const token = localStorage.getItem("token");
+    const token = getToken();
 
     if (!movieId || !token) return;
 
@@ -130,7 +130,7 @@ export default function MovieDetails() {
   };
 
   const addToWatchlist = async () => {
-    const token = localStorage.getItem("token");
+    const token = getToken;
     if (!token || !movie) return;
 
     try {
@@ -155,7 +155,7 @@ export default function MovieDetails() {
 
 
   const removeFromWatchlist = async () => {
-    const token = localStorage.getItem("token");
+    const token = getToken();
     if (!token || !movie) return;
 
     try {

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { getToken } from "../utils/auth";
 const API = import.meta.env.VITE_API_URL;
 
 export default function WatchlistPage() {
@@ -18,7 +19,7 @@ export default function WatchlistPage() {
 
   // Fetch initial watchlist
   useEffect(() => {
-      const token = localStorage.getItem("token");
+      const token = getToken();
       setLoading(true);
       fetch(`${API}/users/watchlist`, {
         headers: {

@@ -138,7 +138,7 @@ export default function MovieDetails() {
   };
 
   const addToWatchlist = async () => {
-    const token = getToken;
+    const token = getToken();
     if (!token || !movie) return;
 
     try {

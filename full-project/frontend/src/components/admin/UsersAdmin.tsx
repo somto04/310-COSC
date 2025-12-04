@@ -151,10 +151,7 @@ export default function UsersAdmin() {
     />
 
     <button
-      onClick={() => {
-        const num = Number(pageInput);
-        if (num >= 1) loadPage(num);
-      }}
+      onClick={handlePageJump}
       style={{
         padding: "0.3rem 0.8rem",
         cursor: "pointer",

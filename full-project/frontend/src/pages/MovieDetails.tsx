@@ -35,22 +35,35 @@ type Review = {
 };
 
 export default function MovieDetails() {
+
   const { movieId } = useParams();
+
+  // Movie + TMDB
   const [movie, setMovie] = useState<Movie | null>(null);
   const [tmdb, setTmdb] = useState<TMDbMovie | null>(null);
+
+  // Reviews
   const [reviews, setReviews] = useState<Review[]>([]);
-  const [loading, setLoading] = useState(true);
   const [reviewsPage, setReviewsPage] = useState(1);
   const [hasMoreReviews, setHasMoreReviews] = useState(false);
 
+  // Form state
   const [newTitle, setNewTitle] = useState("");
   const [newBody, setNewBody] = useState("");
   const [posting, setPosting] = useState(false);
+
+  // UI + Errors
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // --- LIKE SYSTEM ---
+  // LIKE SYSTEM
   const [likedReviewIds, setLikedReviewIds] = useState<number[]>([]);
 
+  // FAVORITES SYSTEM
+  const [isFavorite, setIsFavorite] = useState(false);
+
+
+  // --- FETCH LIKED REVIEWS ---
   const fetchLikedReviews = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -63,13 +76,12 @@ export default function MovieDetails() {
       if (!res.ok) return;
 
       const data = await res.json();
-      const ids = data.map((item: { id: number }) => item.id);
-      setLikedReviewIds(ids);
-    } catch (err) {
-      console.error("Failed to load liked reviews", err);
-    }
+      setLikedReviewIds(data.map((item: { id: number }) => item.id));
+    } catch {}
   };
 
+
+  // --- TOGGLE LIKE ---
   const handleToggleLike = async (reviewId: number) => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -79,31 +91,27 @@ export default function MovieDetails() {
 
     const isLiked = likedReviewIds.includes(reviewId);
 
-    // Optimistic UI
-    setLikedReviewIds((prev) =>
-      isLiked ? prev.filter((id) => id !== reviewId) : [...prev, reviewId]
+    // optimistic UI
+    setLikedReviewIds(prev =>
+      isLiked ? prev.filter(id => id !== reviewId) : [...prev, reviewId]
     );
 
     try {
       const method = isLiked ? "DELETE" : "POST";
-
       const res = await fetch(`${API}/likeReview/${reviewId}`, {
         method,
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      if (!res.ok) throw new Error("Failed to toggle like");
-    } catch (err) {
-      console.error(err);
-
-      // Revert UI
-      setLikedReviewIds((prev) =>
-        isLiked ? [...prev, reviewId] : prev.filter((id) => id !== reviewId)
+      if (!res.ok) throw new Error();
+    } catch {
+      // revert UI
+      setLikedReviewIds(prev =>
+        isLiked ? [...prev, reviewId] : prev.filter(id => id !== reviewId)
       );
-
-      alert("Error updating like.");
     }
   };
+
 
   // ---  WATCHLIST SYSTEM ---
   const [isInWatchlist, setInWatchlist] = useState(false);
@@ -169,14 +177,10 @@ export default function MovieDetails() {
     }
   };
 
-  // --- FAVORITES SYSTEM ---
-  const [isFavorite, setIsFavorite] = useState(false);
-
+  // --- FAVORITES CHECK ---
   const checkFavoriteStatus = async () => {
     const token = localStorage.getItem("token");
-    const userId = localStorage.getItem("userId");
-
-    if (!movieId || !token || !userId) return;
+    if (!token || !movieId) return;
 
     try {
       const res = await fetch(`${API}/favorites/`, {
@@ -187,13 +191,12 @@ export default function MovieDetails() {
 
       const data = await res.json();
       const favIds = data.map((m: any) => m.id);
-
       setIsFavorite(favIds.includes(Number(movieId)));
-    } catch (err) {
-      console.error("Failed to load favorites", err);
-    }
+    } catch {}
   };
 
+
+  // --- ADD FAVORITE ---
   const addToFavorites = async () => {
     const token = localStorage.getItem("token");
     if (!token || !movie) return;
@@ -201,14 +204,14 @@ export default function MovieDetails() {
     try {
       await fetch(`${API}/favorites/${movie.id}`, {
         method: "POST",
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
       setIsFavorite(true);
-    } catch (err) {
-      console.error("Failed to add to favorites", err);
-    }
+    } catch {}
   };
 
+
+  // --- REMOVE FAVORITE ---
   const removeFromFavorites = async () => {
     const token = localStorage.getItem("token");
     if (!token || !movie) return;
@@ -216,23 +219,22 @@ export default function MovieDetails() {
     try {
       await fetch(`${API}/favorites/${movie.id}`, {
         method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
       setIsFavorite(false);
-    } catch (err) {
-      console.error("Failed to remove from favorites", err);
-    }
+    } catch {}
   };
 
-  // Load everything
+
+  // --- FETCH MOVIE, TMDB, REVIEWS ---
   useEffect(() => {
     if (!movieId) return;
 
-    const fetchData = async () => {
+    const loadData = async () => {
       setLoading(true);
       try {
         const res = await fetch(`${API}/movies/${movieId}`);
-        if (!res.ok) throw new Error("Failed to fetch movie");
+        if (!res.ok) throw new Error();
         const data: Movie = await res.json();
         setMovie(data);
 
@@ -243,39 +245,41 @@ export default function MovieDetails() {
         checkFavoriteStatus();
         checkWatchlistStatus();
         fetchReviews(1);
-      } catch (err) {
-        console.error(err);
-        setError("Error loading movie details");
+
+      } catch {
+        setError("Error loading movie");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchData();
+    loadData();
   }, [movieId]);
 
+
+  // --- FETCH REVIEWS ---
   const fetchReviews = async (page: number) => {
     try {
       const res = await fetch(
         `${API}/reviews/search?query=${movieId}&page=${page}&limit=10`
       );
-      if (!res.ok) throw new Error("Failed to fetch reviews");
+
+      if (!res.ok) throw new Error();
 
       const data: Review[] = await res.json();
-
       if (page === 1) setReviews(data);
-      else setReviews((prev) => [...prev, ...data]);
+      else setReviews(prev => [...prev, ...data]);
 
       setHasMoreReviews(data.length === 10);
-    } catch (err) {
-      console.error(err);
-    }
+    } catch {}
   };
 
   useEffect(() => {
     if (reviewsPage !== 1) fetchReviews(reviewsPage);
   }, [reviewsPage]);
 
+
+  // --- POST REVIEW ---
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTitle || !newBody) return;
@@ -283,6 +287,7 @@ export default function MovieDetails() {
     setPosting(true);
     try {
       const token = localStorage.getItem("token");
+
       const res = await fetch(`${API}/reviews/${movieId}`, {
         method: "POST",
         headers: {
@@ -296,21 +301,23 @@ export default function MovieDetails() {
         }),
       });
 
-      if (!res.ok) throw new Error("Failed to post review");
+      if (!res.ok) throw new Error();
 
       const newReview = await res.json();
-      setReviews((prev) => [newReview, ...prev]);
+      setReviews(prev => [newReview, ...prev]);
 
       setNewTitle("");
       setNewBody("");
-    } catch (err) {
-      console.error(err);
+
+    } catch {
       setError("Failed to post review");
     } finally {
       setPosting(false);
     }
   };
 
+
+  // --- FLAG REVIEW ---
   const handleFlagReview = async (reviewId: number) => {
     try {
       const token = getToken();
@@ -322,37 +329,74 @@ export default function MovieDetails() {
         },
       });
 
-      if (!res.ok) throw new Error("Failed to flag review");
+      if (!res.ok) throw new Error();
 
-      setReviews((prev) =>
-        prev.map((r) =>
-          r.id === reviewId ? { ...r, flagged: true } : r
-        )
+      setReviews(prev =>
+        prev.map(r => (r.id === reviewId ? { ...r, flagged: true } : r))
       );
-    } catch (err) {
-      console.error(err);
+
+    } catch {
       alert("Failed to flag review");
     }
   };
 
+
+  // --- RENDER ---
   if (loading) return <p>Loading movie details...</p>;
-  if (!movie) return <p>Movie not found</p>;
+  if (!movie) return <p>Movie not found.</p>;
+
 
   return (
     <div style={{ maxWidth: "800px", margin: "0 auto", padding: "2rem" }}>
+
       <h1>{movie.title}</h1>
 
+      {/* POSTER + DETAILS */}
+      <div style={{ display: "flex", gap: "1rem", marginBottom: "1rem" }}>
+        {tmdb?.poster ? (
+          <img
+            src={tmdb.poster}
+            alt={movie.title}
+            style={{ width: "200px", objectFit: "cover" }}
+          />
+        ) : (
+          <div
+            style={{
+              width: "200px",
+              height: "300px",
+              backgroundColor: "#ccc",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              color: "#666",
+            }}
+          >
+            No Image
+          </div>
+        )}
+
+        <div>
+          <p><strong>Genres:</strong> {movie.movieGenres?.join(", ") || "N/A"}</p>
+          <p><strong>Directors:</strong> {movie.directors?.join(", ") || "N/A"}</p>
+          <p><strong>Main Stars:</strong> {movie.mainStars?.join(", ") || "N/A"}</p>
+          <p><strong>Year:</strong> {movie.yearReleased || "N/A"}</p>
+          <p><strong>Duration:</strong> {tmdb?.runtime || movie.duration} min</p>
+          <p><strong>Description:</strong> {tmdb?.overview || movie.description}</p>
+        </div>
+      </div>
+
+      {/* FAVORITES BUTTON */}
       <button
         onClick={isFavorite ? removeFromFavorites : addToFavorites}
         style={{
-          marginTop: "1rem",
           padding: "0.6rem 1rem",
+          marginBottom: "1rem",
           fontWeight: "bold",
           border: "1px solid black",
           backgroundColor: isFavorite ? "red" : "black",
           color: "white",
-          cursor: "pointer",
           borderRadius: "4px",
+          cursor: "pointer",
         }}
       >
         {isFavorite ? "Remove from Favorites" : "Add to Favorites ⭐"}
@@ -379,28 +423,60 @@ export default function MovieDetails() {
       <section style={{ marginTop: "2rem" }}>
         <h2>Reviews</h2>
 
-        {reviews.map((r) => (
-          <div key={r.id} style={{ border: "1px solid #ccc", padding: "1rem", marginBottom: "1rem" }}>
-            <strong>{r.reviewTitle}</strong>
-            <p>{r.reviewBody}</p>
+        {reviews.map((r) => {
+          const liked = likedReviewIds.includes(r.id);
 
-            {/* Like button */}
-            <button onClick={() => handleToggleLike(r.id)}>
-              {likedReviewIds.includes(r.id) ? "❤️ Unlike" : "🤍 Like"}
-            </button>
-
-            {/* Flag button */}
-            <button
-              onClick={() => handleFlagReview(r.id)}
-              disabled={r.flagged}
+          return (
+            <div
+              key={r.id}
+              style={{
+                border: "1px solid #ddd",
+                padding: "1rem",
+                marginBottom: "1rem",
+                borderRadius: "4px",
+              }}
             >
-              {r.flagged ? "Flagged" : "Flag Review"}
-            </button>
-          </div>
-        ))}
+              <strong>{r.reviewTitle}</strong> <em>({r.datePosted})</em>
+              <p>{r.reviewBody}</p>
+
+              {/* LIKE BUTTON */}
+              <button
+                onClick={() => handleToggleLike(r.id)}
+                style={{
+                  padding: "0.25rem 0.5rem",
+                  marginRight: "0.5rem",
+                  backgroundColor: liked ? "#ffdddd" : "#eee",
+                  cursor: "pointer",
+                }}
+              >
+                {liked ? "❤️ Liked" : "🤍 Like"}
+              </button>
+
+              {/* FLAG BUTTON */}
+              <button
+                onClick={() => handleFlagReview(r.id)}
+                disabled={r.flagged}
+                style={{
+                  padding: "0.25rem 0.5rem",
+                  cursor: r.flagged ? "not-allowed" : "pointer",
+                }}
+              >
+                {r.flagged ? "Flagged" : "Flag Review"}
+              </button>
+            </div>
+          );
+        })}
 
         {hasMoreReviews && (
-          <button onClick={() => setReviewsPage((p) => p + 1)}>
+          <button
+            onClick={() => setReviewsPage((p) => p + 1)}
+            style={{
+              padding: "0.5rem",
+              fontWeight: "bold",
+              cursor: "pointer",
+              marginTop: "1rem",
+            }}
+          >
             Load More
           </button>
         )}

@@ -152,10 +152,7 @@ export default function UsersAdmin() {
 
     <button
       onClick={handlePageJump}
-      style={{
-        padding: "0.3rem 0.8rem",
-        cursor: "pointer",
-      }}
+        style={{ padding: "0.3rem 0.8rem", cursor: "pointer" }}
       aria-label="Navigate to page"
     >
       Go

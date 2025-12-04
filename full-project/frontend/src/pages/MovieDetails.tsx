@@ -402,6 +402,7 @@ export default function MovieDetails() {
         {isFavorite ? "Remove from Favorites" : "Add to Favorites ⭐"}
       </button>
 
+      {/* ---- Watchlist button ---- */}
       <button
         onClick={isInWatchlist ? removeFromWatchlist : addToWatchlist}
         style={{

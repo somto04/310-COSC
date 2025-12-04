@@ -115,14 +115,14 @@ export default function ReviewsAdmin() {
       try {
         // movies
         if (missingMovieIds.length > 0) {
-          const movieResults = await Promise.all(
+          const movieResults = await Promise.allSettled(
             missingMovieIds.map((id) => authGet(`/movies/${id}`))
           );
           setMovieTitles((prev) => {
             const next = { ...prev };
             movieResults.forEach((movie, idx) => {
               const id = missingMovieIds[idx];
-              next[id] = movie.title ?? `Movie #${id}`;
+              next[id] = movie.status === "fulfilled" ? movie.value.title ?? `Movie #${id}` : `Movie #${id}`;
             });
             return next;
           });

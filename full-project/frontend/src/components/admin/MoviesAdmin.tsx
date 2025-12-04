@@ -47,6 +47,30 @@ export default function MoviesAdmin() {
 
   const token = getToken();
 
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      const target = e.target as HTMLElement;
+      if (
+        confirmDeleteId !== null &&
+        !target.closest(".delete-btn")
+      ) {
+        setConfirmDeleteId(null);
+      }
+    }
+    window.addEventListener("click", handleClickOutside);
+    return () => window.removeEventListener("click", handleClickOutside);
+  }, [confirmDeleteId]);
+
+  useEffect(() => {
+    function handleEsc(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        setConfirmDeleteId(null);
+      }
+    }
+    window.addEventListener("keydown", handleEsc);
+    return () => window.removeEventListener("keydown", handleEsc);
+  }, []);
+
   function authHeaders(extra?: HeadersInit): Headers {
         const headers = new Headers(extra);
 
@@ -394,11 +418,13 @@ export default function MoviesAdmin() {
                 </button>
 
                 <button
-                  onClick={() =>
+                  className="delete-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
                     confirmDeleteId === m.id
                       ? deleteMovie(m.id)
-                      : setConfirmDeleteId(m.id)
-                  }
+                      : setConfirmDeleteId(m.id);
+                  }}
                   style={{
                     background:
                       confirmDeleteId === m.id ? "tomato" : undefined,

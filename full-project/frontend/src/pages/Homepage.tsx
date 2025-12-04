@@ -91,7 +91,6 @@ export default function Homepage() {
                 return res.json();
             })
             .then(data => {
-                console.log("Metadata received:", data);
                 setGenres(data.genres || []);
                 setDecades(data.decades || []);
                 setDirectors(data.directors || []);
@@ -122,6 +121,18 @@ export default function Homepage() {
                 if (filterYear) params.append("year", filterYear);
                 if (filterDirector) params.append("director", filterDirector);
                 if (filterStar) params.append("star", filterStar);
+
+                const url = `${API}/movies/filter?${params.toString()}`;
+                const res = await fetch(url);
+
+                if (res.status === 404) {
+                    setMovies([]);
+                    return;
+                }
+
+                if (!res.ok) {
+                    throw new Error(`HTTP ${res.status}`);
+                }
                 
                 url = `${API}/movies/filter?${params.toString()}`;
             }

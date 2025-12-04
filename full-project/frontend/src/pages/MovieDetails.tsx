@@ -112,6 +112,7 @@ export default function MovieDetails() {
     }
   };
 
+
   // ---  WATCHLIST SYSTEM ---
   const [isInWatchlist, setInWatchlist] = useState(false);
 
@@ -417,60 +418,7 @@ export default function MovieDetails() {
         {isInWatchlist ? "Remove from Watchlist" : "Add to Watchlist ⭐"}
       </button>
 
-      <button
-        onClick={isInWatchlist ? removeFromWatchlist : addToWatchlist}
-        style={{
-          marginTop: "1rem",
-          padding: "0.6rem 1rem",
-          fontWeight: "bold",
-          border: "1px solid black",
-          backgroundColor: isInWatchlist ? "red" : "black",
-          color: "white",
-          cursor: "pointer",
-          borderRadius: "4px",
-        }}
-      >
-        {isInWatchlist ? "Remove from Watchlist" : "Add to Watchlist ⭐"}
-      </button>
-
-
-      {/* --- ADD REVIEW --- */}
-      <section style={{ marginTop: "2rem" }}>
-        <h2>Add a Review</h2>
-
-        <form
-          onSubmit={handleSubmit}
-          style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}
-        >
-          <input
-            type="text"
-            placeholder="Review Title"
-            value={newTitle}
-            onChange={(e) => setNewTitle(e.target.value)}
-            required
-            style={{ padding: "0.5rem" }}
-          />
-          <textarea
-            placeholder="Write your review..."
-            value={newBody}
-            onChange={(e) => setNewBody(e.target.value)}
-            required
-            rows={4}
-            style={{ padding: "0.5rem" }}
-          />
-
-          <button
-            type="submit"
-            disabled={posting}
-            style={{ padding: "0.5rem", fontWeight: "bold", cursor: "pointer" }}
-          >
-            {posting ? "Posting..." : "Submit Review"}
-          </button>
-        </form>
-      </section>
-
-
-      {/* --- REVIEWS LIST --- */}
+      {/* ---- Reviews UI ---- */}
       <section style={{ marginTop: "2rem" }}>
         <h2>Reviews</h2>
 

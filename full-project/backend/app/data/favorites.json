@@ -30,5 +30,13 @@
   {
     "userId": 40922,
     "movieId": 2
+  },
+  {
+    "userId": 40919,
+    "movieId": 1
+  },
+  {
+    "userId": 40919,
+    "movieId": 8
   }
 ]

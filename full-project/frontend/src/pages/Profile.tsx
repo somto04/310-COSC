@@ -349,7 +349,7 @@ fetch(`${API}/likeReview/`,{
           <p>You haven't liked any reviews yet.</p>
         ) : (
           <ul style={{ paddingLeft: "1rem" }}>
-            {reviews.slice(0, 3).map((r) => (
+            {reviews.slice(0, 30).map((r) => (
               <li
                 key={r.id}
                 style={{

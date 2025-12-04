@@ -1,10 +1,14 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { setAuth } from "../utils/auth";
 const API = import.meta.env.VITE_API_URL;
 
 
+type CreateAccountProps = {
+  updateAuth: () => void;
+};
 
-export default function Register() {
+export default function Register({updateAuth}: CreateAccountProps) {
   const [username, setUsername] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -51,57 +55,82 @@ export default function Register() {
     return `${label}: ${msg}`;
   }
 
-  const handleRegister = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
+  e.preventDefault();
+  setMessage("");
 
-    fetch(`${API}/users`, {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-  },
-  body: JSON.stringify({
-    username,
-    firstName,
-    lastName,
-    email,
-    age: Number(age),
-    pw,
-  }),
-})
+  try {
+    // 1) Create the user
+    const res = await fetch(`${API}/users`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        username,
+        firstName,
+        lastName,
+        email,
+        age: Number(age),
+        pw,
+      }),
+    });
 
-      .then(async (res) => {
-        const data = await res.json();
+    const data = await res.json();
 
-        // Handle backend validation errors
-        if (!res.ok) {
-          if (Array.isArray(data.detail)) {
-            const messages = data.detail.map((err: any) =>
-              formatError(err.loc?.[1], err.msg, err.ctx)
-            );
-            setMessage(messages.join("\n"));
-            return;
-          }
+    // Handle backend validation errors
+    if (!res.ok) {
+      if (Array.isArray(data.detail)) {
+        const messages = data.detail.map((err: any) =>
+          formatError(err.loc?.[1], err.msg, err.ctx)
+        );
+        setMessage(messages.join("\n"));
+        return;
+      }
 
-          if (typeof data.detail === "string") {
-            setMessage(data.detail);
-            return;
-          }
+      if (typeof data.detail === "string") {
+        setMessage(data.detail);
+        return;
+      }
 
-          setMessage("Something went wrong.");
-          return;
-        }
+      setMessage("Something went wrong.");
+      return;
+    }
 
-        
-        setMessage("Account created successfully!");
+    // Auto-login using the same creds
+    const formData = new URLSearchParams();
+    formData.append("username", username);
+    formData.append("password", pw);
 
-        
-        navigate("/");
-      })
-      .catch((err) => {
-        console.error("Error creating account:", err);
-        setMessage("Network error. Please try again.");
-      });
-  };
+    const loginRes = await fetch(`${API}/token`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: formData.toString(),
+    });
+
+    const loginData = await loginRes.json();
+
+    if (loginRes.ok && loginData.access_token) {
+      setAuth(
+        loginData.access_token,
+        loginData.userId,
+        loginData.isAdmin,
+        loginData.username
+      );
+      updateAuth();
+      setMessage("Account created & logged in!");
+      navigate("/"); // or "/homepage", both route to Homepage
+    } else {
+      setMessage("Account created, but login failed. Please log in manually.");
+    }
+  } catch (err) {
+    console.error("Error creating account:", err);
+    setMessage("Network error. Please try again.");
+  }
+};
+
 
   return (
     <div style={{ padding: "2rem", maxWidth: "400px", margin: "0 auto" }}>

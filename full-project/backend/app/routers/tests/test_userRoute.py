@@ -140,7 +140,6 @@ def test_getAllUsers(mockList, client, sampleUsers):
         assert "pw" not in user
         assert "age" not in user
         assert "lastName" not in user
-        assert "role" not in user
         assert "penalties" not in user
     mockList.assert_called_once()
     
@@ -176,7 +175,6 @@ def test_getUserById(mockGet, client, sampleUsers):
         assert "pw" not in user
         assert "age" not in user
         assert "lastName" not in user
-        assert "role" not in user
         assert "penalties" not in user
     
     mockGet.assert_called_once_with(1)

@@ -115,7 +115,7 @@ export default function Register({updateAuth}: {updateAuth: () => void}) {
       localStorage.setItem("userId", loginData.userId);
       updateAuth();
       setMessage("Account created & logged in!");
-      window.location.href = "/"; // or "/homepage", both route to Homepage
+      navigate("/"); // or "/homepage", both route to Homepage
     } else {
       setMessage("Account created, but login failed. Please log in manually.");
     }

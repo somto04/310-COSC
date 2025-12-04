@@ -1,7 +1,7 @@
 import { useState } from "react";
 import ReviewsAdmin from "../components/admin/ReviewsAdmin";
 import UsersAdmin from "../components/admin/UsersAdmin";
-// import MoviesAdmin from "../components/admin/MoviesAdmin";
+import MoviesAdmin from "../components/admin/MoviesAdmin";
 
 type AdminSection = "reviews" | "users" | "movies";
 
@@ -20,7 +20,7 @@ export default function AdminDashboard() {
 
       {section === "reviews" && <ReviewsAdmin />}
       {section === "users" && <UsersAdmin />}
-      {/* {section === "movies" && <MoviesAdmin />} */}
+      {section === "movies" && <MoviesAdmin />}
     </div>
   );
 }

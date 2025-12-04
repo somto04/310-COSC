@@ -7,31 +7,79 @@ SpoilerAlert! is a movie review platform built with FastAPI that lets users brow
 
 The backend manages all core logic including reviews, replies, penalties, user accounts, and movie data, while the frontend delivers a clean, responsive UI for both casual users and admins. The platform is designed to be modular, testable, and easy to extend.
 
-## How to run docker
+## How to Run the Webpage
 
-To start, ensure you are in the root directory, whatever that may be (e.g. 310-COSC, full-project, or whatever contains ALL the project code.) Next, run this to containerize the backend and frontend, and hopefully everything is good from there:
-```
-docker compose up --build
-```
+Before running the system, install the following tools:
 
-## to delete old coverage report and add a new one run the commands: 
-```
-rm -r htmlcov  
-coverage run -m pytest
-coverage html
-```
+Docker Desktop (version 4.x or newer)
+https://www.docker.com/products/docker-desktop/
 
-## to delete the old report folder and create a new one run the commands: 
-```
-rm -r report
-pytest --junitxml=report/report.xml
-```
+VSCode
+https://code.visualstudio.com/
 
-## Other
+### Option 1 - Using VSCode Terminal:
+1. Open the project in VSCode (clone from GitHub repo)
+2. Make sure you are in the folder that contains `docker-compose.yml` (e.g., 310-COSC):
 
-To activate our virtual environment go to the fullproject then backend folder then enter: `source backendvenv\Scripts\Activate`
+`cd 310-COSC`
 
-To reload fastapi: `uvicorn app.app:app --reload`
+3. Run the containers in detached mode:
+
+`docker compose up -d`
+
+This will:
+Start both the backend and frontend containers
+Run them in the background
+
+4. To stop the containers:
+
+`docker compose down`
+
+
+### Option 2 - Using Docker Desktop:
+
+1. Open Docker Desktop
+2. Go to the Containers tab
+3. Find the project folder name (310-cosc)
+4. Click Start to run both the containers
+5. Click Stop when done
+
+## Accessing the Services:
+
+Once the containers are running, go to this URL:
+
+  Frontend (REACT+Vite):
+  http://localhost:5173/
+
+
+## Rebuilding the Images (when code or Dockerfile changes):
+
+If you need to rebuild:
+
+`docker compose up --build`
+
+Then start again:
+`docker compose up -d`
+
+## Dependencies
+
+| Category              | Component / Technology | Version                |
+| --------------------- | ---------------------- | ---------------------- |
+| **Frontend**          | React                  | 19.2.0                 |
+|                       | React DOM              | 19.2.0                 |
+|                       | Vite                   | 7.2.4                  |
+|                       | TypeScript             | 5.9.3                  |
+| **Backend**           | Python                 | 3.13.7                 |
+| **Backend Framework** | FastAPI                | 0.119.1                |
+| **Package Manager**   | pip                    | 25.3                   |
+| **Database**          | JSON storage           | Included with Python   |
+| **Containerization**  | Docker Engine          | 28.4.0 (build d8eb465) |
+|                       | Docker Compose         | v2.39.4-desktop.1      |
+| **External API**      | TMDB API               | V3                     |
+
+
+
+
 
 ## pip list
 | Package           | Version   |

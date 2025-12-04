@@ -54,7 +54,6 @@ export default function MovieDetails() {
 
 
   // UI + Errors
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   // --- LIKE SYSTEM ---

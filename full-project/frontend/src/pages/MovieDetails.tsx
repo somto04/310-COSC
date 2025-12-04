@@ -112,6 +112,69 @@ export default function MovieDetails() {
     }
   };
 
+  // ---  WATCHLIST SYSTEM ---
+  const [isInWatchlist, setInWatchlist] = useState(false);
+
+  const checkWatchlistStatus = async () => {
+    const token = getToken();
+
+    if (!movieId || !token) return;
+
+    try {
+      const res = await fetch(`${API}/users/watchlist`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!res.ok) return;
+
+      const data = await res.json();
+      const watchlistIds = data.watchlist.map((movie: any) => movie.id);
+
+      setInWatchlist(watchlistIds.includes(Number(movieId)));
+    } catch (err) {
+      console.error("Failed to load watchlist", err);
+    }
+  };
+
+  const addToWatchlist = async () => {
+    const token = getToken;
+    if (!token || !movie) return;
+
+    try {
+      const res = await fetch(`${API}/users/watchlist/${movie.id}`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      });
+
+      if (!res.ok) {
+        console.error("Backend failed to add movie:", res.status);
+        return;
+      }
+
+      setInWatchlist(true);
+    } catch (err) {
+      console.error("Failed to add to watchlist", err);
+    }
+  };
+
+
+  const removeFromWatchlist = async () => {
+    const token = getToken();
+    if (!token || !movie) return;
+
+    try {
+      await fetch(`${API}/users/watchlist/${movie.id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setInWatchlist(false);
+    } catch (err) {
+      console.error("Failed to remove from watchlist", err);
+    }
+  };
 
   // --- FAVORITES CHECK ---
   const checkFavoriteStatus = async () => {
@@ -179,6 +242,7 @@ export default function MovieDetails() {
 
         fetchLikedReviews();
         checkFavoriteStatus();
+        checkWatchlistStatus();
         fetchReviews(1);
 
       } catch {
@@ -335,6 +399,38 @@ export default function MovieDetails() {
         }}
       >
         {isFavorite ? "Remove from Favorites" : "Add to Favorites ⭐"}
+      </button>
+
+      <button
+        onClick={isInWatchlist ? removeFromWatchlist : addToWatchlist}
+        style={{
+          marginTop: "1rem",
+          padding: "0.6rem 1rem",
+          fontWeight: "bold",
+          border: "1px solid black",
+          backgroundColor: isInWatchlist ? "red" : "black",
+          color: "white",
+          cursor: "pointer",
+          borderRadius: "4px",
+        }}
+      >
+        {isInWatchlist ? "Remove from Watchlist" : "Add to Watchlist ⭐"}
+      </button>
+
+      <button
+        onClick={isInWatchlist ? removeFromWatchlist : addToWatchlist}
+        style={{
+          marginTop: "1rem",
+          padding: "0.6rem 1rem",
+          fontWeight: "bold",
+          border: "1px solid black",
+          backgroundColor: isInWatchlist ? "red" : "black",
+          color: "white",
+          cursor: "pointer",
+          borderRadius: "4px",
+        }}
+      >
+        {isInWatchlist ? "Remove from Watchlist" : "Add to Watchlist ⭐"}
       </button>
 
 

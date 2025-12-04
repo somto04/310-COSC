@@ -15,20 +15,22 @@ import AdminPage from './pages/AdminDashboard';
 import MovieDetails from './pages/MovieDetails';
 
 import { useState } from "react";
-import { getToken, getIsAdmin, requireAuth, requireAdmin } from "./utils/auth";
+import { getToken, getIsAdmin, requireAuth, requireAdmin, getUsername } from "./utils/auth";
 
 function App() {
   const [token, setToken] = useState(getToken());
   const [isAdmin, setIsAdmin] = useState(getIsAdmin());
+  const [username, setUsername] = useState(getUsername());
 
   const updateAuth = () => {
     setToken(getToken());
     setIsAdmin(getIsAdmin());
+    setUsername(getUsername());
   };
 
   return (
     <BrowserRouter>
-      <Header token={token} isAdmin={isAdmin} />
+      <Header token={token} isAdmin={isAdmin} username={username} />
 
       <Routes>
         <Route path="/" element={<Homepage/>} />

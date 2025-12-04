@@ -148,65 +148,74 @@ export default function MoviesAdmin() {
   }
 
   async function saveEdit() {
-    if (!editingMovie || !editForm) return;
+  if (!editingMovie || !editForm) return;
 
-    setLoading(true);
-    setError(null);
-    setMsg(null);
+  setLoading(true);
+  setError(null);
+  setMsg(null);
 
-    const yr = Number(editForm.yearReleased);
+  const yr = Number(editForm.yearReleased);
 
-    if (!editForm.yearReleased.trim() || Number.isNaN(yr) || yr < 1888) {
-        setError("Year Released is required and must be a number ≥ 1888.");
-        setLoading(false);
-        return;
-    }
-
-
-    const payload = {
-        tmdbId: Number(editForm.tmdbId) || 0,
-        title: editForm.title,
-        movieIMDb: parseFloat(editForm.movieIMDb) || 0,
-        movieGenre: editForm.movieGenre
-            .split(",")
-            .map((s) => s.trim())
-            .filter(Boolean),
-        directors: editForm.directors
-            .split(",")
-            .map((s) => s.trim())
-            .filter(Boolean),
-        mainstars: editForm.mainstars
-            .split(",")
-            .map((s) => s.trim())
-            .filter(Boolean),
-        description: editForm.description,
-        datePublished: editForm.datePublished,
-        duration: Number(editForm.duration) || 0,
-        yearReleased: yr,
-    };
-
-    try {
-      const res = await fetch(`${API}/movies/${editingMovie.id}`, {
-        method: "PUT",
-        headers: authHeaders(),
-        body: JSON.stringify(payload),
-      });
-
-      if (!res.ok) {
-        const body = await res.json().catch(() => null);
-        throw new Error(body?.detail || `Update failed (${res.status})`);
-      }
-
-      setMsg(`Updated movie #${editingMovie.id}.`);
-      setEditingMovie(null);
-      setEditForm(null);
-      await loadMovies();
-    } catch (e: any) {
-      setError(e.message || "Failed to update movie.");
-    } finally {
-      setLoading(false);
-    }
+  //Year validation
+  if (!editForm.yearReleased.trim() || Number.isNaN(yr) || yr < 1888) {
+    setError("Year Released is required and must be a number ≥ 1888.");
+    setLoading(false);
+    return;
   }
+
+  //Title validation
+  const title = editForm.title.trim();
+  if (!title) {
+    setError("Title is required.");
+    setLoading(false);
+    return;
+  }
+
+  const payload = {
+    tmdbId: Number(editForm.tmdbId) || 0,
+    title, // use trimmed title
+    movieIMDb: parseFloat(editForm.movieIMDb) || 0,
+    movieGenre: editForm.movieGenre
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean),
+    directors: editForm.directors
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean),
+    mainstars: editForm.mainstars
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean),
+    description: editForm.description,
+    datePublished: editForm.datePublished,
+    duration: Number(editForm.duration) || 0,
+    yearReleased: yr,
+  };
+
+  try {
+    const res = await fetch(`${API}/movies/${editingMovie.id}`, {
+      method: "PUT",
+      headers: authHeaders(),
+      body: JSON.stringify(payload),
+    });
+
+    if (!res.ok) {
+      const body = await res.json().catch(() => null);
+      throw new Error(body?.detail || `Update failed (${res.status})`);
+    }
+
+    setMsg(`Updated movie #${editingMovie.id}.`);
+    setEditingMovie(null);
+    setEditForm(null);
+    await loadMovies();
+  } catch (e: any) {
+    setError(e.message || "Failed to update movie.");
+  } finally {
+    setLoading(false);
+  }
+}
+
 
   async function deleteMovie(id: number) {
     setLoading(true);

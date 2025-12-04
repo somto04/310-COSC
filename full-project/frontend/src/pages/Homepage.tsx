@@ -102,13 +102,21 @@ export default function Homepage() {
             });
     }, []);
 
-    // Fetch filtered movies
+    // Fetch movies with search + filters
     useEffect(() => {
-        const fetchFilteredMovies = async () => {
-            try {
+    const fetchMovies = async () => {
+        setLoading(true);
+        
+        try {
+            let url = `${API}/movies/`;
+            
+            // only search term so uses search endpoint
+            if (searchTerm && !filterGenre && !filterYear && !filterDirector && !filterStar) {
+                url = `${API}/movies/search?query=${encodeURIComponent(searchTerm)}`;
+            }
+            // only filters so uses filters endpoint
+            else if (!searchTerm && (filterGenre || filterYear || filterDirector || filterStar)) {
                 const params = new URLSearchParams();
-
-                if (searchTerm) params.append("query", searchTerm);
                 if (filterGenre) params.append("genre", filterGenre);
                 if (filterYear) params.append("year", filterYear);
                 if (filterDirector) params.append("director", filterDirector);
@@ -126,21 +134,52 @@ export default function Homepage() {
                     throw new Error(`HTTP ${res.status}`);
                 }
                 
-                const data = await res.json();
-                if (!Array.isArray(data)) {
-                    setMovies([]);
-                    return;
-                }
-                const moviesWithPosters = await fetchMoviesWithPosters(data);
-                setMovies(moviesWithPosters);
+                url = `${API}/movies/filter?${params.toString()}`;
             }
-            catch (err) {
-                console.error("Error fetching filtered movies:", err);
+            // search and filters so uses filter endpoint with query
+            else if (searchTerm && (filterGenre || filterYear || filterDirector || filterStar)) {
+                const params = new URLSearchParams();
+                params.append("query", searchTerm);
+                if (filterGenre) params.append("genre", filterGenre);
+                if (filterYear) params.append("year", filterYear);
+                if (filterDirector) params.append("director", filterDirector);
+                if (filterStar) params.append("star", filterStar);
+                
+                url = `${API}/movies/filter?${params.toString()}`;
             }
-        };
-        
-        fetchFilteredMovies();
-    }, [searchTerm, filterDirector, filterStar, filterGenre, filterYear]);
+            
+            // nothing selected so gets all movies (default)
+            console.log("Fetching:", url);
+            
+            const res = await fetch(url);
+            
+            if (res.status === 404) {
+                setMovies([]);
+                setLoading(false);
+                return;
+            }
+            
+            if (!res.ok) {
+                throw new Error(`HTTP ${res.status}`);
+            }
+            
+            const data = await res.json();
+            const moviesWithPosters = await fetchMoviesWithPosters(data);
+            setMovies(moviesWithPosters);
+        } catch (err) {
+            console.error("Error fetching movies:", err);
+        } finally {
+            setLoading(false);
+        }
+    };
+    
+    const timeoutId = setTimeout(() => {
+        fetchMovies();
+    }, searchTerm ? 500 : 0);
+    
+    return () => clearTimeout(timeoutId);
+}, [searchTerm, filterGenre, filterYear, filterDirector, filterStar]);
+
 
     return (
         <div style={{ padding: "2rem", margin: "0 auto", maxWidth: "1200px" }}>

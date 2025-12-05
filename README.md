@@ -35,6 +35,8 @@ Run them in the background
 
 `docker compose down`
 
+You will have to put a .env file in the backend directory to use the TMDb API, and set TMDB_API_KEY inside of it.
+
 
 ### Option 2 - Using Docker Desktop:
 
@@ -43,6 +45,30 @@ Run them in the background
 3. Find the project folder name (310-cosc)
 4. Click Start to run both the containers
 5. Click Stop when done
+
+### Option 3 - From a image tar
+
+First, load the images into Docker with `docker load -i [backend_name_here.tar]` and `docker load -i [frontend_name_here.tar]`
+
+Then, check the images in Docker with `docker images` and check the names of the backend and frontend. In the next steps, you should replace [backend_name_goes_here:tag] and [frontend_name_goes_here:tag] with these names. E.g., they may look something like `310-cosc-frontend:latest`
+
+To run the backend, you first need to make a .env somewhere and inside, put a key for TMDB_API_KEY if you want to see extra movie details. Then, do
+```
+docker run -d \
+  --name 310-backend \
+  --env-file [directory_to_.env] \
+  -p 8000:8000 \
+  [backend_name_goes_here:tag]
+```
+
+To run the frontend, do
+```
+docker run -d \
+  --name 310-frontend \
+  -p 5173:5173 \
+  -e VITE_API_URL=http://localhost:8000 \
+  [frontend_name_goes_here:tag]
+```
 
 ## Accessing the Services:
 
